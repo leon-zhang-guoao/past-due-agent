@@ -5,6 +5,8 @@ No production credentials or network. This is not Atlas/JDBC/platform validation
 Uses a temporary local data directory and never changes business tables.
 """
 import json
+from datetime import datetime
+from zoneinfo import ZoneInfo
 import re
 import tempfile
 import unittest
@@ -44,17 +46,20 @@ class SQLFixtures(unittest.TestCase):
                 count=0 if cc=='ZERO' else 20 if cc=='EMPTY' else 110 if cc=='BAD' else 10
                 extra.append(f"('{cc}','{dt}',1,'Fixture','NR','EDI',{count},100)")
         cls.db.query('INSERT INTO past_due.vendor_past_due_daily VALUES '+','.join(extra))
+        # Vendor 1 disappears at T, but Country retains a valid complete T.
+        cls.db.query("INSERT INTO past_due.vendor_past_due_daily VALUES ('GONE','2026-10-23',1,'Gone','NR','EDI',10,100),('GONE','2026-10-26',2,'Other','SH','EDI',5,100)")
         cls.db.query('CREATE TABLE past_due.past_due_detail_view (country_code String,from_acct_no Int64,vendor_name String,eta_code String,source String,is_pastdue Int64,alert_type String) ENGINE=MergeTree ORDER BY (country_code,from_acct_no)')
         cls.db.query("INSERT INTO past_due.past_due_detail_view VALUES ('CA',1,'One','NR','EDI',1,'LATE'),('CA',1,'One','SH','EDI',0,'OPEN'),('CA',2,'Two','US','AutoUS',1,'LATE'),('CA',3,'Unmapped','NR','EDI',1,'LATE')")
         cls.db.query('CREATE TABLE past_due.vendor_master_mapping_view (country_code String,vendor_no Int64,department_type String,master_primary String,master_manager String) ENGINE=MergeTree ORDER BY (country_code,vendor_no)')
         cls.db.query("INSERT INTO past_due.vendor_master_mapping_view VALUES ('CA',1,'ETAD','A','M'),('CA',1,'ETAD','A','M'),('CA',2,'ETAD','B','N')")
+        cls.db.query("INSERT INTO past_due.vendor_master_mapping_view VALUES ('GONE',1,'ETAD','GoneOwner','M')")
     @classmethod
     def tearDownClass(cls):
         del cls.db;cls.tmp.cleanup()
     def sql(self,rid,**overrides):
         page=overrides.pop('_page',None)
         b=self.doc[':execution'][':bindings'][rid+'-sql']
-        params={'country_code':'CA','calendar_mode':'WEEKDAYS','target_snapshot_date':'2026-10-26','previous_snapshot_date':'2026-10-23','selection_mode':'POSITIVE_TOP_N','top_n':10,'vendor_code':0,'relative_change_threshold':'0.10','range_start_date':'2026-10-23','range_end_date':'2026-10-26','grain':'VENDOR','vendor_code_filter':'','department_type_filter':'','master_primary_filter':'','master_manager_filter':'','denominator_scope':'COUNTRY_ALL'}
+        params={'country_code':'CA','calendar_mode':'WEEKDAYS','target_snapshot_date':'2026-10-26','previous_snapshot_date':'2026-10-23','selection_mode':'POSITIVE_TOP_N','top_n':10,'vendor_code':0,'relative_change_threshold':'0.10','range_start_date':'2026-10-23','range_end_date':'2026-10-26','grain':'VENDOR','vendor_code_filter':'','department_type_filter':'','master_primary_filter':'','master_manager_filter':'','denominator_scope':'COUNTRY_ALL','time_basis':'PAIR','pair_policy':'EXPLICIT','eta_code_filter':'','source_filter':'','ranking_metric':'NONE','sort_direction':'DESC','change_selection':'ALL'}
         params.update(overrides)
         def replace(m):
             x=params[m.group(1)]
@@ -72,6 +77,123 @@ class SQLFixtures(unittest.TestCase):
         mapped={v for k,v in b[':binding/output-map'].items() if self.doc[':vocabulary'][':attributes'][k][':attribute/type']!=':ref'}
         for row in rows:self.assertEqual(set(row),mapped,'Actual SQL columns differ from mapped scalar outputs: '+rid)
         return rows
+    def test_v31_disappearing_selected_vendor(self):
+        for selection in [dict(vendor_code=1),dict(master_primary_filter='GoneOwner')]:
+            for grain in ['VENDOR','VENDOR_CODE','VENDOR_SOURCE','COUNTRY']:
+                rows=self.sql('pastdue_v3_explore_query_rows',country_code='GONE',top_n=0,
+                              grain=grain,denominator_scope='FILTERED_POPULATION',**selection)
+                facts=[r for r in rows if r['record_type']=='FACT']
+                self.assertEqual(len(facts),1,(grain,selection))
+                row=facts[0]
+                self.assertEqual((int(row['previous_past_due_count']),int(row['target_past_due_count'])),(10,0))
+                self.assertEqual(int(row['past_due_count_change']),-10)
+                self.assertEqual(int(row['target_share_denominator']),0)
+                self.assertIsNone(row['target_past_due_share'])
+                if grain!='COUNTRY':
+                    self.assertEqual(int(row['target_ratio_denominator']),0)
+                    self.assertIsNone(row['target_past_due_ratio'])
+
+    def test_v31_report(self):
+        rows=self.sql('pastdue_v3_report_query_rows')
+        self.assertEqual(len([r for r in rows if r['record_type']=='VENDOR_METRICS']),10)
+        self.assertEqual(len([r for r in rows if r['record_type']=='COUNTRY_CONTROL']),1)
+        self.assertTrue(all(int(r['expected_record_count'])==len(rows) for r in rows))
+        checks=[r for r in rows if r['record_type']=='VENDOR_CHECK']
+        self.assertEqual(len(checks),30)
+        self.assertTrue(all(r['counts_match'] for r in checks))
+        for c in checks:
+            facts=[r for r in rows if r['vendor_code']==c['vendor_code'] and r['dimension']==c['dimension'] and r['record_type'].endswith('_SUMMARY')]
+            self.assertLessEqual(len(facts),6)
+            self.assertEqual(sum(int(r['previous_past_due_count']) for r in facts),int(c['previous_total']))
+            self.assertEqual(sum(int(r['target_past_due_count']) for r in facts),int(c['target_total']))
+        self.assertTrue(any(r['row_kind']=='OTHER' for r in rows))
+
+    def test_v31_explore(self):
+        rows=self.sql('pastdue_v3_explore_query_rows')
+        self.assertEqual(rows[0]['scope_status'],'OK')
+        facts=[r for r in rows if r['record_type']=='FACT']
+        self.assertEqual(len(facts),10)
+        current=self.sql('pastdue_v3_explore_query_rows',time_basis='CURRENT',grain='VENDOR_CODE',eta_code_filter='NR',top_n=0,ranking_metric='PAST_DUE_RATIO')
+        facts=[r for r in current if r['record_type']=='FACT']
+        one=next(r for r in facts if int(r['vendor_code'])==1)
+        self.assertEqual(int(one['target_ratio_denominator']),2)
+        self.assertAlmostEqual(float(one['target_past_due_ratio']),.5)
+        self.assertEqual(int(one['target_share_denominator']),3)
+        history=self.sql('pastdue_v3_explore_query_rows',time_basis='RANGE',top_n=0)
+        self.assertEqual(len([r for r in history if r['record_type']=='FACT']),24)
+        self.assertTrue(all(r['target_snapshot_date'] in ['2026-10-23','2026-10-26'] for r in history if r['record_type']=='FACT'))
+
+    def test_v31_explore_shapes_and_invalid(self):
+        for grain in ['COUNTRY','VENDOR','VENDOR_CODE','VENDOR_SOURCE','VENDOR_CODE_SOURCE']:
+            rows=self.sql('pastdue_v3_explore_query_rows',grain=grain,top_n=0)
+            self.assertTrue(any(r['record_type']=='FACT' for r in rows),grain)
+        explicit=self.sql('pastdue_v3_explore_query_rows',previous_snapshot_date='2026-10-22',top_n=0)
+        self.assertTrue(all(r['previous_snapshot_date']=='2026-10-22' for r in explicit if r['record_type']=='FACT'))
+        nearest=self.sql('pastdue_v3_explore_query_rows',pair_policy='PREVIOUS_AVAILABLE',previous_snapshot_date='1970-01-01',top_n=0)
+        self.assertTrue(all(r['previous_snapshot_date']=='2026-10-23' for r in nearest if r['record_type']=='FACT'))
+        improve=self.sql('pastdue_v3_explore_query_rows',grain='VENDOR_CODE',ranking_metric='COUNT_CHANGE',sort_direction='ASC',change_selection='NEGATIVE',top_n=100)
+        self.assertTrue(all(int(r['past_due_count_change'])<0 for r in improve if r['record_type']=='FACT'))
+        values=[int(r['past_due_count_change']) for r in improve if r['record_type']=='FACT']
+        self.assertEqual(values,sorted(values));self.assertTrue(values)
+        joint=self.sql('pastdue_v3_explore_query_rows',grain='VENDOR_CODE_SOURCE',eta_code_filter='US',top_n=0)
+        self.assertTrue(all(r['eta_code']=='US' for r in joint if r['record_type']=='FACT'))
+        snap=self.sql('pastdue_v3_explore_query_rows',time_basis='SNAPSHOT',top_n=0)
+        self.assertEqual(len([r for r in snap if r['record_type']=='FACT']),12)
+        bad=self.sql('pastdue_v3_explore_query_rows',time_basis='CURRENT',ranking_metric='COUNT_CHANGE')
+        self.assertEqual(len(bad),1);self.assertEqual(bad[0]['scope_status'],'UNSUPPORTED_COMBINATION')
+        bad=self.sql('pastdue_v3_explore_query_rows',time_basis='RANGE',range_start_date='2020-01-01')
+        self.assertEqual(bad[0]['scope_status'],'INVALID_RANGE')
+        bad=self.sql('pastdue_v3_explore_query_rows',previous_snapshot_date='2026-10-24')
+        self.assertEqual(bad[0]['scope_status'],'INVALID_PAIR')
+        bad=self.sql('pastdue_v3_explore_query_rows',country_code='MISSING')
+        self.assertNotEqual(bad[0]['scope_status'],'OK')
+        empty=self.sql('pastdue_v3_explore_query_rows',vendor_code=999)
+        self.assertEqual(len(empty),1);self.assertEqual(empty[0]['scope_status'],'OK')
+
+    def test_v31_filter_population_and_paging(self):
+        rows=self.sql('pastdue_v3_explore_query_rows',time_basis='CURRENT',top_n=0,master_primary_filter='A',denominator_scope='FILTERED_POPULATION',eta_code_filter='NR',grain='VENDOR_CODE')
+        facts=[r for r in rows if r['record_type']=='FACT']
+        self.assertEqual(len(facts),1)
+        self.assertEqual(int(facts[0]['target_ratio_denominator']),2)
+        self.assertEqual(int(facts[0]['target_share_denominator']),1)
+        unfiltered=self.sql('pastdue_v3_explore_query_rows',time_basis='CURRENT',top_n=0)
+        self.assertEqual({int(r['vendor_code']) for r in unfiltered if r['record_type']=='FACT'},{1,2,3})
+        for rid in ['pastdue_v3_report_query_rows','pastdue_v3_explore_query_rows']:
+            allrows=self.sql(rid)
+            pages=[]
+            for offset in range(0,len(allrows),17):pages+=self.sql(rid,_page=(offset,17))
+            self.assertEqual(len(pages),len(allrows))
+            self.assertEqual([int(r['row_ordinal']) for r in pages],list(range(1,len(allrows)+1)))
+            self.assertTrue(all(int(r['expected_record_count'])==len(allrows) for r in pages))
+        empty=self.sql('pastdue_v3_report_query_rows',country_code='EMPTY')
+        self.assertEqual(len(empty),1);self.assertEqual(empty[0]['scope_status'],'OK')
+        self.assertEqual(int(empty[0]['selected_vendor_count']),0)
+        invalid=self.sql('pastdue_v3_report_query_rows',previous_snapshot_date='2026-10-24')
+        self.assertEqual(len(invalid),1);self.assertEqual(invalid[0]['scope_status'],'INVALID_PAIR')
+
+    def test_v31_dst_and_controls(self):
+        zone=ZoneInfo('America/Los_Angeles')
+        self.assertEqual(datetime(2026,1,15,tzinfo=zone).tzname(),'PST')
+        self.assertEqual(datetime(2026,7,15,tzinfo=zone).tzname(),'PDT')
+        self.assertEqual(datetime(2026,7,15,tzinfo=zone).utcoffset().total_seconds(),-7*3600)
+        for basis in ['CURRENT','SNAPSHOT','PAIR','RANGE']:
+            kwargs={'time_basis':basis,'top_n':0}
+            if basis=='CURRENT':kwargs['country_code']='CA'
+            rows=self.sql('pastdue_v3_explore_query_rows',**kwargs)
+            self.assertEqual(rows[0]['scope_status'],'OK')
+            self.assertEqual(len({r['scope_key'] for r in rows}),1)
+            self.assertEqual(len({r['row_ordinal'] for r in rows}),len(rows))
+        invalid=self.sql('pastdue_v3_report_query_rows',country_code='BAD')
+        self.assertEqual(len(invalid),1);self.assertEqual(invalid[0]['scope_status'],'DATA_ERROR')
+        good=self.sql('pastdue_v3_report_query_rows',selection_mode='SINGLE_VENDOR',vendor_code=12,top_n=1)
+        self.assertEqual({int(r['vendor_code']) for r in good if r['record_type']=='VENDOR_METRICS'},{12})
+        for cc in ['US','CA']:
+            rows=self.sql('pastdue_v3_report_query_rows',country_code=cc)
+            self.assertTrue(any(r['record_type']=='US_SOURCE_SUMMARY' for r in rows))
+            ctl=next(r for r in rows if r['record_type']=='COUNTRY_CONTROL')
+            self.assertGreater(int(ctl['target_country_past_due_count']),0)
+            self.assertGreater(float(ctl['target_country_ratio']),0)
+
     def test_monitor_and_history(self):
         rows=self.sql('pastdue_v3_monitor_query_countries')
         for row in [r for r in rows if r['country_code'] in ['CA','US']]:

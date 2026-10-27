@@ -1,15 +1,18 @@
-# v3 implementation notes
+# v3.1 implementation notes
 
-The combined graph is authoritative; development builder only extends/replaces
-v3 artifacts and retains legacy bindings. Legacy reference attr shards are not
-parsed as production truth. Tests no longer assert old past-due-only ratio behavior.
+The authoritative merged graph is built by the development-only builders, sharing
+SQL selection, ratios and calendar logic. Existing v3 entry semantics remain intact;
+new explore/report entries have independent identities including full bound scope.
 
-The latest trace omits identity fields and contains identical requested Vendor
-parameters with different returned totals. The new protocol detects this, but
-its original server/log/cache root cause is UNCONFIRMED; no production access was
-attempted and no historical token reused.
+The current Chinese HTML export contains an incorrect final-report assignment:
+Vendor 3493 is rank 8, 275→319 in comparison, Code, Source and checks. The report
+copied 75225's 66→305 and declared conflict. This supports REPORT_ERROR, not a
+confirmed underlying data conflict. CA 12570 SH+7 and 37108 BUYER+9 are preserved
+as sanitized regressions. The English export has no expanded tool payload.
 
-Model rules are not hard enforcement. Runtime prototype is archived and excluded
-from production packaging. Optional local helpers remain development assets only.
-Formal platform config-check, deployed JDBC, performance and real Agent acceptance
-must be completed after deployment. See docs/VALIDATION_V3.md for exact local status.
+The visible handle/version association anomaly remains UNCONFIRMED without raw
+platform call-ID logs. No production access was attempted and no old token reused.
+
+Formal config-check, deployed JDBC/pagination/performance and real Agent behavior
+remain separate release blockers. Instructions and offline validators cannot hard
+force model completion. See docs/VALIDATION_V3.md for actual executed evidence.

@@ -1,3 +1,25 @@
+# PastDue Agent v3.1 整体改造设计
+
+## v3.1 已批准实施基线
+
+本节和当前 `docs/API_V3.md`、Skill 契约是3.1权威设计；下方1.0记录保留作历史背景，不覆盖新接口与报告取数策略。
+
+- 交付仍为 Prompt + 完整 Skill + Atlas EDN；无线上 Python、任意 SQL、新表或邮件发送。
+- 时区为 America/Los_Angeles，按夏令时显示 PST/PDT 和实际偏移；完整快照早于本地今天。
+- 统一分析规格（模式、语言、范围、时间、指标、粒度、筛选、分母、排名、模块）。日报只是预设。
+- explore-query/rows 支持当前、快照、任意有效两期、区间；受控组合粒度、指标、筛选与排名。互动不受日报正向Top10限制。
+- report-query/rows 同一逻辑查询返回控制、Vendor、Code、Source、Code=US联合Source及核对记录；服务端计算Top5+Other、改善抵消和覆盖率。
+- 报告只获取服务端完整汇总时，声明 SERVER_RECONCILED，不声称已读取全部原始桶；全桶审计仍可按需进行。
+- 行身份含服务器返回的完整输入scope-key；禁止按位置/数量猜归属。
+- 数据事实冲突需两条原始证据；关联异常与报告错误独立分类，不能用“隔离”掩盖抄写错误。
+- 固定双语报告结构，所有选中Vendor有两期ETA摘要与诊断；交互只组合相关模块。
+- 测试入口中英文同义，强制适用下钻，权限和核验不放松；硬事实/报告错误FAIL，缺必需证据PARTIAL，unknown警告本身不决定失败。
+- 先部署兼容Atlas，再更新Prompt/Skill；离线、平台与真实Agent验收分开，待真实验收前保持PENDING_LIVE_ACCEPTANCE。
+
+---
+
+## 历史设计记录（1.0，部分被上文与3.1契约替代）
+
 # PastDue Agent 整体改造设计
 
 > 版本：1.0（待评审设计）  

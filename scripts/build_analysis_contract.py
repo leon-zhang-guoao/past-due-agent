@@ -9,7 +9,7 @@ from edn_io import K, read, write, EdnSet
 
 ROOT = Path(__file__).resolve().parents[1]
 GRAPH = ROOT / 'atlas/charts/pastdue.edn'
-VERSION = '3.0.0'
+VERSION = '3.1.0'
 BUSINESS_TZ = 'America/Los_Angeles'
 NOW_PST = f"now('{BUSINESS_TZ}')"
 TODAY_PST = f"toDate({NOW_PST})"
@@ -211,9 +211,9 @@ def nsattr(ns, field):
 def add_entity(doc, ns, fields, identity):
     attrs = doc[':vocabulary'][':attributes']
     for name, typ in fields:
-        nullable=typ=='decimal' or (ns in ('pastdue.monitor-fact','pastdue.history-fact') and name in ('previous-snapshot-date','previous-past-due-count','previous-open-count','snapshot-gap-days','missing-workdays-between'))
+        nullable=(typ=='decimal' and not ns.endswith('-query')) or (ns in ('pastdue.monitor-fact','pastdue.history-fact') and name in ('previous-snapshot-date','previous-past-due-count','previous-open-count','snapshot-gap-days','missing-workdays-between'))
         attrs[nsattr(ns, name)] = {K(':attribute/label'): name.replace('-', ' ').title(), K(':attribute/type'): K(':' + typ), K(':attribute/nullable?'): nullable, K(':attribute/description'): f'v3 {name}; see shipped semantic contract. Identity is from actual result grouping.'}
-    doc[':vocabulary'][':entities'][ns] = {K(':entity/label'): ns.split('.')[-1].replace('-', ' ').title(), K(':entity/identity'): [nsattr(ns,x) for x in identity], K(':entity/attributes'): [nsattr(ns,x) for x,_ in fields], K(':entity/description'): 'v3 analysis contract; PST, fixed scope and verifiable facts.'}
+    doc[':vocabulary'][':entities'][ns] = {K(':entity/label'): ns.split('.')[-1].replace('-', ' ').title(), K(':entity/identity'): [nsattr(ns,x) for x in identity], K(':entity/attributes'): [nsattr(ns,x) for x,_ in fields], K(':entity/description'): 'Analysis contract; America/Los_Angeles (PST/PDT), fixed scope and verifiable facts.'}
     if ns not in doc[':graph'][':graph/entities']:doc[':graph'][':graph/entities'].append(ns)
     doc[':ownership'][':entities'][ns] = doc[':graph'][':graph/id']
 
@@ -233,8 +233,9 @@ def add_collection(doc, parent, collection, child, fields, inputs, sql, sort='ro
     doc[':ownership'][':resolvers'][rid] = doc[':graph'][':graph/id']
 
 
-def build():
-    doc=read(GRAPH)
+def build(graph_path=None):
+    graph_path = Path(graph_path) if graph_path is not None else GRAPH
+    doc=read(graph_path)
     query_fields=[(x,'date' if x.endswith('date') else 'integer' if x in ('top-n','vendor-code') else 'string') for x in QUERY]
     add_entity(doc,'pastdue.analysis-query',query_fields,QUERY)
     add_entity(doc,'pastdue.analysis-vendor',VENDOR_FIELDS,ID+['vendor-code'])
@@ -356,7 +357,9 @@ def build():
         example_id='v3-'+title.lower().replace(' ','-')
         examples.append({K(':example/id'):example_id,K(':example/title'):title,K(':example/description'):'v3 example only; replace illustrative dates with actual validated scope.',K(':example/eql'):dumps(output),K(':example/entity'):{a:values[a.rsplit('/',1)[-1]] for a in r[':input']},K(':example/parameters'):{},K(':example/requires'):EdnSet([K(':query/pagination-v1'),K(':connector/sql'),K(':query/sort-v1')]),K(':example/expected'):{K(':result/cardinality'):K(':many'),K(':result/fields'):list(output[0].values())[0]}})
     guide[K(':guide/examples')]=[ex[':example/id'] for ex in examples if ex[':example/id'].startswith('v3-')]
-    write(GRAPH,doc)
+    from build_v31_contract import add_v31
+    add_v31(doc)
+    write(graph_path,doc)
     return doc
 
 

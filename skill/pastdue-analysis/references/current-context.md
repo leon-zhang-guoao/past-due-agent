@@ -1,4 +1,4 @@
-# On-demand current action context
+# On-demand current action context — v3.1
 
 These facts are current, not historical attribution. Query only on request.
 Discover exact inputs through MCP. Country+Vendor are mandatory across lookups.
@@ -27,3 +27,13 @@ Ambiguous/nonregular text → unresolved candidates, never guess addresses.
 Missing To/CC group → RECIPIENT_UNRESOLVED. No local CSV/Python, mail drafts,
 sending, follow-up, reply tracking or escalation. TEST follows same display-only
 boundary. Only minimal authorized personal fields are requested.
+
+## Interaction and display contract
+For INTERACTIVE questions, distinct optional fact scopes share the maximum 6
+logical fact requests; discovery/materialization/pagination are excluded and
+retries stay in the same slot. Report presets have no six-request cap; optional
+context never replaces mandatory report facts. Batch targeted lookups, avoid
+per-Vendor storms, and explicitly bound broad optional scope if necessary. State
+what was not queried, never silently skip or claim unqueried rows are empty.
+Render capture times in America/Los_Angeles with actual PST/PDT and UTC offset;
+label CURRENT_MAPPING explicitly when used for a historical request.

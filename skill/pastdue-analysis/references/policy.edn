@@ -1,16 +1,34 @@
-{:policy-version "3.0.0"
-  :business-timezone "PST"
+{:policy-version "3.1.0"
+  :business-timezone "America/Los_Angeles"
   :business-timezone-iana "America/Los_Angeles"
+  :display-timezone {:daylight-saving true
+    :actual-labels ["PST" "PDT"]
+    :include-utc-offset true}
   :monitor-country-allowlist ["US" "CA"]
   :atlas-country-scope :all-actual-authorized-countries
   :snapshot-calendar {:default "WEEKDAYS"
     :weekdays [1 2 3 4 5]
     :holidays nil
-    :completed-before-current-pst-date true
+    :completed-before-current-local-date true
     :stale-after-workdays 2}
   :country-trigger {:relative-ratio-change-gte 0.1
     :minimum-percentage-point-change nil
     :use-unrounded-counts true}
+  :interfaces {:flexible :pastdue.explore-query/rows
+    :report :pastdue.report-query/rows
+    :missing-required :deployment-gap
+    :silent-legacy-fallback false}
+  :explore {:time-bases ["CURRENT" "SNAPSHOT" "PAIR" "RANGE"]
+    :pair-policies ["PREVIOUS_AVAILABLE" "EXPLICIT"]
+    :grains ["COUNTRY" "VENDOR" "VENDOR_CODE" "VENDOR_SOURCE" "VENDOR_CODE_SOURCE"]
+    :denominator-scopes ["COUNTRY_ALL" "FILTERED_POPULATION" "WITHIN_VENDOR"]
+    :ranking-metrics ["NONE" "PAST_DUE_COUNT" "PAST_DUE_RATIO" "PAST_DUE_SHARE" "COUNT_CHANGE" "RATIO_CHANGE" "CONTRIBUTION_CHANGE"]
+    :sort-directions ["ASC" "DESC"]
+    :change-selections ["ALL" "POSITIVE" "NEGATIVE" "ZERO"]
+    :top-n {:all 0
+      :minimum 1
+      :maximum 100}
+    :all-vendors 0}
   :vendor-selection {:mode "POSITIVE_TOP_N"
     :maximum-vendors 10
     :tie-breaker :vendor-code-ascending
@@ -18,6 +36,7 @@
     :stop-at-coverage false}
   :eta-selection {:maximum-values 5
     :include-other true
+    :computed-by :shared-server-facts
     :sort [:absolute-count-change-desc :target-count-desc :eta-value-asc]
     :require-complete true
     :normalize-empty-as "UNKNOWN"}
@@ -26,14 +45,34 @@
     :maximum-deep-dives-per-country 5
     :previous-may-precede-range-start true
     :event-list-only-supported true}
-  :test-mode {:entry "开始测试"
+  :test-mode {:entries ["开始测试" "start test"]
     :force-drilldown true
     :preserve-real-business-status true
     :include-optional-modules-by-default false}
-  :execution {:concurrency-guidance 2
+  :execution {:maximum-logical-requests-per-interaction 6
+    :pagination-excluded true
     :maximum-corrected-retries 1
     :recursive-fanout-fallback false
-    :host-hard-gate-installed false}
+    :arbitrary-sql false
+    :runtime-python false
+    :host-hard-gate-installed false
+    :logical-request-limit-applies-to "INTERACTIVE"
+    :discovery-excluded true
+    :materialization-excluded true
+    :retry-same-logical-slot true
+    :counts-different-logical-fact-requests-only true
+    :report-presets-six-request-cap false
+    :presets-attempt-all-mandatory-work true
+    :broad-scope-bounds-must-be-explicit true
+    :result-handle-materialization {:allowed true
+      :tool "analyze_result"
+      :schema-first true
+      :scope "exact retained result handle only"
+      :sql-shape "read-only SELECT explicit discovered columns FROM data ORDER BY discovered row-ordinal"
+      :prohibited ["source/database SQL" "SELECT *" "other tables" "joins" "writes" "fact-dropping filters" "metric/denominator/rank/selection recomputation"]}}
+  :evidence {:data-conflict-requires :two-raw-same-scope-contradictory-responses
+    :separate-errors ["DATA_CONFLICT" "ASSOCIATION_ERROR" "REPORT_ERROR"]
+    :conflict-comparison "contradictory COMMON semantic fields only, not whole response shape or capture metadata"}
   :po-line-limits {:maximum-per-vendor 5
     :maximum-per-country 20
     :allocation :one-per-vendor-then-rank-fill}
@@ -49,6 +88,6 @@
        :cc []} {:eta-codes ["DD"]
        :to :warehouse
        :cc [:buyer]}]}
-  :metric-version "3.0.0"
-  :selection-version "3.0.0"
+  :metric-version "3.1.0"
+  :selection-version "3.1.0"
   :calendar-version "weekdays-v1-no-holidays"}

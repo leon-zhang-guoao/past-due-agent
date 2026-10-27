@@ -1,15 +1,17 @@
-# Agent / Skill / EDN responsibilities — v3
+# Agent / Skill / EDN responsibilities — v3.1
 
-- Agent Prompt: governed role, current/historical boundary, no fabricated facts.
-- Skill: analysis specification, daily/history/test/current workflows, required
-  evidence checks, diagnosis and report assembly; no Python runtime invocation.
-- Policy: PST weekdays, 10% trigger, fixed positive Top 10, ETA Top 5+Other.
-- Atlas EDN: reachable parameterized facts, fixed pairs, batched independent
-  dimensions, real identity, deterministic ranks/Other/totals and check records.
-- Diagnostic rules: ETA meaning and verification suggestions, not proven causes.
-- Display contract: reusable consistent modules, generic declared combinations.
-- Release manifest: exact hashes/required entries, separate offline and live status.
+| Asset | Responsibility |
+|---|---|
+| System Prompt | Role, language precedence, governed source, factual boundaries |
+| Skill | Analysis specification, presets or question composition, evidence and interpretation |
+| Policy | LA local weekdays, alert threshold, preset selection vs interactive limits |
+| Atlas EDN | Bound controlled parameters, complete aggregates, denominators, ranks, scope identity |
+| Report API | Batched preset facts; independent Code/Source/Code=US×Source summaries |
+| Explore API | CURRENT/SNAPSHOT/PAIR/RANGE, controlled grains/filters/ranking without preset restrictions |
+| Diagnostic rules | Bilingual risk meanings and suggestions, explicit Source aliases, not causality |
+| Display contract | Stable bilingual modules and mandatory per-Vendor report content |
+| Offline validators | Evidence-to-report regressions, not an installed production executor |
+| Release manifest | Exact input/artifact hashes and separate offline/platform/live status |
 
-Detailed rationale: `docs/PASTDUE_AGENT_REDESIGN.md`. Concrete APIs/deployment:
-`docs/API_V3.md`, `docs/DEPLOYMENT_V3.md`. Current Owner/contacts/PO are optional;
-contact display only. No Kernel, mail sender or external service is presumed.
+Current Owner, contacts and PO are optional context, not historical evidence.
+Contacts are displayed only. No runtime CSV, Python, arbitrary SQL or mail sender.

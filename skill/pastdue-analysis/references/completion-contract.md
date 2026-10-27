@@ -1,67 +1,124 @@
-# Completion and evidence contract
+# Completion and evidence contract — v3.1
 
-For each requested Country record business/data/analysis status independently.
-Freeze Country, T/P, calendar, selection mode and selected Vendor codes/ranks.
-Each Code/Source result MUST project Country, Vendor, T, P, calendar, ETA value,
-row-ordinal, expected-bucket-count and both period counts, not just value/delta.
+Track business/data/analysis status independently for every requested Country.
+Freeze the full request (including filters, ranking and denominator), actual pair,
+selected Vendors/ranks, environment/metric versions when exposed and result handles.
+For INTERACTIVE questions only, at most 6 DIFFERENT LOGICAL FACT REQUESTS.
+Discovery, materialization and pagination are excluded; retries/corrections remain
+in the same logical slot. Different substantive fact scopes count separately.
+Daily/history/test REPORT PRESETS have no six-request cap: attempt all mandatory
+work. Broad history/optional scope may be bounded explicitly, never silently skipped.
 
 ## Before COMPLETE
-1. vendor-comparisons and vendor-checks cover exactly the selected Vendor set.
-2. For each dimension/Vendor unique bucket count equals expected-bucket-count;
-   there are no duplicate row ordinals or identities; paging is exhausted.
-3. Code T/P sum equals Vendor T/P; Source independently equals Vendor T/P.
-   Check SQL totals against received facts, not just two copies of metadata.
-4. US joint T/P sum equals US Code T/P for Vendors with nonzero US in either
-   period. Nonrequired joint dimensions are explicitly not applicable.
-5. Every identity and date pair matches scope; no inferred reassignment based
-   on matching numbers. Checks and facts use compatible environment/version.
-6. Report selected set/ranks equal comparisons and every Vendor has diagnosis
-   or a specific unavailable/partial reason. Current facts are marked current.
+Always project scope-key in explore/report rows: JSON tuple of ALL required
+inputs in declaration order. Keep original inputs and verify key consistency;
+it is part of row identity, not a watermark or a transaction claim.
 
-`result-complete`/no truncation are transport/materialization scope; not proof
-of full resolver population. coverage-unknown alone is neither failure nor
-success. Expected bucket counts+unique identities+reconciliation support scope
-completeness. Matching totals alone never proves identity.
+1. Exactly one control row: report COUNTRY_CONTROL or explore CONTROL. Require
+   scope-status OK; empty transport/handle isn't OK. Record every explicit error.
+2. Fetch every page, unique row-ordinal, exact expected-record-count INCLUDING
+   control. Verify consistent expected count and semantic identity across pages.
+   Sorting/pagination is stable; a short page alone doesn't prove completeness.
+   Reconcile COUNTRY_CONTROL target/previous-country-past-due-count,
+   target/previous-country-open and target/previous-country-ratio to the pinned
+   monitor/history facts; if captures drift, mark combining scopes unverified
+   and preserve both raw responses rather than overwriting or alleging corruption.
+3. Report VENDOR_METRICS covers exactly selected-vendor-count, unique Country+
+   Vendor, server ranks and selection scope. All required identities match request.
+4. Every selected Vendor has exactly one VENDOR_CHECK per code/source/us, including
+   empty or required=false cases. Require counts-match=true for applicable
+   dimensions; previous/target-total equal previous/target-expected-total and
+   agree with independently received metrics, not merely duplicate metadata.
+5. Code and Source summaries each reconcile both periods to Vendor PD. US joint
+   summary applies in ALL Countries and reconciles to Code=US. Code=US can be inside OTHER: use US check
+   expected totals, not a fabricated visible Code bucket. Apply required from
+   the server check; required US dimensions must never be omitted.
+6. Summary BUCKET ranks≤5 are unique raw eta-value identities; OTHER rank6 is
+   distinguished by row-kind, not blank eta-value. BUCKET count plus OTHER's
+   other-bucket-count equals expected-bucket-count. The row count is NOT the
+   raw bucket count. For no remainder no Other. Sum compact T/P and delta against
+   checks. Check increase-total + decrease-total = net-change = target-total −
+   previous-total. Don't reconstruct signed totals from Other's net change.
+7. Every selected Vendor appears in report rank order with full compact metrics,
+   Code, Source, applicable US joint interpretation and diagnosis, or a specific
+   per-dimension failure. Selected sets and field order match tool facts.
+8. Explore results preserve all declared dimensions and scope. Non-PAIR previous
+   placeholders aren't measured zero or growth. Truncated Top-N doesn't prove
+   population totals. Explicit denominator fields govern displayed rates/shares.
 
-Work state: verified / failed / completeness-unverified / not-executed. Last two
-are unfinished, not empty or complete. One failed dimension doesn't erase the
-other. Outer isError=false can still contain nested errors; inspect payload.
-No arbitrary percent confidence. Retain result handles, query scope and versions
-provided by MCP for audit; absent platform revision means UNVERIFIED, not invented.
+Report schema summaries are intentionally compact, not incomplete raw buckets;
+expected counts+Other representation+checks are the completeness mechanism. The
+Agent must not issue raw per-Vendor calls to fill that intentional compression.
+`result-complete` and no truncation describe transport/materialization only.
+coverage-unknown alone is neither proof of failure nor proof of completeness.
 
-## Cross-request identity conflicts
+Work states: verified / failed / completeness-unverified / not-executed. Last two
+aren't empty or complete. Inspect nested errors even when isError=false. At most
+one corrected retry per request in the same logical slot, no permission bypass or
+recursive fanout. Preserve independent verified facts when one scope fails.
 
-When more than one response is used for the same logical fact, normalize its
-request scope key as:
+## Evidence classification: do not confuse these cases
 
-```text
-Country + Vendor + dimension + target date + previous date + calendar mode
-+ selection/filter scope + metric version + environment/graph version (when available)
-```
+**DATA_CONFLICT** requires TWO preserved raw tool responses for the SAME complete
+fact identity that contradict on COMMON semantic fact fields (for example both
+project the same T/P counts but disagree). Differing projections, extra metadata,
+row ordering, handles or capture timestamps alone are not contradictions. Retain
+both literal raw rows,
+request entity/projection, result/handle identifiers, capture time and exposed
+versions. Identity includes scope-key, Country, Vendor, dimension, actual T/P/calendar,
+time-basis, all filters, denominator, selection/ranking scope, record-type,
+row-kind, ETA value(s), metric and environment/graph version when available.
+Different versions may be revision drift, not same-version server corruption.
+Same scope+value with contradictory commonly projected T/P counts or other common
+semantic fields is a hard conflict only with paired raw evidence. Equivalent
+common facts may be deduplicated with provenance while retaining projection-only
+fields separately; an unprojected field is unknown, not contradictory. Do not
+deduplicate distinct row-kind/record-type facts.
 
-The fact identity is the request scope key plus ETA value. Exact duplicate
-responses may be deduplicated only when the complete semantic fact payload is
-identical. If two responses for the same scope and ETA value disagree on
-either period count, quarantine both versions and mark that dimension `FAIL`
-for a hard identity/count contract violation. Do not choose the first, latest,
-largest, or numerically matching result; do not reassign a result to another
-Vendor; and never sum conflicting versions. A non-identical payload with the
-same counts is also not sufficient evidence to select one representation.
+Quarantine both conflicting versions, mark affected dimension FAIL and say
+“数据身份/数量冲突，已隔离” / “Conflicting identity/count evidence quarantined”.
+Never choose first/latest/largest, sum versions, or infer Vendor from equal counts.
+Report both request/result provenance references. If raw evidence or scope is
+missing, mark PARTIAL/UNVERIFIED and request evidence; don't accuse Atlas of a
+proven conflict. Identical repeated numbers across different Vendors aren't proof.
 
-If required scope metadata is missing and the conflict cannot be classified,
-retain the result only as `PARTIAL`/`UNVERIFIED`; it can never support
-`COMPLETE`. A conflict in Code does not invalidate an independently verified
-Source dimension, and vice versa. The selected Vendor remains in the report
-with the affected dimension marked `FAILED`, `PARTIAL`, or `UNVERIFIED` and
-the literal explanation “数据身份/数量冲突，已隔离” where applicable.
+**ASSOCIATION_ERROR**: a result is attached to the wrong request, Vendor or pair.
+One mismatched raw response can establish this, but cannot establish two same-scope
+server facts. Quarantine the attachment; correct it only with exact provenance,
+never by matching numbers. Report data source cause as UNCONFIRMED.
 
-For test mode, a same-scope conflict is `FAIL`; an unknown-scope conflict is
-`PARTIAL`. `NORMAL` business status does not make a test pass automatically.
+**REPORT_ERROR**: the narrative/table contradicts verified tool facts or mixes
+Code with Source. Correct the report, preserve the verified facts; don't blame
+the server or label this DATA_CONFLICT. Identify the erroneous claim and its
+correct raw-fact reference.
 
-## Test outcome
-PASS: all applicable mandatory checks verified. PARTIAL: execution/external
-failure or completeness unknown. FAIL: identity, count, date or contract hard
-violation. No-trigger is not a failed test. Zero positive Vendors may PASS the
-applicable empty path, but explicitly say multi-Vendor ETA was not exercised.
-No host interruption claim unless actual host evidence exists. A table output
-is not proof of a successful test; never say online acceptance passed offline.
+Missing metadata is completeness/identity UNVERIFIED, not a conflict by itself.
+Maintain separate error classification, dimension result and analysis status.
+A bad Code dimension doesn't erase independently verified Source or another Vendor.
+No confidence percentages, invented watermark, immutable-history or transaction claim.
+
+## Test and budget outcome
+PASS: all applicable mandatory checks verified; NORMAL isn't automatic PASS.
+PARTIAL: external execution failure, unknown completeness, missing evidence or
+interactive-limit or explicitly bounded not-executed work. FAIL: proven identity/count/date/contract hard
+violation, including paired DATA_CONFLICT, association or report error. A corrected
+report must disclose the correction and rerun relevant checks, not hide the failure.
+A missing optional context path doesn't fail unrequested mandatory work.
+Zero positive selection may PASS the applicable empty path with explicit statement
+that multi-Vendor ETA was not exercised. No-trigger alone is neither FAIL nor PASS.
+Stop new distinct fact requests at the INTERACTIVE cap, preserving verified work
+and identifying unexecuted scope. The cap never stops mandatory report presets.
+Explicitly disclose bounds on broad historical/optional scope. Never invent host
+interruption or automatic next-turn continuation.
+Offline checks never certify real Atlas/JDBC/Agent acceptance.
+
+## Governed result-handle materialization exception
+“No arbitrary SQL” prohibits unconstrained/source/database SQL, not reading an
+Atlas-retained result. execute_eql may return only a handle. Discover tool schema,
+inspect actual analyze_result columns, then use a read-only SELECT of explicit
+discovered columns FROM data ORDER BY discovered row-ordinal, bound to that exact
+request/environment/capture handle. Include all required identity/metric/check
+columns, preserve values and consume every page. No presumed structured-read tool,
+SELECT *, other tables, joins, writes, dropped facts, or recomputing metric,
+denominator, selection or rank. Materialization doesn't add a logical fact slot.
+See atlas-query-playbook.md for the narrow allowed shape and discovery procedure.

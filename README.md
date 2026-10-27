@@ -1,46 +1,46 @@
-# PastDue Analysis Agent v3
+# PastDue Analysis Agent v3.1
 
-**Status: local implementation; production acceptance pending.**
+**Status: local contracts; production acceptance pending.**
 
-Deploy only `agent/SYSTEM_PROMPT.md`, the complete `skill/pastdue-analysis/`
-folder and `atlas/charts/pastdue.edn` with `atlas/sources.edn` source-slot binding.
-No Python service, email sender, local CSV or runtime Kernel is required.
+A unified governed analysis capability with a compact full-Vendor report preset.
+Business facts come only from Atlas MCP; no arbitrary SQL, runtime Python, local
+CSV, mail or external execution service. Governed handle-bound analyze_result
+SELECT of explicit discovered columns FROM data is allowed for materialization,
+not source SQL, joins, writes or metric/denominator/rank recomputation.
 
 ## Capabilities
+- `pastdue.explore-query/rows`: controlled CURRENT/SNAPSHOT/PAIR/RANGE analysis,
+  Country/Vendor/Code/Source/joint grains, Vendor/ETA/org filters, explicit ratio
+  and share denominators, rank/sign/direction and top-n=0 all or 1..100.
+- `pastdue.report-query/rows`: seven-input compatible analysis preset, tagged
+  Country control, Vendor metrics, server Top-5+Other Code/Source/US joint summaries
+  and all Vendor checks from shared facts; no per-Vendor request fanout.
+- Independent US/CA completed-weekday monitoring, relative Country ratio trigger
+  ≥10%; historical events and fixed-pair review. No holiday exclusion calendar.
+- `start test` / `开始测试`: force applicable diagnostics, preserve real trigger;
+  English/Chinese fixed compact FULL sections for every selected Vendor.
+- America/Los_Angeles DST-aware clock, actual PST/PDT and UTC offset. Completed
+  snapshots aren't current state; Monday snapshot vs Friday isn't Monday's run.
+- Explicit AutoUS/AUTO US rule alias; US joint evidence applies to every Country.
+- scope-key/full identity and counts evidence; paired raw DATA_CONFLICT separated
+  from ASSOCIATION_ERROR and REPORT_ERROR, independent dimensions preserved.
+- INTERACTIVE only: ≤6 different logical fact requests; discovery/materialization/
+  paging excluded, retries same slot. Report presets have no six-request cap and
+  attempt all mandatory work; broad optional scope is bounded explicitly.
+  Missing v3.1 never silently falls
+  back. Owner/contacts/PO are current, display-only and only on request.
 
-- PST completed **weekday** monitoring, Monday snapshot vs Friday.
-- US/CA independent alerts at relative Country ratio increase ≥10%.
-- Positive contribution Top 10; batch signed Code/Source changes for every Vendor.
-- Exact result identity, expected-bucket and period-total checks.
-- ETA business diagnosis including conditional US×Source evidence.
-- `开始测试`: force applicable standard drilldown, preserve real trigger state.
-- Explicit historical date/range review and current Vendor/ETA/organization Q&A.
-- Consistent modular reports; Owner, contact display and PO on demand only.
+## Contracts and delivery
+See docs/API_V3.md, docs/DEPLOYMENT_V3.md, ACCEPTANCE_TESTS.md and the Skill's
+manual atlas-query-playbook.md. Deploy matching System Prompt, complete Skill
+references/metadata and combined Atlas graph with approved source binding.
+The expanded graph inventory is 35 resolvers / 595 attributes; only live platform
+checks prove deployed capabilities. scope-key/capture time is not a transaction.
 
-Calendar-day v2 interfaces remain legacy. A weekend run can repeat the same
-weekday pair; it is not a new event. Holidays are not excluded in v1 of this
-calendar. Model completion is guided, not hard-enforced by an unwired Kernel.
-
-## Delivery and deployment
-
-See `docs/DEPLOYMENT_V3.md`, `docs/API_V3.md`, `ACCEPTANCE_TESTS.md` and
-`docs/VALIDATION_V3.md`. Production ZIP contains only needed artifacts and
-sanitized documentation. Reference shards, chat exports, CSVs, secrets, caches
-and research runtime are excluded. `releases/pre-redesign-rollback.zip` is the
-pre-change bundle for rollback reference, **not** a certified production release.
-
-Development checks (never required inside the deployed Agent):
-
-```sh
-python3 -B scripts/run_golden_eval.py
-python3 -B scripts/test_sql_fixtures.py
-python3 -B scripts/build_release.py --check
-```
-
-The SQL fixture suite needs optional `chdb`; missing dependency is explicitly
-SKIPPED, not a SQL PASS. Static validation is against the actual combined graph,
-not `*.attr.edn` reference shards. Atlas config-check, deployed JDBC/SQL and real
-Agent acceptance are separate release gates.
-
-No historical credential is used by this implementation. Secrets must be supplied
-through your approved source configuration; policy allowlists are not RLS.
+Release metadata/archive generation is a separate owner-controlled step. A retained
+old manifest/hash/PASS cannot certify changed v3.1 contracts; do not ship a mixed
+bundle. Development scripts, tests and release assets are not Agent runtime
+requirements. `docs/VALIDATION_V3.md` is a versioned evidence record, not blanket
+validation of new changes. Offline checks, real Atlas/JDBC and real Agent reports
+are distinct gates. A skipped SQL suite isn't SQL PASS; instructions aren't a
+host-enforced submission gate. Configure secrets externally; policy isn't RLS.

@@ -1,11 +1,11 @@
-# Active design
+# Active design — v3.1
 
-v3 implementation follows `docs/PASTDUE_AGENT_REDESIGN.md` and the approved
-implementation plan. See `docs/API_V3.md` for concrete entry names and
-`docs/DEPLOYMENT_V3.md` for actual deployment gates. Historical specs under
-`docs/superpowers/` describe prior iterations, not current runtime guarantees.
+The analysis bottom layer serves both flexible user questions and standard daily,
+history and test presets. Report queries are an optimization, not the only API.
+See `docs/API_V3.md` for the current wire contract and `docs/DEPLOYMENT_V3.md`
+for deployment/rollback gates. `docs/PASTDUE_AGENT_REDESIGN.md` records the design.
 
-The production architecture is Prompt + self-contained Skill + Atlas EDN. No
-required local Python service or machine-enforced Kernel is installed. Determinism
-is concentrated in SQL selection, counts, ranks and checks; language interpretation
-and presentation remain guided by contracts. Host hard-gating is out of scope.
+Deploy Prompt + complete Skill + Atlas EDN. Development scripts are not a runtime
+service; no host hard gate, SQL console, email sender or external Kernel is presumed.
+Business dates use America/Los_Angeles with actual PST/PDT offset. SQL determines
+counts, denominators, ranks and summaries; the model interprets verified facts.

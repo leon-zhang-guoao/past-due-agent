@@ -1,28 +1,81 @@
-{:version "3.0.0"
+{:version "3.1.0"
   :code-normalization :trim-uppercase
   :source-match :trim-case-insensitive-exact
   :autous-canonical "AutoUS"
-  :autous-aliases []
+  :autous-aliases ["AUTO US"]
+  :preserve-raw-source true
+  :alias-scope :diagnosis-only
   :requires-joint-facts-for-us true
   :unknown-code-action :retain-without-inventing-rule
   :interpretation :risk-not-proven-cause
+  :language-selection :request-language
   :rules [{:code "DD"
-     :meaning "Warehouse 收货不及时"
-     :verification "核查实际到货与收货登记进度"} {:code "SH"
-     :meaning "未及时送达／收货"
-     :verification "核查运输送达及收货进度，不单独归咎其中一方"} {:code "SC"
-     :meaning "Vendor 预计发货时间不准确"
-     :verification "核查承诺日期与更新情况"} {:code "NR"
-     :meaning "Vendor 已收到订单，但未提供预计发货时间"
-     :verification "核查预计发货时间补充进度"} {:code "RQ"
-     :meaning "未收到 Vendor 确认信息 ACK"
-     :verification "核查订单接收与 ACK 反馈"} {:code "US"
+     :meaning {:zh "Warehouse 收货不及时"
+       :en "Risk of delayed warehouse receipt recording"}
+     :verification {:zh "核查实际到货与收货登记进度"
+       :en "Check physical arrival and receipt-recording progress"}
+     :rule-id "ETA-DD-RECEIPT-DELAY"
+     :risk-type "WAREHOUSE_RECEIPT_DELAY"
+     :requires-joint-facts false} {:code "SH"
+     :meaning {:zh "未及时送达／收货"
+       :en "Risk of delayed delivery or receipt"}
+     :verification {:zh "核查运输送达及收货进度，不单独归咎其中一方"
+       :en "Check delivery and receipt progress without assigning blame to either party"}
+     :rule-id "ETA-SH-DELIVERY-RECEIPT-DELAY"
+     :risk-type "DELIVERY_OR_RECEIPT_DELAY"
+     :requires-joint-facts false} {:code "SC"
+     :meaning {:zh "Vendor 预计发货时间不准确"
+       :en "Risk of inaccurate Vendor estimated ship dates"}
+     :verification {:zh "核查承诺日期与更新情况"
+       :en "Verify committed dates and subsequent updates"}
+     :rule-id "ETA-SC-SHIP-DATE-ACCURACY"
+     :risk-type "ESTIMATED_SHIP_DATE_INACCURACY"
+     :requires-joint-facts false} {:code "NR"
+     :meaning {:zh "Vendor 已收到订单，但未提供预计发货时间"
+       :en "Vendor has received the order but has not provided an estimated ship date"}
+     :verification {:zh "核查预计发货时间补充进度"
+       :en "Check progress on obtaining an estimated ship date"}
+     :rule-id "ETA-NR-MISSING-SHIP-DATE"
+     :risk-type "MISSING_ESTIMATED_SHIP_DATE"
+     :requires-joint-facts false} {:code "RQ"
+     :meaning {:zh "未收到 Vendor 确认信息 ACK"
+       :en "Vendor order acknowledgement (ACK) has not been received"}
+     :verification {:zh "核查订单接收与 ACK 反馈"
+       :en "Verify order receipt and ACK response"}
+     :rule-id "ETA-RQ-MISSING-ACK"
+     :risk-type "MISSING_VENDOR_ACK"
+     :requires-joint-facts false} {:code "US"
      :source-condition "AUTOUS"
-     :meaning "Vendor 提供的 ETA 已 past due"
-     :verification "核查原 ETA 有效性与下一次更新"} {:code "US"
+     :meaning {:zh "Vendor 提供的 ETA 已 past due"
+       :en "The Vendor-provided ETA is past due"}
+     :verification {:zh "核查原 ETA 有效性与下一次更新"
+       :en "Verify the original ETA and obtain the next update"}
+     :rule-id "ETA-US-AUTOUS-OVERDUE"
+     :risk-type "VENDOR_ETA_OVERDUE"
+     :requires-joint-facts true} {:code "US"
      :source-condition "OTHER_KNOWN"
-     :meaning "Vendor 仅提供粗略时间 rough date"
-     :verification "核查更明确的交期"} {:code "US"
+     :meaning {:zh "Vendor 仅提供粗略时间 rough date"
+       :en "The Vendor has provided only a rough date"}
+     :verification {:zh "核查更明确的交期"
+       :en "Request a more precise delivery date"}
+     :rule-id "ETA-US-KNOWN-SOURCE-ROUGH-DATE"
+     :risk-type "ROUGH_DATE_ONLY"
+     :requires-joint-facts true} {:code "US"
      :source-condition "UNKNOWN"
-     :meaning "来源未知，无法区分具体业务含义"
-     :verification "先确认来源，不按其他来源解释"}]}
+     :meaning {:zh "来源未知，无法区分具体业务含义"
+       :en "Source is unknown; the specific US interpretation cannot be determined"}
+     :verification {:zh "先确认来源，不按其他来源解释"
+       :en "Identify the source first; do not treat it as a known non-AutoUS source"}
+     :rule-id "ETA-US-UNKNOWN-SOURCE"
+     :risk-type "SOURCE_UNDETERMINED"
+     :requires-joint-facts true}]
+  :source-classification {:authority "governed business Source dictionary; accepted observed values below, not a new data table"
+    :recognized-other-sources ["AUTO NR" "API ASN" "API Order" "BUYER" "Block AUTOETA" "Carrier API" "EDI855" "EDI856" "EDI870" "EDI3B2" "EDI3A4C" "EDI3A6" "Vendor Email" "Vendor Report" "Vendor Web Site" "Vendor Invoice" "AUTOBUY" "PO_REL" "Auto Push" "NIFI_AUTO_REC"]
+    :match "trim-case-insensitive-exact; no substring, prefix or speculative aliases"
+    :requires-observed-source-in-verified-joint-row true
+    :precedence ["AUTOUS canonical or explicit alias" "OTHER_KNOWN only recognized dictionary member" "UNKNOWN for empty, UNKNOWN literal or any unrecognized raw value"]
+    :unrecognized-source-action "retain raw Source; diagnostic class UNKNOWN; no rough-date classification"
+    :catalog-expansion "only explicit governed Source dictionary approval; no invented lookup interface or table"
+    :dictionary-membership-not-evidence-of-presence true
+    :source-name-does-not-add-business-semantics true
+    :other-summary-action "mixed aggregate; no source-specific rule without constituent joint facts"}}

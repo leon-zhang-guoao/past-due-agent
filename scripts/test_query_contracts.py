@@ -37,9 +37,27 @@ class QueryContracts(unittest.TestCase):
             for f in ['country-code','vendor-code','target-snapshot-date','previous-snapshot-date','calendar-mode','row-ordinal','expected-bucket-count']:
                 self.assertTrue(any(a.endswith('/'+f) for a in fields))
     def test_policy_and_display(self):self.assertEqual(b.check_skill(),[])
+    def test_v31_input_output_contracts(self):
+        from build_v31_contract import EXPLORE_INPUTS,EXPLORE_FIELDS,REPORT_FIELDS
+        for prefix,fields,inputs in [('explore',EXPLORE_FIELDS,[n for n,_ in EXPLORE_INPUTS]),('report',REPORT_FIELDS,['country-code','target-snapshot-date','previous-snapshot-date','calendar-mode','selection-mode','top-n','vendor-code'])]:
+            rid='pastdue_v3_'+prefix+'_query_rows';r=self.doc[':execution'][':resolvers'][rid]
+            self.assertEqual({a.rsplit('/',1)[1] for a in r[':input']},set(inputs))
+            self.assertEqual({a.rsplit('/',1)[1] for a in b.flatten_output(r[':output']) if not a.endswith('/rows')},{n for n,_ in fields})
+            entity=self.doc[':vocabulary'][':entities']['pastdue.'+prefix+'-fact']
+            self.assertIn(':pastdue.'+prefix+'-fact/scope-key',entity[':entity/identity'])
+        self.assertEqual(self.doc[':publication'][':release/version'],'3.1.0')
+
     def test_generator_idempotent(self):
         from build_analysis_contract import build,GRAPH
-        before=GRAPH.read_bytes();build();self.assertEqual(before,GRAPH.read_bytes())
+        import tempfile
+        from pathlib import Path
+        before=GRAPH.read_bytes()
+        with tempfile.TemporaryDirectory() as tmp:
+            graph=Path(tmp)/'pastdue.edn';graph.write_bytes(before)
+            build(graph);once=graph.read_bytes();build(graph)
+            self.assertEqual(once,graph.read_bytes())
+            self.assertEqual(before,once)
+        self.assertEqual(before,GRAPH.read_bytes())
 
 
 if __name__=='__main__':unittest.main()

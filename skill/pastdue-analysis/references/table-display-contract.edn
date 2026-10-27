@@ -1,4 +1,4 @@
-{:version "3.0.0"
+{:version "3.1.0"
   :formats {:date {:pattern "YYYY-MM-DD"}
     :int {:thousands-separator false}
     :signed_int {:positive-prefix "+"
@@ -7,7 +7,7 @@
       :decimals 2
       :suffix "%"}
     :pp {:multiply 100
-      :decimals 2
+      :decimals 4
       :suffix " pp"}
     :text {:preserve-codes true}
     :pair_count {:separator "→"}
@@ -15,12 +15,19 @@
       :multiply 100
       :decimals 2}
     :signed_bucket_list {:maximum-values 5
-      :include-other true}
+      :include-other true
+      :computed-by "shared-server-facts"}
     :pair_pp {:multiply 100
-      :decimals 2
+      :decimals 4
       :separator "→"
       :suffix " pp"}
-    :datetime_pst {:pattern "YYYY-MM-DD HH:mm:ss PST"}}
+    :datetime_local {:pattern "YYYY-MM-DD HH:mm:ss z UTC±HH:mm"
+      :timezone "America/Los_Angeles"
+      :offset-source "trusted-runtime"
+      :actual-pst-pdt true}
+    :datetime_utc {:pattern "YYYY-MM-DD HH:mm:ss UTC"
+      :timezone "UTC"
+      :legacy-semantics-unchanged true}}
   :modules {:country_metrics {:section-label {:zh "Country 指标"
         :en "Country metrics"}
       :columns [{:id "country_code"
@@ -72,45 +79,45 @@
            :en "Analysis Status"}
          :format :text
          :source "completion-contract"}]}
-    :vendor_summary {:section-label {:zh "Vendor Top 10"
-        :en "Vendor Top 10"}
+    :vendor_summary {:section-label {:zh "Vendor 汇总"
+        :en "Vendor Summary"}
       :columns [{:id "rank"
          :label {:zh "排名"
            :en "Rank"}
          :format :int
-         :source "analysis-vendor/contribution-rank"} {:id "vendor_code"
+         :source "report-fact/contribution-rank"} {:id "vendor_code"
          :label {:zh "Vendor Code"
            :en "Vendor Code"}
          :format :int
-         :source "analysis-vendor/vendor-code"} {:id "vendor_name"
+         :source "report-fact/vendor-code"} {:id "vendor_name"
          :label {:zh "Vendor 名称"
            :en "Vendor Name"}
          :format :text
-         :source "analysis-vendor/vendor-name"} {:id "past_due_pair"
+         :source "report-fact/vendor-name"} {:id "past_due_pair"
          :label {:zh "逾期 上期→本期"
            :en "Past Due Pair"}
          :format :pair_count
-         :source "analysis-vendor/previous-past-due-count,target-past-due-count"} {:id "net_change"
+         :source "report-fact/previous-past-due-count,target-past-due-count"} {:id "net_change"
          :label {:zh "净变化"
            :en "Net Change"}
          :format :signed_int
-         :source "analysis-vendor/past-due-count-change"} {:id "country_delta"
+         :source "report-fact/past-due-count-change"} {:id "country_delta"
          :label {:zh "Country 贡献变化"
            :en "Country Delta"}
          :format :pp
-         :source "analysis-vendor/delta-country-contribution"} {:id "positive_share"
+         :source "report-fact/delta-country-contribution"} {:id "positive_share"
          :label {:zh "正向贡献占比"
            :en "Positive Share"}
          :format :ratio_pct
-         :source "analysis-vendor/positive-contribution-share"} {:id "eta_code_changes_brief"
+         :source "report-fact/positive-contribution-share"} {:id "eta_code_changes_brief"
          :label {:zh "ETA Code 变化"
            :en "Eta Code Changes Brief"}
          :format :signed_bucket_list
-         :source "analysis-eta-code/display-rank,eta-value,past-due-count-change"} {:id "eta_source_changes_brief"
+         :source "report-fact/ETA_CODE_SUMMARY/display-rank,eta-value,past-due-count-change"} {:id "eta_source_changes_brief"
          :label {:zh "ETA Source 变化"
            :en "Eta Source Changes Brief"}
          :format :signed_bucket_list
-         :source "analysis-eta-source/display-rank,eta-value,past-due-count-change"} {:id "business_diagnosis"
+         :source "report-fact/ETA_SOURCE_SUMMARY/display-rank,eta-value,past-due-count-change"} {:id "business_diagnosis"
          :label {:zh "业务诊断"
            :en "Business Diagnosis"}
          :format :text
@@ -125,54 +132,66 @@
          :label {:zh "ETA 值"
            :en "Eta Value"}
          :format :text
-         :source "eta-value"} {:id "previous_count"
+         :source "report-fact/ETA_CODE_SUMMARY/row-kind,eta-value"} {:id "previous_count"
          :label {:zh "上期数量"
            :en "Previous Count"}
          :format :int
-         :source "previous-past-due-count"} {:id "target_count"
+         :source "report-fact/ETA_CODE_SUMMARY/previous-past-due-count"} {:id "target_count"
          :label {:zh "本期数量"
            :en "Target Count"}
          :format :int
-         :source "target-past-due-count"} {:id "net_change"
+         :source "report-fact/ETA_CODE_SUMMARY/target-past-due-count"} {:id "net_change"
          :label {:zh "净变化"
            :en "Net Change"}
          :format :signed_int
-         :source "past-due-count-change"} {:id "relative_change"
+         :source "report-fact/ETA_CODE_SUMMARY/past-due-count-change"} {:id "relative_change"
          :label {:zh "相对变化"
            :en "Relative Change"}
          :format :ratio_pct
-         :source "past-due-count-relative-change"} {:id "contribution_change"
+         :source "report-fact/ETA_CODE_SUMMARY/past-due-count-relative-change"} {:id "contribution_change"
          :label {:zh "Country 贡献变化"
            :en "Contribution Change"}
          :format :pp
-         :source "delta-country-contribution"}]}
+         :source "report-fact/ETA_CODE_SUMMARY/delta-country-contribution"}]
+      :row-order ["display-rank" "row-kind" "eta-value"]
+      :other-row {:row-kind "OTHER"
+        :display-rank 6
+        :label {:zh "其他"
+          :en "Other"}
+        :source "server aggregate, not raw bucket"}}
     :eta_source_changes {:section-label {:zh "ETA Source 两期变化"
         :en "Eta Source Changes"}
       :columns [{:id "eta_value"
          :label {:zh "ETA 值"
            :en "Eta Value"}
          :format :text
-         :source "eta-value"} {:id "previous_count"
+         :source "report-fact/ETA_SOURCE_SUMMARY/row-kind,eta-value"} {:id "previous_count"
          :label {:zh "上期数量"
            :en "Previous Count"}
          :format :int
-         :source "previous-past-due-count"} {:id "target_count"
+         :source "report-fact/ETA_SOURCE_SUMMARY/previous-past-due-count"} {:id "target_count"
          :label {:zh "本期数量"
            :en "Target Count"}
          :format :int
-         :source "target-past-due-count"} {:id "net_change"
+         :source "report-fact/ETA_SOURCE_SUMMARY/target-past-due-count"} {:id "net_change"
          :label {:zh "净变化"
            :en "Net Change"}
          :format :signed_int
-         :source "past-due-count-change"} {:id "relative_change"
+         :source "report-fact/ETA_SOURCE_SUMMARY/past-due-count-change"} {:id "relative_change"
          :label {:zh "相对变化"
            :en "Relative Change"}
          :format :ratio_pct
-         :source "past-due-count-relative-change"} {:id "contribution_change"
+         :source "report-fact/ETA_SOURCE_SUMMARY/past-due-count-relative-change"} {:id "contribution_change"
          :label {:zh "Country 贡献变化"
            :en "Contribution Change"}
          :format :pp
-         :source "delta-country-contribution"}]}
+         :source "report-fact/ETA_SOURCE_SUMMARY/delta-country-contribution"}]
+      :row-order ["display-rank" "row-kind" "eta-value"]
+      :other-row {:row-kind "OTHER"
+        :display-rank 6
+        :label {:zh "其他"
+          :en "Other"}
+        :source "server aggregate, not raw bucket"}}
     :trigger_events {:section-label {:zh "历史触发事件"
         :en "Trigger Events"}
       :columns [{:id "country_code"
@@ -203,61 +222,67 @@
     :vendor_metrics {:section-label {:zh "Vendor 指标"
         :en "Vendor Metrics"}
       :columns [{:id "vendor_code"
-         :label {:zh "vendor_code"
+         :label {:zh "Vendor 编码"
            :en "Vendor Code"}
          :format :int
-         :source "declared Atlas attribute or explicitly computed status"} {:id "past_due_pair"
-         :label {:zh "past_due_pair"
-           :en "Past Due Pair"}
+         :source "report-fact/vendor-code"} {:id "past_due_pair"
+         :label {:zh "逾期 上期→本期"
+           :en "Past Due Previous→Target"}
          :format :pair_count
-         :source "declared Atlas attribute or explicitly computed status"} {:id "open_pair"
-         :label {:zh "open_pair"
-           :en "Open Pair"}
+         :source "report-fact/previous-past-due-count,target-past-due-count"} {:id "open_pair"
+         :label {:zh "Open 上期→本期"
+           :en "Open Previous→Target"}
          :format :pair_count
-         :source "declared Atlas attribute or explicitly computed status"} {:id "vendor_ratio_pair"
-         :label {:zh "vendor_ratio_pair"
-           :en "Vendor Ratio Pair"}
+         :source "report-fact/previous-open-count,target-open-count"} {:id "vendor_ratio_pair"
+         :label {:zh "Vendor 逾期率 上期→本期"
+           :en "Vendor Ratio Previous→Target"}
          :format :pair_ratio
-         :source "declared Atlas attribute or explicitly computed status"} {:id "country_contribution_pair"
-         :label {:zh "country_contribution_pair"
-           :en "Country Contribution Pair"}
+         :source "report-fact/previous-vendor-ratio,target-vendor-ratio"} {:id "country_contribution_pair"
+         :label {:zh "Country 贡献 上期→本期"
+           :en "Country Contribution Previous→Target"}
          :format :pair_pp
-         :source "declared Atlas attribute or explicitly computed status"} {:id "analysis_status"
-         :label {:zh "analysis_status"
+         :source "report-fact/previous-country-contribution,target-country-contribution"} {:id "analysis_status"
+         :label {:zh "分析状态"
            :en "Analysis Status"}
          :format :text
-         :source "declared Atlas attribute or explicitly computed status"}]}
+         :source "completion-contract.md"}]}
     :us_source_changes {:section-label {:zh "US 联合来源变化"
         :en "Us Source Changes"}
       :columns [{:id "vendor_code"
-         :label {:zh "vendor_code"
+         :label {:zh "Vendor 编码"
            :en "Vendor Code"}
          :format :int
-         :source "declared Atlas attribute or explicitly computed status"} {:id "eta_code"
-         :label {:zh "eta_code"
-           :en "Eta Code"}
+         :source "report-fact/vendor-code"} {:id "eta_code"
+         :label {:zh "ETA Code"
+           :en "ETA Code"}
          :format :text
-         :source "declared Atlas attribute or explicitly computed status"} {:id "eta_source"
-         :label {:zh "eta_source"
-           :en "Eta Source"}
+         :source "US_SOURCE_SUMMARY implies Code=US"} {:id "eta_source"
+         :label {:zh "ETA Source"
+           :en "ETA Source"}
          :format :text
-         :source "declared Atlas attribute or explicitly computed status"} {:id "previous_count"
-         :label {:zh "previous_count"
+         :source "report-fact/row-kind,eta-value"} {:id "previous_count"
+         :label {:zh "上期数量"
            :en "Previous Count"}
          :format :int
-         :source "declared Atlas attribute or explicitly computed status"} {:id "target_count"
-         :label {:zh "target_count"
+         :source "report-fact/previous-past-due-count"} {:id "target_count"
+         :label {:zh "本期数量"
            :en "Target Count"}
          :format :int
-         :source "declared Atlas attribute or explicitly computed status"} {:id "net_change"
-         :label {:zh "net_change"
+         :source "report-fact/target-past-due-count"} {:id "net_change"
+         :label {:zh "净变化"
            :en "Net Change"}
          :format :signed_int
-         :source "declared Atlas attribute or explicitly computed status"} {:id "rule_interpretation"
-         :label {:zh "rule_interpretation"
+         :source "report-fact/past-due-count-change"} {:id "rule_interpretation"
+         :label {:zh "规则解释"
            :en "Rule Interpretation"}
          :format :text
-         :source "declared Atlas attribute or explicitly computed status"}]}
+         :source "eta-diagnostic-rules.edn request-language text from verified joint facts"}]
+      :applicability "VENDOR_CHECK dimension=us required=true, ANY Country; otherwise explicit not applicable"
+      :other-row {:row-kind "OTHER"
+        :display-rank 6
+        :label {:zh "其他"
+          :en "Other"}
+        :source "server aggregate, not raw bucket"}}
     :current_owners {:section-label {:zh "当前负责人"
         :en "Current Owners"}
       :columns [{:id "country_code"
@@ -281,10 +306,10 @@
            :en "Manager"}
          :format :text
          :source "declared Atlas attribute or explicitly computed status"} {:id "queried_at_utc"
-         :label {:zh "queried_at_utc"
-           :en "Queried At Utc"}
-         :format :datetime_pst
-         :source "declared Atlas attribute or explicitly computed status"}]}
+         :label {:zh "查询时间 UTC（旧接口）"
+           :en "Queried At UTC (Legacy)"}
+         :format :datetime_utc
+         :source "legacy discovered queried-at-utc UTC timestamp, unchanged; never relabel a local value as UTC"}]}
     :notification_recipients {:section-label {:zh "建议联系人"
         :en "Notification Recipients"}
       :columns [{:id "country_code"
@@ -418,7 +443,7 @@
          :format :text
          :source "declared Atlas attribute or explicitly computed status"}]}
     :generic_analysis {:section-label {:zh "分析结果"
-        :en "Generic Analysis"}
+        :en "Analysis Results"}
       :columns [{:id "declared_dimensions"
          :label {:zh "declared_dimensions"
            :en "Declared Dimensions"}
@@ -439,8 +464,112 @@
          :label {:zh "evidence_status"
            :en "Evidence Status"}
          :format :text
-         :source "declared Atlas attribute or explicitly computed status"}]}}
-  :compositions {:daily_full [:country_metrics :vendor_summary :completion]
-    :historical_full [:trigger_events :vendor_summary :completion]
+         :source "declared Atlas attribute or explicitly computed status"}]
+      :dynamic-columns ["declared dimensions" "applicable target metrics" "PAIR-only previous/change metrics" "returned ratio/share denominators" "scope and evidence status"]
+      :source "pastdue.explore-fact/FACT; CONTROL validates scope, never a measured result row"
+      :omit-nonpair-previous true}
+    :business_diagnosis {:section-label {:zh "业务诊断"
+        :en "Business Diagnosis"}
+      :columns [{:id "vendor_code"
+         :label {:zh "Vendor 编码"
+           :en "Vendor Code"}
+         :format :int
+         :source "report-fact/vendor-code"} {:id "verified_fact"
+         :label {:zh "已核实事实"
+           :en "Verified Fact"}
+         :format :text
+         :source "verified metrics and dimension summaries"} {:id "business_signal"
+         :label {:zh "业务信号"
+           :en "Business Signal"}
+         :format :text
+         :source "eta-diagnostic-rules.edn request-language meaning"} {:id "verification"
+         :label {:zh "建议核查"
+           :en "Suggested Verification"}
+         :format :text
+         :source "eta-diagnostic-rules.edn request-language verification"} {:id "limitations"
+         :label {:zh "限制"
+           :en "Limitations"}
+         :format :text
+         :source "completion-contract.md dimension evidence status"}]}
+    :country_summary {:section-label {:zh "Country 小结"
+        :en "Country Summary"}
+      :columns [{:id "country_code"
+         :label {:zh "Country"
+           :en "Country"}
+         :format :text
+         :source "report-fact/country-code"} {:id "selected_coverage"
+         :label {:zh "所选正向贡献覆盖率"
+           :en "Selected Positive Coverage"}
+         :format :ratio_pct
+         :source "report-fact/selected-positive-coverage"} {:id "signals"
+         :label {:zh "风险与改善信号"
+           :en "Risks and Improvements"}
+         :format :text
+         :source "verified selected-Vendor facts, not all-Country distribution"} {:id "next_checks"
+         :label {:zh "下一步核查"
+           :en "Next Checks"}
+         :format :text
+         :source "eta-diagnostic-rules.edn and verified limitations"} {:id "limitations"
+         :label {:zh "限制"
+           :en "Limitations"}
+         :format :text
+         :source "completion-contract.md"}]}
+    :run_info {:section-label {:zh "运行信息、模式与结论"
+        :en "Run Information, Mode and Conclusion"}
+      :columns [{:id "mode"
+         :label {:zh "模式"
+           :en "Mode"}
+         :format :text
+         :source "resolved analysis specification and verified per-Country facts; no merged Vendor ranks"} {:id "business_time"
+         :label {:zh "业务时间"
+           :en "Business Time"}
+         :format :text
+         :source "resolved analysis specification and verified per-Country facts; no merged Vendor ranks"} {:id "language"
+         :label {:zh "输出语言"
+           :en "Output Language"}
+         :format :text
+         :source "resolved analysis specification and verified per-Country facts; no merged Vendor ranks"} {:id "scope"
+         :label {:zh "分析范围"
+           :en "Analysis Scope"}
+         :format :text
+         :source "resolved analysis specification and verified per-Country facts; no merged Vendor ranks"} {:id "conclusion"
+         :label {:zh "结论"
+           :en "Conclusion"}
+         :format :text
+         :source "resolved analysis specification and verified per-Country facts; no merged Vendor ranks"}]}
+    :cross_country_summary {:section-label {:zh "跨 Country 总结"
+        :en "Cross-Country Summary"}
+      :columns [{:id "countries"
+         :label {:zh "国家"
+           :en "Countries"}
+         :format :text
+         :source "resolved analysis specification and verified per-Country facts; no merged Vendor ranks"} {:id "signals"
+         :label {:zh "信号"
+           :en "Signals"}
+         :format :text
+         :source "resolved analysis specification and verified per-Country facts; no merged Vendor ranks"} {:id "limitations"
+         :label {:zh "限制"
+           :en "Limitations"}
+         :format :text
+         :source "resolved analysis specification and verified per-Country facts; no merged Vendor ranks"}]}}
+  :compositions {:daily_full [:run_info :country_metrics :vendor_summary :vendor_metrics :eta_code_changes :eta_source_changes :us_source_changes :business_diagnosis :country_summary :cross_country_summary :completion]
+    :historical_full [:run_info :trigger_events :vendor_summary :vendor_metrics :eta_code_changes :eta_source_changes :us_source_changes :business_diagnosis :country_summary :cross_country_summary :completion]
     :historical_events_only [:trigger_events]
-    :test_full [:country_metrics :vendor_summary :completion :test_checks]}}
+    :test_full [:run_info :country_metrics :vendor_summary :vendor_metrics :eta_code_changes :eta_source_changes :us_source_changes :business_diagnosis :country_summary :cross_country_summary :completion :test_checks]
+    :interactive [:generic_analysis]}
+  :composition-rules {:per-country true
+    :per-selected-vendor [:vendor_metrics :eta_code_changes :eta_source_changes :us_source_changes :business_diagnosis]
+    :vendor-order "report-fact/contribution-rank ASC, vendor-code ASC"
+    :conditional-module {:us_source_changes "dimension=us required=true, any Country; otherwise show explicit N/A"}
+    :optional-only-on-request [:current_owners :notification_recipients :current_po_lines]
+    :no-silent-omission true
+    :default-country-order ["US" "CA"]
+    :other-country-order "explicit request order"}
+  :completion-display {:require-six-module-status-strings false
+    :source "verified facts and checks"
+    :failure-or-na "one precise statement per affected scope; no redundant status boilerplate"}
+  :report-header {:queried-at-local-source "report-fact/queried-at-local or explore-fact/queried-at-local"
+    :business-timezone-source "business-timezone IANA"
+    :actual-offset-source "trusted corresponding instant/offset; never guessed from tool delivery time"
+    :ambiguous-offset "UNVERIFIED; preserve actual returned local timestamp and IANA"
+    :legacy-queried-at-utc "unchanged UTC semantics, not repurposed as queried-at-local"}}

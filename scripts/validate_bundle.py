@@ -110,7 +110,7 @@ def check_skill():
     if not isinstance(t,(float,int)) or not math.isfinite(t) or t<=0:errors.append('Invalid threshold')
     if p[':country-trigger'][':minimum-percentage-point-change'] is not None:errors.append('Unexpected pp threshold')
     if p[':snapshot-calendar'][':weekdays']!=[1,2,3,4,5]:errors.append('Invalid workweek')
-    if p.get(':business-timezone')!='PST':errors.append('Business timezone must be PST')
+    if p.get(':business-timezone')!='America/Los_Angeles':errors.append('Business timezone must follow America/Los_Angeles with DST')
     if p.get(':business-timezone-iana')!='America/Los_Angeles':errors.append('Business timezone IANA must be America/Los_Angeles')
     if "now('UTC')" in (CHART_DIR/'pastdue.edn').read_text(encoding='utf-8'):errors.append('Graph still uses UTC now()')
     display=read(SKILL_DIR/'references/table-display-contract.edn')

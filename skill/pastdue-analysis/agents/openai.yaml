@@ -1,8 +1,8 @@
 interface:
   display_name: "PastDue Analysis"
-  short_description: "Weekday PastDue monitoring, testing and governed analysis"
+  short_description: "Flexible PastDue analysis and compact full-Vendor reports"
   brand_color: "#B45309"
-  default_prompt: "Use $pastdue-analysis to run the PST US/CA weekday monitor, 开始测试, a historical review, or a current Vendor/ETA analysis."
+  default_prompt: "Use $pastdue-analysis for flexible current/snapshot/pair/range analysis or a US/CA weekday report; start test / 开始测试 forces applicable diagnostics in the request language."
 
 dependencies:
   tools:
