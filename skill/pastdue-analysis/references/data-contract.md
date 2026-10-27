@@ -187,7 +187,7 @@ service, required tool or claim of machine enforcement.
 | Vendor overview AND detailed metrics | VENDOR_METRICS + exact Country/Vendor/scope | previous/target-past-due-count, previous/target-open-count, previous/target-vendor-ratio, contribution-rank, previous/target-country-contribution, delta-country-contribution, positive-contribution-share |
 | Code table | ETA_CODE_SUMMARY + dimension=code + same Vendor/scope | bucket counts, count change, relative change, delta-country-contribution, row-kind, display-rank |
 | Source table | ETA_SOURCE_SUMMARY + dimension=source + same Vendor/scope | independent marginal Source bucket fields |
-| US joint table | US_SOURCE_SUMMARY + dimension=us + same Vendor/scope | Source counts conditioned on Code=US, ANY Country |
+| Internal conditional-source evidence (optional detail on request) | US_SOURCE_SUMMARY + dimension=us + same Vendor/scope | Source counts conditioned on Code=US, ANY Country |
 | Signed totals and applicability | VENDOR_CHECK + same Vendor/scope + exact dimension | required, counts-match, previous/target-total, previous/target-expected-total, increase-total, decrease-total, net-change, expected-bucket-count |
 | Selected coverage | agreeing VENDOR_METRICS metadata in same selection | selected-positive-coverage, NOT sum of this repeated field |
 
@@ -219,3 +219,10 @@ never to silently replace a missing or inconsistent authoritative field. A faile
 comparison is explicitly UNVERIFIED/failed at the narrowest affected scope. Keep
 raw rows and request references; numeric disagreement inside a single response
 is a reconciliation failure, not proof of two-response DATA_CONFLICT.
+
+
+Agent display contract 3.1.3 hides the dedicated conditional-source table in
+standard reports; the facts/checks above remain unchanged. Material business
+interpretation is integrated into Country Vendor analysis immediately after Vendor
+ranking, with exact Vendor identity retained. This is not a new Country-wide
+aggregate or permission to infer associations from independent distributions.

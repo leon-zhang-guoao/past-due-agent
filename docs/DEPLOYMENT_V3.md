@@ -1,4 +1,4 @@
-> Agent/report 3.1.2 update: use REPORT_RENDERING_3_1_2.md and the current
+> Agent/report 3.1.3 update: use COUNTRY_VENDOR_SUMMARY_3_1_3.md and the current
 > VALIDATION_V3.md. Replace Prompt + complete Skill together. Atlas remains
 > publication 3.1.1/revision 2, metric/API 3.1.0; no graph reupload if already there.
 > This delivery uses --package-only: offline and live checks NOT_RUN. The general
@@ -23,7 +23,7 @@ as certification of these changed v3.1 contracts.
    never reuse historical chat tokens. Policy allowlists aren't RLS.
 3. Read API_V3.md and the version-specific update/validation notes. Offline
    regressions are optional owner-selected development work, not evidence of live
-   Agent correctness; none were run for 3.1.2 per user request. There is no Agent
+   Agent correctness; none were run for 3.1.2/3.1.3 per user request. There is no Agent
    runtime Python. Old evidence applies only to its recorded artifact/version.
 4. Release owner verifies combined Atlas v3.1 graph, source-slot binding and actual
    formal platform config-check. Static inventory: 35 resolvers / 595 attributes;

@@ -15,7 +15,7 @@ from pathlib import Path, PurePosixPath
 from edn_io import read, loads, dumps, K
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = '3.1.2'
+VERSION = '3.1.3'
 SKILL = 'skill/pastdue-analysis/'
 MANIFEST_PATH = SKILL + 'references/release-manifest.edn'
 MANIFEST = ROOT / MANIFEST_PATH
@@ -28,7 +28,7 @@ ROOT_FILES = {'agent/SYSTEM_PROMPT.md', 'agent/INVOCATION_EXAMPLES.md',
               'ACCEPTANCE_TESTS.md', 'DESIGN.md', 'AGENT_SKILL_EDN_DESIGN.md',
               'IMPLEMENTATION_NOTES.md', 'docs/PASTDUE_AGENT_REDESIGN.md', 'docs/API_V3.md',
               'docs/DEPLOYMENT_V3.md', 'docs/VALIDATION_V3.md', 'docs/VALIDATION_V3_1_1.md',
-              'docs/REPORT_RENDERING_3_1_2.md', 'docs/BASELINE_V3_1.md', 'docs/REPORT_SQL_FIX_3_1_1.md'}
+              'docs/REPORT_RENDERING_3_1_2.md', 'docs/COUNTRY_VENDOR_SUMMARY_3_1_3.md', 'docs/BASELINE_V3_1.md', 'docs/REPORT_SQL_FIX_3_1_1.md'}
 REF_NAMES = {'atlas-query-playbook.md', 'completion-contract.md', 'current-context.md',
              'data-contract.md', 'eta-diagnostic-rules.edn', 'metric-definitions.md',
              'policy.edn', 'report-format.md', 'table-display-contract.edn',

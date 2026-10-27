@@ -1,4 +1,4 @@
-# Completion and evidence contract — v3.1.2
+# Completion and evidence contract — v3.1.3
 
 Track business/data/analysis status independently for every requested Country.
 Freeze the full request (including filters, ranking and denominator), actual pair,
@@ -48,8 +48,11 @@ it is part of row identity, not a watermark or a transaction claim.
    checks. Check increase-total + decrease-total = net-change = target-total −
    previous-total. Don't reconstruct signed totals from Other's net change.
 7. Every selected Vendor appears in report rank order with full compact metrics,
-   Code, Source, applicable US joint interpretation and diagnosis, or a specific
-   per-dimension failure. Selected sets and field order match tool facts.
+   Code, Source and diagnosis, or a specific per-dimension failure. Selected sets
+   and field order match tool facts. After each Country Vendor ranking, render its
+   Vendor analysis summary with material verified Code=US Source findings
+   integrated into business interpretation. No separate joint-source display is
+   required or permitted by default; underlying applicable checks remain required.
 8. Explore results preserve all declared dimensions and scope. Non-PAIR previous
    placeholders aren't measured zero or growth. Truncated Top-N doesn't prove
    population totals. Explicit denominator fields govern displayed rates/shares.
@@ -162,3 +165,16 @@ contract violation (test FAIL), not a reason to quarantine otherwise valid facts
 External absence/incomplete evidence is PARTIAL, not a fabricated business zero.
 Keep business, data, analysis and report status separate. UNKNOWN source coverage
 alone does not decide outcome; delay warnings do not automatically fail a test.
+
+
+## 3.1.3 presentation boundary
+
+Do not require a standalone Code=US Source table, column, section, totals row or
+per-Vendor N/A placeholder to complete a standard report. This is a presentation
+change only: applicable US_SOURCE_SUMMARY and dimension=us VENDOR_CHECK are still
+required evidence. Material verified findings belong in Country Vendor analysis
+immediately after Vendor ranking; missing required joint facts remain an analysis
+limitation, even though no separate technical module is displayed. If no material
+finding applies, do not manufacture one just to fill a subsection. All selected
+Vendor Code/Source detail blocks remain required. Explicit detail requests may
+compose the optional joint-source module; it is not removed from the capability.

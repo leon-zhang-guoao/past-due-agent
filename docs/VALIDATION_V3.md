@@ -1,4 +1,4 @@
-# Validation record — 3.1.2 Agent/report update
+# Validation record — 3.1.3 Agent/report update
 
 Status: **PENDING_LIVE_ACCEPTANCE**.
 
@@ -11,10 +11,11 @@ Status: **PENDING_LIVE_ACCEPTANCE**.
 | Real Agent report correctness / repeatability | NOT_RUN | Requires raw tool evidence and final reports |
 | Packaging | Content hashes and ZIPs only | Does not certify any analysis or report |
 
-Agent contract 3.1.2 uses unchanged Atlas publication 3.1.1/revision 2 and compatible
-metric version 3.1.0. `REPORT_RENDERING_3_1_2.md` records actual changes, evidence
+Agent contract 3.1.3 uses unchanged Atlas publication 3.1.1/revision 2 and compatible
+metric version 3.1.0. `COUNTRY_VENDOR_SUMMARY_3_1_3.md` records the current presentation change;
+`REPORT_RENDERING_3_1_2.md` records the base rendering changes and evidence
 limits, deployment instructions and pending real-run checks. `VALIDATION_V3_1_1.md`
-is historical evidence only; its PASS claims do NOT apply to changed 3.1.2 files.
+is historical evidence only; its PASS claims do NOT apply to changed 3.1.3 files.
 
 Packaging command used for this delivery:
 

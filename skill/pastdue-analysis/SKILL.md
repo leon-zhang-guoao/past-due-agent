@@ -3,7 +3,7 @@ name: pastdue-analysis
 description: Analyze PastDue using governed Atlas flexible current, snapshot, pair and range facts; run weekday US/CA monitoring or a compact full-Vendor report with 开始测试 or start test. Diagnose bilingual ETA risks with verified evidence; contacts are display-only on request, never mail.
 ---
 
-# PastDue Analysis v3.1.2
+# PastDue Analysis v3.1.3
 
 Atlas MCP is the only business-fact interface. No arbitrary SQL, runtime Python,
 local CSV, direct database access, mail/drafts or external execution service.
@@ -92,7 +92,12 @@ Read [query playbook](references/atlas-query-playbook.md) before execution and
    gets a compact full section and diagnosis or precise failure. Fill the literal
    bilingual skeleton; do not invent wide merged tables to shorten the report.
    The summary is an index, not a replacement for Vendor Code/Source tables and
-   signed totals. Review each displayed total/rank/delta against its bound row.
+   signed totals. After each Country Vendor ranking, add its Vendor analysis
+   summary before individual detail blocks. Integrate verified Code=US Source
+   findings into that narrative; no standalone joint-source table/column/section
+   or totals row by default. Still fetch/reconcile applicable joint facts; show
+   their separate detail only on explicit request. Review displayed facts against
+   their bound rows.
    No “others similar”. Interactive questions use relevant modules only; explicit
    custom layouts remain allowed with display scope stated, not full-report PASS.
 

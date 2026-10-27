@@ -1,4 +1,4 @@
-# Requests — Agent contract 3.1.2
+# Requests — Agent contract 3.1.3
 
 | Request | Route / resolved intent |
 |---|---|
@@ -32,3 +32,7 @@ separate Vendor Code/Source tables. English and Chinese differ in labels and
 interpretation language, not field order or fact definitions. Interactive requests
 use only relevant modules. Explicit brief/custom-column output is allowed with
 CUSTOM display scope; it does not claim full-report test PASS.
+
+Country Vendor analysis appears immediately after each Country Vendor ranking.
+Conditional-source conclusions are integrated there, not a default joint-source
+column/table. Explicit requests for ETA Code=US Source detail remain supported.

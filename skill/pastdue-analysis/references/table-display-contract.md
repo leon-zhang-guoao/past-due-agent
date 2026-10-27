@@ -1,7 +1,8 @@
-# Display contract — 3.1.2
+# Display contract — 3.1.3
 
 Readable projection of `table-display-contract.edn`; EDN owns field IDs/order/bindings.
-Use the literal bilingual skeleton in `report-format.md` for standard presets.
+Standard placement is defined by the literal bilingual `report-format.md` skeleton.
+Country Vendor analysis follows its ranking immediately; no separate joint-source presentation.
 Interactive questions compose relevant modules only.
 
 ## module: country_metrics
@@ -34,7 +35,7 @@ analysis_status
 ```
 Vendor 汇总 / Vendor Summary
 
-Record selector: `{':record-type': 'VENDOR_METRICS', ':same-scope-required': True}`. Same scope/Country/Vendor/date identity is mandatory.
+Record selector: `{':record-type': 'VENDOR_METRICS', ':same-scope-required': True}`. Exact scope/Country/Vendor/date identity required.
 
 ## module: eta_code_changes
 ```fields
@@ -47,7 +48,7 @@ contribution_change
 ```
 ETA Code 两期变化 / ETA Code Changes
 
-Record selector: `{':record-type': 'ETA_CODE_SUMMARY', ':same-scope-required': True, ':dimension': 'code'}`. Same scope/Country/Vendor/date identity is mandatory.
+Record selector: `{':record-type': 'ETA_CODE_SUMMARY', ':same-scope-required': True, ':dimension': 'code'}`. Exact scope/Country/Vendor/date identity required.
 
 ## module: eta_source_changes
 ```fields
@@ -60,7 +61,7 @@ contribution_change
 ```
 ETA Source 两期变化 / ETA Source Changes
 
-Record selector: `{':record-type': 'ETA_SOURCE_SUMMARY', ':same-scope-required': True, ':dimension': 'source'}`. Same scope/Country/Vendor/date identity is mandatory.
+Record selector: `{':record-type': 'ETA_SOURCE_SUMMARY', ':same-scope-required': True, ':dimension': 'source'}`. Exact scope/Country/Vendor/date identity required.
 
 ## module: trigger_events
 ```fields
@@ -84,7 +85,7 @@ analysis_status
 ```
 Vendor 指标 / Vendor Metrics
 
-Record selector: `{':record-type': 'VENDOR_METRICS', ':same-scope-required': True}`. Same scope/Country/Vendor/date identity is mandatory.
+Record selector: `{':record-type': 'VENDOR_METRICS', ':same-scope-required': True}`. Exact scope/Country/Vendor/date identity required.
 
 ## module: us_source_changes
 ```fields
@@ -96,9 +97,11 @@ target_count
 net_change
 rule_interpretation
 ```
-US 联合来源变化 / US joint Source Changes
+ETA Code=US 的来源细分 / Source breakdown for ETA Code=US
 
-Record selector: `{':record-type': 'US_SOURCE_SUMMARY', ':same-scope-required': True, ':dimension': 'us'}`. Same scope/Country/Vendor/date identity is mandatory.
+Record selector: `{':record-type': 'US_SOURCE_SUMMARY', ':same-scope-required': True, ':dimension': 'us'}`. Exact scope/Country/Vendor/date identity required.
+
+Optional explicit-detail module only; hidden from all standard report presets. Its facts/checks still support Country Vendor analysis.
 
 ## module: current_owners
 ```fields
@@ -189,9 +192,11 @@ signals
 next_checks
 limitations
 ```
-Country 小结 / Country Summary
+Country Vendor 总结分析 / Country Vendor analysis summary
 
-Record selector: `{':record-type': 'VENDOR_METRICS', ':same-scope-required': True}`. Same scope/Country/Vendor/date identity is mandatory.
+Record selector: `{':record-type': 'VENDOR_METRICS', ':same-scope-required': True}`. Exact scope/Country/Vendor/date identity required.
+
+structured narrative immediately after vendor_summary, before individual Vendor details; use declared field order, not a separate joint-source column/table
 
 ## module: run_info
 ```fields
@@ -221,10 +226,9 @@ evidence_status
 ```
 全桶变化汇总 / All-bucket change totals
 
-Record selector: `{':record-type': 'VENDOR_CHECK'}`. Same scope/Country/Vendor/date identity is mandatory.
+Record selector: `{':record-type': 'VENDOR_CHECK'}`. Exact scope/Country/Vendor/date identity required.
 
 ## Layout and evidence
-Standard hierarchy: run → Country table → each Country summary and repeated Vendor blocks → Country conclusion → cross-Country → completion → test result.
-Vendor overview never substitutes for repeated Vendor blocks. VENDOR_METRICS supplies Vendor totals/rates/ranks; ETA summaries supply bucket counts; VENDOR_CHECK supplies signed totals.
-Other is a server aggregate with row-kind OTHER, not UNKNOWN or an invented zero remainder. Unknown, failed, not queried and not applicable are distinct.
-Source coverage UNKNOWN alone does not downgrade reconciled evidence. Never claim client raw-bucket audit without reading raw buckets.
+Run → Country metrics → each Country: Vendor ranking → Country Vendor analysis summary → every Vendor detail → cross-Country → completion → test result.
+Vendor totals use VENDOR_METRICS; buckets use the correct dimension summaries; signed totals use VENDOR_CHECK. Standard totals display Code and Source only.
+Code=US conditional Source is verified internally and interpreted within Country Vendor analysis, not displayed as a separate technical table/column.

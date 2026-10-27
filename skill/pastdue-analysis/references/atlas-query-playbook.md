@@ -323,3 +323,12 @@ dimension, not a speculative “+?” or a new raw-conflict allegation. Only use
 single permitted retry for a specific recoverable query/projection/attachment issue,
 not to repeatedly hunt for numbers matching a drafted report. Retain independent
 verified Countries, Vendors and dimensions; no per-Vendor fallback storm.
+
+
+### 3.1.3 presentation-only change
+
+Retain applicable US_SOURCE_SUMMARY and dimension=us VENDOR_CHECK projection,
+retrieval and reconciliation. Standard reports no longer render a joint-source
+module: integrate material verified findings into Country Vendor analysis directly
+after that Country's Vendor ranking. No extra query or marginal-source stitching
+is needed for this presentation change. Optional explicit detail remains available.

@@ -1,15 +1,19 @@
 # PastDue Analysis Agent v3.1
 
-**Agent release 3.1.2; Atlas publication 3.1.1 / compatible metric/API 3.1.0.**
+**Agent release 3.1.3; Atlas publication 3.1.1 / compatible metric/API 3.1.0.**
 
 Report layout and flat-row fact binding are updated. Daily/history/test share a
 literal bilingual skeleton, separate Vendor totals from ETA buckets, preserve
 per-Vendor checks and localize failures. Interactive analysis remains composable.
-See [changes and deployment](docs/REPORT_RENDERING_3_1_2.md).
+Country Vendor analysis now follows its Vendor ranking directly; material
+ETA Code=US Source findings are integrated into this narrative, without a separate
+technical column/table. Underlying evidence checks and all Vendor detail remain.
+See [current update](docs/COUNTRY_VENDOR_SUMMARY_3_1_3.md) and
+[base rendering changes](docs/REPORT_RENDERING_3_1_2.md).
 
 This update does NOT change Atlas SQL. Update the System Prompt and **complete
 Skill** together; an already deployed 3.1.1 graph need not be reuploaded. New
-packages are versioned 3.1.2; previous archives are preserved for rollback.
+packages are versioned 3.1.3; previous archives are preserved for rollback.
 **No offline tests run at the user's request. Real Agent/Atlas acceptance pending.**
 
 A unified governed analysis capability with a compact full-Vendor report preset.

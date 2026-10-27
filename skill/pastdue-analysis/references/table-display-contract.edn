@@ -1,4 +1,4 @@
-{:version "3.1.2"
+{:version "3.1.3"
   :formats {:date {:pattern "YYYY-MM-DD"}
     :int {:thousands-separator false}
     :signed_int {:positive-prefix "+"
@@ -253,8 +253,8 @@
         :same-scope-required true}
       :identity ["scope-key" "country-code" "vendor-code" "previous-snapshot-date" "target-snapshot-date" "calendar-mode" "metric-version"]
       :cardinality "exactly one VENDOR_METRICS per selected Country+Vendor+scope"}
-    :us_source_changes {:section-label {:zh "US 联合来源变化"
-        :en "US joint Source Changes"}
+    :us_source_changes {:section-label {:zh "ETA Code=US 的来源细分"
+        :en "Source breakdown for ETA Code=US"}
       :columns [{:id "vendor_code"
          :label {:zh "Vendor 编码"
            :en "Vendor Code"}
@@ -293,7 +293,8 @@
       :record-selector {:record-type "US_SOURCE_SUMMARY"
         :same-scope-required true
         :dimension "us"}
-      :identity ["scope-key" "country-code" "vendor-code" "previous-snapshot-date" "target-snapshot-date" "calendar-mode" "metric-version"]}
+      :identity ["scope-key" "country-code" "vendor-code" "previous-snapshot-date" "target-snapshot-date" "calendar-mode" "metric-version"]
+      :default-visible false}
     :current_owners {:section-label {:zh "当前负责人"
         :en "Current Owners"}
       :columns [{:id "country_code"
@@ -502,8 +503,8 @@
            :en "Limitations"}
          :format :text
          :source "completion-contract.md dimension evidence status"}]}
-    :country_summary {:section-label {:zh "Country 小结"
-        :en "Country Summary"}
+    :country_summary {:section-label {:zh "Country Vendor 总结分析"
+        :en "Country Vendor analysis summary"}
       :columns [{:id "country_code"
          :label {:zh "Country"
            :en "Country"}
@@ -528,7 +529,10 @@
       :record-selector {:record-type "VENDOR_METRICS"
         :same-scope-required true}
       :identity ["scope-key" "country-code" "vendor-code" "previous-snapshot-date" "target-snapshot-date" "calendar-mode" "metric-version"]
-      :aggregation "selected-positive-coverage is repeated selection metadata: require agreement across VENDOR_METRICS; never sum or substitute a prose claim"}
+      :aggregation "selected-positive-coverage is repeated selection metadata: require agreement across VENDOR_METRICS; never sum or substitute a prose claim"
+      :presentation "structured narrative immediately after vendor_summary, before individual Vendor details; use declared field order, not a separate joint-source column/table"
+      :diagnostic-evidence "VENDOR_METRICS selection/coverage + independently verified Code/Source summaries + verified Code=US conditional Source rows and checks; joint rows do not supply Vendor metrics"
+      :narrative-content ["actual selected positive coverage" "named Vendor risks and improvement offsets with verified quantities" "integrated Code=US conditional-source business interpretation when material; distinguish ETA Code from Country" "quantity versus Country denominator effect" "next checks and narrow limitations; selected Vendors are not all Country"]}
     :run_info {:section-label {:zh "运行信息、模式与结论"
         :en "Run Information, Mode and Conclusion"}
       :columns [{:id "mode"
@@ -591,16 +595,18 @@
          :label {:zh "核对状态"
            :en "Reconciliation"}
          :format :text
-         :source "report-fact/VENDOR_CHECK/counts-match,required and completion-contract.md"}]}}
-  :compositions {:daily_full [:run_info :country_metrics :vendor_summary :vendor_metrics :eta_code_changes :eta_source_changes :eta_totals :us_source_changes :business_diagnosis :country_summary :cross_country_summary :completion]
-    :historical_full [:run_info :trigger_events :country_metrics :vendor_summary :vendor_metrics :eta_code_changes :eta_source_changes :eta_totals :us_source_changes :business_diagnosis :country_summary :cross_country_summary :completion]
+         :source "report-fact/VENDOR_CHECK/counts-match,required and completion-contract.md"}]
+      :display-dimensions ["code" "source"]
+      :internal-only-dimension "us remains queried/reconciled; no extra default row"}}
+  :compositions {:daily_full [:run_info :country_metrics :vendor_summary :country_summary :vendor_metrics :eta_code_changes :eta_source_changes :eta_totals :business_diagnosis :cross_country_summary :completion]
+    :historical_full [:run_info :trigger_events :country_metrics :vendor_summary :country_summary :vendor_metrics :eta_code_changes :eta_source_changes :eta_totals :business_diagnosis :cross_country_summary :completion]
     :historical_events_only [:trigger_events]
-    :test_full [:run_info :country_metrics :vendor_summary :vendor_metrics :eta_code_changes :eta_source_changes :eta_totals :us_source_changes :business_diagnosis :country_summary :cross_country_summary :completion :test_checks]
+    :test_full [:run_info :country_metrics :vendor_summary :country_summary :vendor_metrics :eta_code_changes :eta_source_changes :eta_totals :business_diagnosis :cross_country_summary :completion :test_checks]
     :interactive [:generic_analysis]}
   :composition-rules {:per-country true
-    :per-selected-vendor [:vendor_metrics :eta_code_changes :eta_source_changes :eta_totals :us_source_changes :business_diagnosis]
+    :per-selected-vendor [:vendor_metrics :eta_code_changes :eta_source_changes :eta_totals :business_diagnosis]
     :vendor-order "report-fact/contribution-rank ASC, vendor-code ASC"
-    :conditional-module {:us_source_changes "dimension=us required=true, any Country; otherwise show explicit N/A"}
+    :conditional-module {:us_source_changes "optional explicit Code=US Source detail request only; not a standard report table/column"}
     :optional-only-on-request [:current_owners :notification_recipients :current_po_lines]
     :no-silent-omission true
     :default-country-order ["US" "CA"]
@@ -615,10 +621,11 @@
     :legacy-queried-at-utc "unchanged UTC semantics, not repurposed as queried-at-local"}
   :rendering {:template "report-format.md#canonical-bilingual-skeleton"
     :standard-presets ["daily_full" "historical_full" "test_full"]
-    :hierarchy ["run_info" "country_metrics (historical_full also trigger_events)" "repeat Country/event: vendor_summary -> repeat selected Vendor: vendor_metrics, eta_code_changes, eta_source_changes, eta_totals, us_source_changes, business_diagnosis -> country_summary" "cross_country_summary" "completion" "test_checks (test_full only)"]
+    :hierarchy ["run_info" "country_metrics (historical_full also trigger_events)" "repeat Country/event: vendor_summary -> country_summary narrative -> repeat selected Vendor: vendor_metrics, eta_code_changes, eta_source_changes, eta_totals, business_diagnosis" "cross_country_summary" "completion" "test_checks (test_full only)"]
     :interactive "compose only requested modules; no forced standard-report hierarchy"
     :custom-output "explicit user requests may change presentation; declare CUSTOM scope, retain evidence rules, do not label reduced output full-report PASS"
-    :no-adaptive-layout ["no merged Code/Source cells in standard summary" "no one-row-per-Vendor substitute for full sections" "no grouped zero buckets" "no changing headings/columns between languages except declared translations"]}
+    :no-adaptive-layout ["no merged Code/Source cells in standard summary" "no one-row-per-Vendor substitute for full sections" "no grouped zero buckets" "no changing headings/columns between languages except declared translations"]
+    :joint-source-display "No default US joint-source table, column, totals row or placeholder. Integrate verified business conclusions into country_summary directly after Vendor ranking. Underlying facts/checks still mandatory when applicable. Detail only on explicit request."}
   :fact-binding {:authority "raw handle-bound Atlas rows; never model intermediate tables"
     :partition-first ["scope-key" "record-type" "country-code" "vendor-code" "previous-snapshot-date" "target-snapshot-date" "dimension" "row-kind"]
     :vendor-total-source "VENDOR_METRICS only; ETA summaries carry bucket counts, not Vendor totals"

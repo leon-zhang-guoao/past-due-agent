@@ -1,4 +1,4 @@
-# Standard report rendering — 3.1.2
+# Standard report rendering — 3.1.3
 
 `table-display-contract.edn` owns module columns, selectors and formats. This file
 owns their literal placement. Do not design a new layout while writing each report.
@@ -94,6 +94,13 @@ Vendor blocks. Do not assert that this exercised multi-Vendor ETA behavior.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | {rank} | {vendor_code} | {vendor_name} | {past_due_pair} | {net_change} | {country_delta} | {positive_share} | {analysis_status} |
 
+### {Country} Vendor 总结分析
+
+- **所选正向贡献覆盖率**：{selected_coverage}。
+- **风险与改善**：{signals}。说明主要 Vendor、实际增减及改善抵消；结合已核验的 ETA 业务规则解释。若 ETA Code=US 的来源差异有业务意义，将具体 Vendor、来源、两期数量和风险含义融入此处，不单列“US 联合来源”。
+- **下一步核查**：{next_checks}。
+- **限制**：{limitations}。所选 Vendor 的结论不扩大为整个 Country；缺少联合证据时，仅说明受影响解释不可用，不猜测来源。
+
 ### {排名}. {Vendor Code} — {Vendor 名称}
 
 #### Vendor 指标
@@ -120,15 +127,7 @@ Vendor blocks. Do not assert that this exercised multi-Vendor ETA behavior.
 | --- | --- | --- | --- | --- |
 | {dimension} | {increase_total} | {decrease_total} | {net_change} | {evidence_status} |
 
-固定 Code、Source 两行，适用时追加 US 联合来源；减少合计保留负号。
-
-#### US 联合来源变化
-
-| Vendor 编码 | ETA Code | ETA Source | 上期数量 | 本期数量 | 净变化 | 规则解释 |
-| --- | --- | --- | --- | --- | --- | --- |
-| {vendor_code} | {eta_code} | {eta_source} | {previous_count} | {target_count} | {net_change} | {rule_interpretation} |
-
-根据本 Vendor 的 US 核对决定适用性，与 Country 是否为 US 无关；仅核验有效的联合事实可解释。
+固定 Code、Source 两行；减少合计保留负号。
 
 #### 业务诊断
 
@@ -137,12 +136,6 @@ Vendor blocks. Do not assert that this exercised multi-Vendor ETA behavior.
 | {vendor_code} | {verified_fact} | {business_signal} | {verification} | {limitations} |
 
 按原排名重复上述完整 Vendor 单元，不可用总表或“其他类似”替代。
-
-### {Country} 小结
-
-| Country | 所选正向贡献覆盖率 | 风险与改善信号 | 下一步核查 | 限制 |
-| --- | --- | --- | --- | --- |
-| {country_code} | {selected_coverage} | {signals} | {next_checks} | {limitations} |
 
 完成本 Country 后再开始下一个 Country；所有 Country 完成后继续。
 
@@ -196,6 +189,13 @@ For historical full mode, insert the trigger-events table here.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | {rank} | {vendor_code} | {vendor_name} | {past_due_pair} | {net_change} | {country_delta} | {positive_share} | {analysis_status} |
 
+### {Country} Vendor analysis summary
+
+- **Selected positive coverage**: {selected_coverage}.
+- **Risks and improvements**: {signals}. Identify the material Vendors, observed changes and improvement offsets using verified ETA rules. When conditional Source differences for ETA Code=US matter, integrate the Vendor, Source, period counts and business meaning here; do not add a separate US joint-source section.
+- **Next checks**: {next_checks}.
+- **Limitations**: {limitations}. Do not generalize selected Vendors to the entire Country. If joint evidence is unavailable, limit only that interpretation; do not guess a Source association.
+
 ### {rank}. {Vendor Code} — {Vendor name}
 
 #### Vendor Metrics
@@ -222,15 +222,7 @@ For historical full mode, insert the trigger-events table here.
 | --- | --- | --- | --- | --- |
 | {dimension} | {increase_total} | {decrease_total} | {net_change} | {evidence_status} |
 
-Code and Source rows are required; add US joint Source when applicable. Decrease total stays negative.
-
-#### US joint Source Changes
-
-| Vendor Code | ETA Code | ETA Source | Previous Count | Target Count | Net Change | Rule Interpretation |
-| --- | --- | --- | --- | --- | --- | --- |
-| {vendor_code} | {eta_code} | {eta_source} | {previous_count} | {target_count} | {net_change} | {rule_interpretation} |
-
-Applicability comes from this Vendor’s US check, regardless of Country. Interpret verified joint facts only.
+Show Code and Source rows only. Decrease total stays negative.
 
 #### Business Diagnosis
 
@@ -239,12 +231,6 @@ Applicability comes from this Vendor’s US check, regardless of Country. Interp
 | {vendor_code} | {verified_fact} | {business_signal} | {verification} | {limitations} |
 
 Repeat the entire Vendor block in original rank order; never replace it with one overview or “others similar”.
-
-### {Country} summary
-
-| Country | Selected Positive Coverage | Risks and Improvements | Next Checks | Limitations |
-| --- | --- | --- | --- | --- |
-| {country_code} | {selected_coverage} | {signals} | {next_checks} | {limitations} |
 
 Finish this Country before the next; after all Countries continue below.
 
@@ -266,13 +252,38 @@ Finish this Country before the next; after all Countries continue below.
 | --- | --- | --- | --- | --- |
 | {country_code} | {check} | {result} | {exercised_scope} | {reason} |
 
+## Country summary placement and conditional-source interpretation
+
+Immediately after each Country's Vendor ranking, render `country_summary` as the
+structured narrative below, before individual Vendor detail blocks. Base it on the
+verified facts for that Country/date pair; writing it early in the report does not
+mean generating it before retrieval/reconciliation. Retain all selected Vendor
+Code/Source detail blocks after this summary; do not repeat a second Country summary
+at the end or silently omit Vendor analysis.
+
+Do NOT show a standalone US joint-source column/table/section, a US row in the
+signed totals table, or a per-Vendor N/A placeholder for it in standard reports.
+Continue retrieving and reconciling the applicable Code=US conditional Source
+facts internally. Integrate material findings into the Country Vendor summary in
+plain business language, naming the Vendor, Source and actual P/T change. This
+means ETA Code=US, never the United States. Apply the existing rule dictionary,
+including UNKNOWN and Other evidence limits; do not invent cross-Vendor sums,
+source classifications or causal claims. Retain per-Vendor evidence even though
+the conclusions are presented at Country level. Failed required joint evidence
+still affects analysis completeness; removing its display does not make it optional.
+
+If the user explicitly asks for this Source detail, compose the optional
+`us_source_changes` module titled “ETA Code=US 的来源细分” / “Source breakdown for
+ETA Code=US”. Normal Source tables and flexible query capability are unchanged.
+
 ## Interpretation and completion
 
 For every Vendor discuss its actual increases, improvement offsets and net change;
 separate quantity effects from Country Open denominator effects. Diagnosis cites
 raw Code/Source labels, observed changes and the applicable rule, not just PASS.
 Code and Source explain the same Vendor total independently; never add them.
-The US joint table sums to Code=US, not the entire Vendor Source distribution.
+Internal Code=US conditional Source facts reconcile to Code=US, not the entire
+Vendor Source distribution; they are not a separate default presentation module.
 When Code=US is inside Other, use verified US check expected totals. A nonpositive
 net change can coexist with positive contribution because denominators changed.
 Do not infer the same PO migrated between codes from aggregate changes.
