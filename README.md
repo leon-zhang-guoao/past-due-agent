@@ -1,12 +1,16 @@
 # PastDue Analysis Agent v3.1
 
-**Release 3.1.1 (compatible v3.1 metrics/API); production acceptance pending.**
+**Agent release 3.1.2; Atlas publication 3.1.1 / compatible metric/API 3.1.0.**
 
-The report SQL cancellation patch removes repeated fact-CTE expansion and uses
-two bounded source reads. See [patch/deployment notes](docs/REPORT_SQL_FIX_3_1_1.md).
-Deploy the regenerated combined EDN, then matching Prompt/Skill. Existing 3.1.0
-ZIPs are preserved; new delivery ZIPs are versioned 3.1.1. ClickHouse 22.8 and
-Atlas/JDBC live success are NOT claimed by local chdb tests.
+Report layout and flat-row fact binding are updated. Daily/history/test share a
+literal bilingual skeleton, separate Vendor totals from ETA buckets, preserve
+per-Vendor checks and localize failures. Interactive analysis remains composable.
+See [changes and deployment](docs/REPORT_RENDERING_3_1_2.md).
+
+This update does NOT change Atlas SQL. Update the System Prompt and **complete
+Skill** together; an already deployed 3.1.1 graph need not be reuploaded. New
+packages are versioned 3.1.2; previous archives are preserved for rollback.
+**No offline tests run at the user's request. Real Agent/Atlas acceptance pending.**
 
 A unified governed analysis capability with a compact full-Vendor report preset.
 Business facts come only from Atlas MCP; no arbitrary SQL, runtime Python, local

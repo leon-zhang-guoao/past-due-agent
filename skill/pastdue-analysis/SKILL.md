@@ -3,7 +3,7 @@ name: pastdue-analysis
 description: Analyze PastDue using governed Atlas flexible current, snapshot, pair and range facts; run weekday US/CA monitoring or a compact full-Vendor report with 开始测试 or start test. Diagnose bilingual ETA risks with verified evidence; contacts are display-only on request, never mail.
 ---
 
-# PastDue Analysis v3.1
+# PastDue Analysis v3.1.2
 
 Atlas MCP is the only business-fact interface. No arbitrary SQL, runtime Python,
 local CSV, direct database access, mail/drafts or external execution service.
@@ -67,7 +67,12 @@ Read [query playbook](references/atlas-query-playbook.md) before execution and
    require VENDOR_METRICS, ETA_CODE_SUMMARY, ETA_SOURCE_SUMMARY,
    US_SOURCE_SUMMARY when applicable, and VENDOR_CHECK for every selected Vendor.
 4. Use server selection, Top-5+Other, full-population counts, signed totals and
-   checks. Compact summaries are NOT a raw-bucket census. Compare summary counts,
+   checks. Read the [row binding](references/data-contract.md#report-row-binding):
+   VENDOR_METRICS supplies Vendor totals/ranks/rates/deltas; ETA summaries supply
+   bucket facts; VENDOR_CHECK supplies signed totals and per-Vendor applicability.
+   Freeze one selected Vendor list and bind by full identity, never row adjacency.
+   Overview, detail and diagnosis must reuse these exact same facts. Compact
+   summaries are NOT a raw-bucket census. Compare summary counts,
    Other, expected coverage and period totals using the advertised schema; do
    not manufacture missing buckets or recompute Other from rounded display rows.
 5. Distinguish paired raw same-scope DATA_CONFLICT from ASSOCIATION_ERROR
@@ -84,7 +89,12 @@ Read [query playbook](references/atlas-query-playbook.md) before execution and
    Use each rule-id/risk-type/requires-joint-facts, never invent Source semantics.
 7. Render [report format](references/report-format.md) and
    [display contract](references/table-display-contract.edn). Every selected Vendor
-   gets a compact full section and diagnosis or precise failure. No “others similar”.
+   gets a compact full section and diagnosis or precise failure. Fill the literal
+   bilingual skeleton; do not invent wide merged tables to shorten the report.
+   The summary is an index, not a replacement for Vendor Code/Source tables and
+   signed totals. Review each displayed total/rank/delta against its bound row.
+   No “others similar”. Interactive questions use relevant modules only; explicit
+   custom layouts remain allowed with display scope stated, not full-report PASS.
 
 ## Completion and optional context
 

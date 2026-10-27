@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Offline sanitized v3.1 packaging; never asserts live acceptance.
+"""Sanitized release packaging with explicit --package-only; never asserts live acceptance.
 
-Builds full/Skill ZIPs and an immutable-HEAD sanitized rollback. Existing v3.0
+Builds full/Skill ZIPs; validated builds also maintain the sanitized baseline rollback. Existing v3.0
 artifacts are not overwritten. Manifests derive evidence from actual commands.
 """
 import argparse
@@ -13,22 +13,22 @@ import sys
 import zipfile
 from pathlib import Path, PurePosixPath
 from edn_io import read, loads, dumps, K
-from run_golden_eval import run_checks
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = '3.1.1'
+VERSION = '3.1.2'
 SKILL = 'skill/pastdue-analysis/'
 MANIFEST_PATH = SKILL + 'references/release-manifest.edn'
 MANIFEST = ROOT / MANIFEST_PATH
-ARCHIVE = ROOT / 'releases/pastdue-agent-v3.1.1.zip'
-SKILL_ARCHIVE = ROOT / 'releases/pastdue-analysis-skill-v3.1.1.zip'
+ARCHIVE = ROOT / f'releases/pastdue-agent-v{VERSION}.zip'
+SKILL_ARCHIVE = ROOT / f'releases/pastdue-analysis-skill-v{VERSION}.zip'
 ROLLBACK = ROOT / 'releases/pre-v3.1-rollback.zip'
 BASELINE = ROOT / 'tests/fixtures/baseline-v3.1.json'
 ROOT_FILES = {'agent/SYSTEM_PROMPT.md', 'agent/INVOCATION_EXAMPLES.md',
               'atlas/charts/pastdue.edn', 'atlas/sources.edn', 'README.md',
               'ACCEPTANCE_TESTS.md', 'DESIGN.md', 'AGENT_SKILL_EDN_DESIGN.md',
               'IMPLEMENTATION_NOTES.md', 'docs/PASTDUE_AGENT_REDESIGN.md', 'docs/API_V3.md',
-              'docs/DEPLOYMENT_V3.md', 'docs/VALIDATION_V3.md', 'docs/BASELINE_V3_1.md', 'docs/REPORT_SQL_FIX_3_1_1.md'}
+              'docs/DEPLOYMENT_V3.md', 'docs/VALIDATION_V3.md', 'docs/VALIDATION_V3_1_1.md',
+              'docs/REPORT_RENDERING_3_1_2.md', 'docs/BASELINE_V3_1.md', 'docs/REPORT_SQL_FIX_3_1_1.md'}
 REF_NAMES = {'atlas-query-playbook.md', 'completion-contract.md', 'current-context.md',
              'data-contract.md', 'eta-diagnostic-rules.edn', 'metric-definitions.md',
              'policy.edn', 'report-format.md', 'table-display-contract.edn',
@@ -182,12 +182,16 @@ def _manifest(full, skill, offline, sql, inputs, doc, baseline):
         ':release-version': VERSION, ':status': 'PENDING_LIVE_ACCEPTANCE',
         ':atlas-semantic-format': '2.0.0',
         ':required-resolvers': {rid: r[':input'] for rid,r in doc[':execution'][':resolvers'].items() if rid.startswith('pastdue_v3_')},
-        ':offline-contracts': offline['status'], ':skill-structure': next(c['status'] for c in offline['checks'] if c['name'] == 'validate_bundle.py'),
+        ':offline-contracts': offline['status'], ':skill-structure': next((c['status'] for c in offline['checks'] if c['name'] == 'validate_bundle.py'), 'NOT_RUN'),
         ':local-clickhouse-sql': sql['status'] if sql else 'NOT_RUN',
         ':platform-config-check': 'NOT_RUN', ':deployed-jdbc-sql': 'NOT_RUN', ':real-agent-eval': 'NOT_RUN',
-        ':evidence-kind': 'OFFLINE_ONLY_NOT_LLM_OUTPUT_PROOF',
+        ':evidence-kind': 'PACKAGING_ONLY_NO_VALIDATION' if offline['status'] == 'NOT_RUN' else 'OFFLINE_ONLY_NOT_LLM_OUTPUT_PROOF',
         ':validation-receipt-json': json.dumps(dict(offline=offline, local_sql=sql or {'status':'NOT_RUN'}), sort_keys=True),
-        ':validation-input-sha256': inputs,
+        ':validation-input-sha256': {} if offline['status'] == 'NOT_RUN' else inputs,
+        ':artifact-input-sha256': inputs,
+        ':agent-contract-version': VERSION,
+        ':required-atlas-publication': '3.1.1',
+        ':compatible-metric-version': '3.1.0',
         ':manifest-self-hash': 'excluded-to-avoid-recursion',
         ':sha256': {k: sha(v) for k,v in full.items()},
         ':skill-sha256': {k: sha(v) for k,v in skill.items()},
@@ -220,11 +224,18 @@ def check_release(root=ROOT):
         raise ValueError('Release version mismatch')
     if m[':sha256'] != digest(root) or m[':skill-sha256'] != digest(root, True):
         raise ValueError('Release source hashes drift')
-    if m[':validation-input-sha256'] != source_hashes(root):
+    if m[':artifact-input-sha256'] != source_hashes(root):
         raise ValueError('Validation receipt inputs drift; rerun build')
     receipt = json.loads(m[':validation-receipt-json'])
-    if m[':offline-contracts'] != receipt['offline']['status'] or m[':offline-contracts'] != 'PASS':
-        raise ValueError('Offline validation did not PASS')
+    if m[':offline-contracts'] != receipt['offline']['status']:
+        raise ValueError('Offline status disagrees with receipt')
+    if m[':offline-contracts'] == 'NOT_RUN':
+        if (m[':evidence-kind'] != 'PACKAGING_ONLY_NO_VALIDATION'
+                or receipt['offline']['checks'] or m[':validation-input-sha256']
+                or m[':skill-structure'] != 'NOT_RUN'):
+            raise ValueError('Packaging-only receipt claims validation')
+    elif m[':offline-contracts'] != 'PASS' or m[':validation-input-sha256'] != source_hashes(root):
+        raise ValueError('Offline validation did not PASS or inputs drift')
     if receipt['local_sql']['status'] != 'NOT_RUN':
         validate_sql_receipt(receipt['local_sql'], root)
     if m[':local-clickhouse-sql'] != receipt['local_sql']['status']:
@@ -232,19 +243,25 @@ def check_release(root=ROOT):
     for key in (':platform-config-check', ':deployed-jdbc-sql', ':real-agent-eval'):
         if m[key] != 'NOT_RUN':
             raise ValueError('Unsupported live acceptance claim')
-    check_archive(root / 'releases/pastdue-agent-v3.1.1.zip', m[':sha256'], mpath.read_bytes())
-    check_archive(root / 'releases/pastdue-analysis-skill-v3.1.1.zip', m[':skill-sha256'], mpath.read_bytes())
+    check_archive(root / f'releases/pastdue-agent-v{VERSION}.zip', m[':sha256'], mpath.read_bytes())
+    check_archive(root / f'releases/pastdue-analysis-skill-v{VERSION}.zip', m[':skill-sha256'], mpath.read_bytes())
     return m
 
 
-def build(root=ROOT, sql_receipt=None):
+def build(root=ROOT, sql_receipt=None, package_only=False):
+    if package_only and sql_receipt is not None:
+        raise ValueError('--package-only cannot import a prior SQL validation receipt')
     before = source_hashes(root)
     payload = {str(p.relative_to(root)): p.read_bytes() for p in files(root)}
     errors = inspect_payload(payload)
     if errors:
         raise ValueError('; '.join(errors))
-    offline = run_checks(root)
-    if offline['status'] != 'PASS':
+    if package_only:
+        offline = dict(status='NOT_RUN', checks=[], reason='Explicit packaging-only request; no offline tests executed')
+    else:
+        from run_golden_eval import run_checks
+        offline = run_checks(root)
+    if not package_only and offline['status'] != 'PASS':
         for result in offline['checks']:
             print(result['name'], result['status'], result.get('output', ''))
         raise ValueError('Offline validation failed; no release emitted')
@@ -255,15 +272,15 @@ def build(root=ROOT, sql_receipt=None):
     if source_hashes(root) != before:
         raise ValueError('Inputs changed during validation; retry after edits settle')
     skill = {k:v for k,v in payload.items() if k.startswith(SKILL)}
-    baseline = rollback(root)
+    baseline = json.loads((root / 'tests/fixtures/baseline-v3.1.json').read_text()) if package_only else rollback(root)
     manifest = _manifest(payload, skill, offline, sql_receipt, before,
                          read(root / 'atlas/charts/pastdue.edn'), baseline)
     manifest_bytes = (dumps(manifest) + '\n').encode()
     if SECRET.search(manifest_bytes.decode()):
         raise ValueError('Potential secret in validation receipt; sanitize logs before packaging')
     (root / MANIFEST_PATH).write_bytes(manifest_bytes)
-    for name, data in [('pastdue-agent-v3.1.1.zip', payload),
-                       ('pastdue-analysis-skill-v3.1.1.zip', skill)]:
+    for name, data in [(f'pastdue-agent-v{VERSION}.zip', payload),
+                       (f'pastdue-analysis-skill-v{VERSION}.zip', skill)]:
         zip_write(root / 'releases' / name, dict(data, **{MANIFEST_PATH: manifest_bytes}))
     check_release(root)
     return manifest
@@ -272,20 +289,23 @@ def build(root=ROOT, sql_receipt=None):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--check', action='store_true', help='verify both ZIPs, receipts, hashes and allowlist')
+    parser.add_argument('--package-only', action='store_true', help='package without executing offline tests; all unexecuted validation stays NOT_RUN')
     parser.add_argument('--sql-receipt', type=Path, help='validated graph-bound local SQL receipt (otherwise NOT_RUN)')
     parser.add_argument('--record-sql-test', type=Path, help='run synthetic SQL tests and save actual JSON receipt; no packaging')
     parser.add_argument('--sql-python', default=sys.executable, help='temporary dev interpreter with chdb, for --record-sql-test')
     args = parser.parse_args()
+    if args.package_only and (args.check or args.sql_receipt or args.record_sql_test):
+        parser.error('--package-only cannot be combined with validation/check/SQL receipt options')
     try:
         if args.record_sql_test:
             receipt = record_sql_test(args.record_sql_test, args.sql_python)
             return 0 if receipt['status'] == 'PASS' else 1
         if args.check:
             check_release()
-            print('PASS both v3.1 archives, hashes, receipt freshness and sanitized allowlist')
+            print('Archive integrity verified; this is not Agent/Atlas acceptance')
         else:
             receipt = json.loads(args.sql_receipt.read_text()) if args.sql_receipt else None
-            result = build(sql_receipt=receipt)
+            result = build(sql_receipt=receipt, package_only=args.package_only)
             print('Built', ARCHIVE, 'and', SKILL_ARCHIVE)
             print('PENDING_LIVE_ACCEPTANCE; local SQL:', result[':local-clickhouse-sql'], '; live checks NOT_RUN')
         return 0

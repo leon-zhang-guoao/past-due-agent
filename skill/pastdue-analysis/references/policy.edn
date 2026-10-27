@@ -1,4 +1,4 @@
-{:policy-version "3.1.0"
+{:policy-version "3.1.2"
   :business-timezone "America/Los_Angeles"
   :business-timezone-iana "America/Los_Angeles"
   :display-timezone {:daylight-saving true
@@ -90,4 +90,10 @@
        :cc [:buyer]}]}
   :metric-version "3.1.0"
   :selection-version "3.1.0"
-  :calendar-version "weekdays-v1-no-holidays"}
+  :calendar-version "weekdays-v1-no-holidays"
+  :report-rendering {:contract-version "3.1.2"
+    :standard-layout "report-format.md canonical bilingual skeleton"
+    :vendor-summary-is-index-only true
+    :record-type-bound-facts true
+    :interactive-composable true
+    :custom-output-explicit true}}

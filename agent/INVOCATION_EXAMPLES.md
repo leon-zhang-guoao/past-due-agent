@@ -1,4 +1,4 @@
-# Requests v3.1
+# Requests — Agent contract 3.1.2
 
 | Request | Route / resolved intent |
 |---|---|
@@ -25,3 +25,10 @@
 Dates and Vendor codes above are illustrative, never runtime defaults. Exact
 controlled inputs and manual EQL examples are in the Skill's data contract and
 Atlas query playbook. No arbitrary SQL or Python is needed for these requests.
+
+
+Standard daily/history/test requests use the canonical bilingual skeleton and
+separate Vendor Code/Source tables. English and Chinese differ in labels and
+interpretation language, not field order or fact definitions. Interactive requests
+use only relevant modules. Explicit brief/custom-column output is allowed with
+CUSTOM display scope; it does not claim full-report test PASS.

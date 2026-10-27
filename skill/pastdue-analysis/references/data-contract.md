@@ -172,3 +172,50 @@ columns, preserve values and consume every page. No presumed structured-read too
 SELECT *, other tables, joins, writes, dropped facts, or recomputing metric,
 denominator, selection or rank. Materialization doesn't add a logical fact slot.
 See atlas-query-playbook.md for the narrow allowed shape and discovery procedure.
+
+## Report row binding
+
+The flat `pastdue.report-fact` schema is a tagged union, NOT one interchangeable
+metric row. Identical field names have different meanings by record-type. Before
+rendering, partition returned rows by the following selectors; keep their actual
+handle and row-ordinal as provenance. This is an Agent procedure, not a new runtime
+service, required tool or claim of machine enforcement.
+
+| Consumer | Required selector | Bound fields / meaning |
+|---|---|---|
+| Country cross-check | COUNTRY_CONTROL | Country PD/Open/ratio, selected-vendor-count, expected-record-count |
+| Vendor overview AND detailed metrics | VENDOR_METRICS + exact Country/Vendor/scope | previous/target-past-due-count, previous/target-open-count, previous/target-vendor-ratio, contribution-rank, previous/target-country-contribution, delta-country-contribution, positive-contribution-share |
+| Code table | ETA_CODE_SUMMARY + dimension=code + same Vendor/scope | bucket counts, count change, relative change, delta-country-contribution, row-kind, display-rank |
+| Source table | ETA_SOURCE_SUMMARY + dimension=source + same Vendor/scope | independent marginal Source bucket fields |
+| US joint table | US_SOURCE_SUMMARY + dimension=us + same Vendor/scope | Source counts conditioned on Code=US, ANY Country |
+| Signed totals and applicability | VENDOR_CHECK + same Vendor/scope + exact dimension | required, counts-match, previous/target-total, previous/target-expected-total, increase-total, decrease-total, net-change, expected-bucket-count |
+| Selected coverage | agreeing VENDOR_METRICS metadata in same selection | selected-positive-coverage, NOT sum of this repeated field |
+
+Scope includes scope-key, Country, actual P/T dates, calendar, selection mode and
+metric version, with exposed environment provenance retained. Maintain one bound
+Vendor entry per selected VENDOR_METRICS row, in returned contribution-rank order.
+Attach code/source/us summaries and checks by identity, never adjacency or totals.
+Duplicate/missing metrics or check rows are errors, not “use first/last”. A summary
+failure must not overwrite Vendor metrics or unrelated dimensions.
+
+`target-country-contribution` is a level, NOT a change. Only
+`delta-country-contribution` fills contribution-change cells. The value is a ratio;
+percentage-point formatting multiplies by 100 once. Vendor ratio uses Vendor Open;
+Country contribution uses Country Open. Do not fill one from another field.
+Vendor totals cannot be read from a SH or US bucket just because those rows share
+previous/target-past-due-count columns. Sparse defaults on unrelated types are
+never fallback values. Render overview and detail from the same bound metrics.
+
+Code and Source must each independently reconcile to both Vendor PD totals. US
+must reconcile to Code=US (possibly hidden in Code Other), not all Source. Use
+per-Vendor dimension=us check in CA as well as US. Positive visible Code=US with
+required=false, or differing joint totals, is a reconciliation failure affecting
+US joint interpretation; do not call it not applicable or erase valid Code/Source.
+If raw Code=US is hidden in Other, verified server checks are the evidence boundary,
+not proof of an independent raw-bucket audit. No marginal-distribution stitching.
+
+Use independent arithmetic only as a consistency check on returned counts/rates,
+never to silently replace a missing or inconsistent authoritative field. A failed
+comparison is explicitly UNVERIFIED/failed at the narrowest affected scope. Keep
+raw rows and request references; numeric disagreement inside a single response
+is a reconciliation failure, not proof of two-response DATA_CONFLICT.

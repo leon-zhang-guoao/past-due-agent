@@ -1,3 +1,10 @@
+> Agent/report 3.1.2 update: use REPORT_RENDERING_3_1_2.md and the current
+> VALIDATION_V3.md. Replace Prompt + complete Skill together. Atlas remains
+> publication 3.1.1/revision 2, metric/API 3.1.0; no graph reupload if already there.
+> This delivery uses --package-only: offline and live checks NOT_RUN. The general
+> rollout checklist below lists available checks, NOT checks performed this turn.
+> Previous validation details moved to VALIDATION_V3_1_1.md (historical only).
+
 > 3.1.1 SQL cancellation patch: deploy `atlas/charts/pastdue.edn` from the
 > matching 3.1.1 ZIP (publication 3.1.1, source revision 2; metric version stays
 > 3.1.0), then Prompt/Skill. See REPORT_SQL_FIX_3_1_1.md for exact Studio smoke
@@ -14,14 +21,15 @@ as certification of these changed v3.1 contracts.
    Inspect baseline/rollback artifacts, but don't assume they prove live state.
 2. Supply fresh authorized environment configuration through secret management;
    never reuse historical chat tokens. Policy allowlists aren't RLS.
-3. Read API_V3.md and ACCEPTANCE_TESTS.md. Run development-only offline regressions
-   without invoking a deployed Agent's Python runtime (there is no runtime Python).
-   Existing validation records apply only to their recorded artifact/version.
+3. Read API_V3.md and the version-specific update/validation notes. Offline
+   regressions are optional owner-selected development work, not evidence of live
+   Agent correctness; none were run for 3.1.2 per user request. There is no Agent
+   runtime Python. Old evidence applies only to its recorded artifact/version.
 4. Release owner verifies combined Atlas v3.1 graph, source-slot binding and actual
    formal platform config-check. Static inventory: 35 resolvers / 595 attributes;
    inventory count alone is not a platform validation or SQL pass.
 5. Release owner updates manifest/version/hashes and produces a matching release
-   only after contract/evidence checks. Do not regenerate artifacts as an incidental
+   with actual validation state explicitly recorded; package-only is not acceptance. Do not regenerate artifacts as an incidental
    docs edit or package mismatched Prompt/Skill/graph/manifest. NOT RUN isn't PASS.
 
 ## Rollout and live gates

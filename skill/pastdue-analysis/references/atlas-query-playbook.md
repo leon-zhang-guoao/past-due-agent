@@ -306,3 +306,20 @@ new queried-at-local field never repurposes an old UTC attribute. DATA_CONFLICT
 compares COMMON semantic fact fields in paired raw same-scope responses, not whole
 payload shape: projection-only fields, handles or timestamps differing aren't a
 conflict, and an unprojected field is unknown, not contradictory.
+
+## Consume once, bind once, render consistently (Agent contract 3.1.2)
+
+For standard report queries project the complete identity, record-type, dimension,
+row-kind, metric, selection/coverage and check fields described in data-contract.md.
+Do not use a narrow overview-only projection and then guess missing detail fields.
+After handle-bound materialization, follow `data-contract.md#report-row-binding`:
+control → freeze VENDOR_METRICS selection → attach dimension summaries/checks by
+identity → review → render the literal `report-format.md` skeleton. Discovery and
+pagination are reused; formatting changes do not require new business queries.
+
+A mismatch found in a draft is corrected from the original bound row and reviewed
+again. If original evidence is unavailable, show an unavailable field or affected
+dimension, not a speculative “+?” or a new raw-conflict allegation. Only use the
+single permitted retry for a specific recoverable query/projection/attachment issue,
+not to repeatedly hunt for numbers matching a drafted report. Retain independent
+verified Countries, Vendors and dimensions; no per-Vendor fallback storm.

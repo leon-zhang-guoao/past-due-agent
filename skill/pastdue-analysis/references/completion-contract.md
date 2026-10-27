@@ -1,4 +1,4 @@
-# Completion and evidence contract — v3.1
+# Completion and evidence contract — v3.1.2
 
 Track business/data/analysis status independently for every requested Country.
 Freeze the full request (including filters, ranking and denominator), actual pair,
@@ -58,7 +58,13 @@ Report schema summaries are intentionally compact, not incomplete raw buckets;
 expected counts+Other representation+checks are the completeness mechanism. The
 Agent must not issue raw per-Vendor calls to fill that intentional compression.
 `result-complete` and no truncation describe transport/materialization only.
-coverage-unknown alone is neither proof of failure nor proof of completeness.
+Source collection coverage-unknown alone is neither proof of failure nor proof
+of completeness. If exact request/row identities, complete transport, expected
+record count, selected set/ranks, BUCKET+OTHER representation, both period totals
+and applicable server checks ALL pass, record SERVER_RECONCILED and keep source
+coverage unknown as a warning, not an automatic PARTIAL. Do not claim
+CLIENT_RAW_AUDIT. If any required reconciliation remains unknown, identify that
+specific missing check and mark only the affected scope PARTIAL.
 
 Work states: verified / failed / completeness-unverified / not-executed. Last two
 aren't empty or complete. Inspect nested errors even when isError=false. At most
@@ -107,10 +113,13 @@ No confidence percentages, invented watermark, immutable-history or transaction 
 
 ## Test and budget outcome
 PASS: all applicable mandatory checks verified; NORMAL isn't automatic PASS.
-PARTIAL: external execution failure, unknown completeness, missing evidence or
+PARTIAL: external execution failure, unverified REQUIRED completeness, missing evidence or
 interactive-limit or explicitly bounded not-executed work. FAIL: proven identity/count/date/contract hard
-violation, including paired DATA_CONFLICT, association or report error. A corrected
-report must disclose the correction and rerun relevant checks, not hide the failure.
+violation, including paired DATA_CONFLICT, association or report error. If a wrong report has ALREADY been sent, disclose the correction and review the
+corrected scope from raw evidence; preserve the prior failure record. An unpublished
+draft copy error corrected and reviewed before delivery is not a permanent source
+failure or a required FAIL on the corrected report. Never publish contradictory
+values and call the output PASS.
 A missing optional context path doesn't fail unrequested mandatory work.
 Zero positive selection may PASS the applicable empty path with explicit statement
 that multi-Vendor ETA was not exercised. No-trigger alone is neither FAIL nor PASS.
@@ -130,3 +139,26 @@ columns, preserve values and consume every page. No presumed structured-read too
 SELECT *, other tables, joins, writes, dropped facts, or recomputing metric,
 denominator, selection or rank. Materialization doesn't add a logical fact slot.
 See atlas-query-playbook.md for the narrow allowed shape and discovery procedure.
+
+
+## Final report review (not a host gate)
+
+Review against bound raw facts, not a second model-produced table:
+- same Vendor set and rank order in selection, overview and repeated blocks;
+- Vendor totals come only from VENDOR_METRICS, not SH/US bucket counts;
+- contribution-change cells use delta, not target contribution;
+- Code/Source each have both periods, signed totals, explicit failure if needed;
+- per-Vendor US applicability and reconciliation, including CA;
+- no speculative numeric cells, invisible remainder assumptions or omitted rows;
+- all required labels, diagnosis and status explanations in the resolved language;
+- actual selected-positive-coverage value, or a precise missing-evidence reason.
+
+A numeric contradiction inside one response is a reconciliation failure. It does
+not establish two-response DATA_CONFLICT. Isolate the affected metric/dimension,
+preserve its place and other verified facts, and explain the observed discrepancy.
+Do not silently repair counts using another report or guess an upstream cause.
+A confirmed wrong rendered total/rank/Code or missing required layout is a report
+contract violation (test FAIL), not a reason to quarantine otherwise valid facts.
+External absence/incomplete evidence is PARTIAL, not a fabricated business zero.
+Keep business, data, analysis and report status separate. UNKNOWN source coverage
+alone does not decide outcome; delay warnings do not automatically fail a test.
