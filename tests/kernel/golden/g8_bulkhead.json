@@ -1,0 +1,15 @@
+{
+  "id": "G8",
+  "ask": "bulkhead simulation",
+  "intent_ir": {
+    "intents": [{"id": "org-mapping", "priority": 0}],
+    "scope": {"countries": ["CA"], "vendors": ["Gx"]}
+  },
+  "context": {
+    "countries": ["CA"],
+    "vendors": ["Gx"]
+  },
+  "expect": {
+    "must_include_capabilities": ["master-mappings"]
+  }
+}

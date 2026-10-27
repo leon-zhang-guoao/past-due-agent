@@ -1,0 +1,9 @@
+{:sources
+ {"clickhouse-pastdue-agent"
+  {:type "sql"
+   :jdbc_url "jdbc:clickhouse://nifi-ch.synnex.org:8123/past_due?compress=0"
+   :username "dba"
+   :password "4ytC8f6V"
+   :max_pool_size 5
+   :min_idle 1
+   :timeout_ms 120000}}}

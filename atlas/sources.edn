@@ -1,0 +1,9 @@
+{:sources
+ {"eta-clickhouse-prod"
+  {:type "sql"
+   :jdbc_url "${PASTDUE_CLICKHOUSE_JDBC_URL}"
+   :username "${PASTDUE_CLICKHOUSE_USERNAME}"
+   :password "${PASTDUE_CLICKHOUSE_PASSWORD}"
+   :max_pool_size 5
+   :min_idle 1
+   :timeout_ms 120000}}}

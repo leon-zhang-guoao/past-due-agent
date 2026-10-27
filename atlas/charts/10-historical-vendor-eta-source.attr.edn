@@ -1,0 +1,148 @@
+{:namespaces
+ {"pastdue.historical-vendor-eta-source"
+  {:label "PastDue Historical Vendor ETA Source Contribution"
+   :domain "PastDue"
+   :description "ETA Source-level decomposition for one Vendor and an explicit valid historical snapshot pair."}}
+
+ :attributes
+ {:pastdue.historical-vendor-eta-source/country-code
+  {:type :string :identity? true :label "Country Code"
+   :description "Country component of the historical ETA Source identity." :format :code}
+  :pastdue.historical-vendor-eta-source/vendor-code
+  {:type :integer :identity? true :label "Vendor Code"
+   :description "Vendor component of the historical ETA Source identity." :format :id}
+  :pastdue.historical-vendor-eta-source/target-snapshot-date
+  {:type :date :identity? true :label "Target Snapshot Date"
+   :description "Historical completed snapshot being explained." :format :date}
+  :pastdue.historical-vendor-eta-source/previous-snapshot-date
+  {:type :date :identity? true :label "Previous Snapshot Date"
+   :description "Nearest prior available snapshot used as the comparison baseline." :format :date}
+  :pastdue.historical-vendor-eta-source/eta-source
+  {:type :string :identity? true :label "ETA Source"
+   :description "Normalized historical ETA Source bucket; null and blank values are UNKNOWN." :format :code}
+  :pastdue.historical-vendor-eta-source/target-past-due-count
+  {:type :integer :label "Target Past-Due Count"
+   :description "Past-due PO-line count for this ETA Source bucket in the target snapshot." :unit "PO lines" :format :number}
+  :pastdue.historical-vendor-eta-source/previous-past-due-count
+  {:type :integer :label "Previous Past-Due Count"
+   :description "Past-due PO-line count for this ETA Source bucket in the previous snapshot." :unit "PO lines" :format :number}
+  :pastdue.historical-vendor-eta-source/past-due-count-change
+  {:type :integer :label "Past-Due Count Change"
+   :description "Target minus previous past-due count for this ETA Source bucket." :unit "PO lines" :format :number}
+  :pastdue.historical-vendor-eta-source/target-country-contribution
+  {:type :decimal :label "Target Country Contribution"
+   :description "Target bucket past-due count divided by target Country open count." :unit "%" :format :percent}
+  :pastdue.historical-vendor-eta-source/previous-country-contribution
+  {:type :decimal :label "Previous Country Contribution"
+   :description "Previous bucket past-due count divided by previous Country open count." :unit "%" :format :percent}
+  :pastdue.historical-vendor-eta-source/delta-country-contribution
+  {:type :decimal :label "Delta Country Contribution"
+   :description "This ETA Source bucket's contribution to the historical Country ratio change." :unit "percentage points" :format :number}
+  :pastdue.historical-vendor-eta-source/positive-contribution-share
+  {:type :decimal :label "Positive Contribution Share"
+   :description "Bucket positive delta divided by all positive ETA Source deltas for this historical Vendor pair." :unit "%" :format :percent}
+  :pastdue.historical-vendor-eta-source/cumulative-positive-share
+  {:type :decimal :label "Cumulative Positive Share"
+   :description "Cumulative positive share in descending historical contribution order." :unit "%" :format :percent}
+  :pastdue.historical-vendor-eta-source/contribution-rank
+  {:type :integer :label "Contribution Rank"
+   :description "Stable descending positive-contribution rank for this Vendor and historical pair." :format :number}}
+
+ :resolvers
+ [{:id "pastdue_historical_vendor_eta_source_drivers"
+   :name "Historical Vendor ETA Source Contribution Drivers"
+   :description "Positive historical ETA Source contribution buckets; legacy positive-only view for explicit positive attribution (80 percent, max five), not the default all-change report."
+   :domain "PastDue"
+   :source-ref "eta-clickhouse-prod"
+   :input ["pastdue.historical-vendor-contribution/country-code"
+           "pastdue.historical-vendor-contribution/vendor-code"
+           "pastdue.historical-vendor-contribution/target-snapshot-date"
+           "pastdue.historical-vendor-contribution/previous-snapshot-date"]
+   :output [{:pastdue.historical-vendor-contribution/eta-source-drivers
+             ["pastdue.historical-vendor-eta-source/country-code"
+              "pastdue.historical-vendor-eta-source/vendor-code"
+              "pastdue.historical-vendor-eta-source/target-snapshot-date"
+              "pastdue.historical-vendor-eta-source/previous-snapshot-date"
+              "pastdue.historical-vendor-eta-source/eta-source"
+              "pastdue.historical-vendor-eta-source/target-past-due-count"
+              "pastdue.historical-vendor-eta-source/previous-past-due-count"
+              "pastdue.historical-vendor-eta-source/past-due-count-change"
+              "pastdue.historical-vendor-eta-source/target-country-contribution"
+              "pastdue.historical-vendor-eta-source/previous-country-contribution"
+              "pastdue.historical-vendor-eta-source/delta-country-contribution"
+              "pastdue.historical-vendor-eta-source/positive-contribution-share"
+              "pastdue.historical-vendor-eta-source/cumulative-positive-share"
+              "pastdue.historical-vendor-eta-source/contribution-rank"]}]
+   :source
+   {:type "sql" :result_type "list"
+    :query "WITH country_daily AS (SELECT snapshot_date, country_code, sum(toInt64(total_open_count)) AS country_open FROM past_due.vendor_past_due_daily WHERE snapshot_date < toDate(now('America/Los_Angeles')) AND country_code = :country_code GROUP BY snapshot_date, country_code), periods AS (SELECT country_code, toDate(:target_snapshot_date) AS target_snapshot_date, toDate(:previous_snapshot_date) AS previous_snapshot_date, sumIf(country_open, snapshot_date = toDate(:target_snapshot_date)) AS target_country_open, sumIf(country_open, snapshot_date = toDate(:previous_snapshot_date)) AS previous_country_open FROM country_daily GROUP BY country_code HAVING toDate(:target_snapshot_date) < toDate(now('America/Los_Angeles')) AND toDate(:previous_snapshot_date) < toDate(:target_snapshot_date) AND countIf(snapshot_date = toDate(:target_snapshot_date)) > 0 AND countIf(snapshot_date = toDate(:previous_snapshot_date)) > 0 AND maxIf(snapshot_date, snapshot_date < toDate(:target_snapshot_date)) = toDate(:previous_snapshot_date)), period_rows AS (SELECT country_code, target_snapshot_date, previous_snapshot_date, target_country_open, previous_country_open, target_snapshot_date AS snapshot_date FROM periods UNION ALL SELECT country_code, target_snapshot_date, previous_snapshot_date, target_country_open, previous_country_open, previous_snapshot_date AS snapshot_date FROM periods), bucket_period AS (SELECT d.country_code, d.vendor_code, if(empty(trim(BOTH ' ' FROM ifNull(d.source, ''))), 'UNKNOWN', trim(BOTH ' ' FROM ifNull(d.source, ''))) AS dimension_value, sumIf(toInt64(d.past_due_count), d.snapshot_date = p.target_snapshot_date) AS target_past_due_count, sumIf(toInt64(d.past_due_count), d.snapshot_date = p.previous_snapshot_date) AS previous_past_due_count, p.target_snapshot_date, p.previous_snapshot_date, p.target_country_open, p.previous_country_open FROM past_due.vendor_past_due_daily d INNER JOIN period_rows p ON d.country_code = p.country_code AND d.snapshot_date = p.snapshot_date WHERE d.vendor_code = :vendor_code GROUP BY d.country_code, d.vendor_code, dimension_value, p.target_snapshot_date, p.previous_snapshot_date, p.target_country_open, p.previous_country_open), calculated AS (SELECT *, if(target_country_open > 0, toDecimal64(toFloat64(target_past_due_count) / target_country_open, 9), toDecimal64(0, 9)) AS target_country_contribution, if(previous_country_open > 0, toDecimal64(toFloat64(previous_past_due_count) / previous_country_open, 9), toDecimal64(0, 9)) AS previous_country_contribution, target_country_contribution - previous_country_contribution AS delta_country_contribution FROM bucket_period), positive AS (SELECT *, sum(delta_country_contribution) OVER () AS total_positive_delta FROM calculated WHERE delta_country_contribution > 0), ranked AS (SELECT *, row_number() OVER (ORDER BY delta_country_contribution DESC, dimension_value ASC) AS contribution_rank, ifNull(toDecimal64(delta_country_contribution / nullIf(total_positive_delta, 0), 9), toDecimal64(0, 9)) AS positive_contribution_share FROM positive) SELECT country_code, vendor_code, target_snapshot_date, previous_snapshot_date, dimension_value, target_past_due_count, previous_past_due_count, target_past_due_count - previous_past_due_count AS past_due_count_change, target_country_contribution, previous_country_contribution, delta_country_contribution, positive_contribution_share, toDecimal64(ifNull(sum(positive_contribution_share) OVER (ORDER BY contribution_rank ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW), toDecimal64(0, 9)), 9) AS cumulative_positive_share, toInt64(contribution_rank) AS contribution_rank FROM ranked"
+    :params {"country_code" "pastdue.historical-vendor-contribution/country-code"
+             "vendor_code" "pastdue.historical-vendor-contribution/vendor-code"
+             "target_snapshot_date" "pastdue.historical-vendor-contribution/target-snapshot-date"
+             "previous_snapshot_date" "pastdue.historical-vendor-contribution/previous-snapshot-date"}
+    :field_mapping
+    {"pastdue.historical-vendor-eta-source/country-code" "country_code"
+     "pastdue.historical-vendor-eta-source/vendor-code" "vendor_code"
+     "pastdue.historical-vendor-eta-source/target-snapshot-date" "target_snapshot_date"
+     "pastdue.historical-vendor-eta-source/previous-snapshot-date" "previous_snapshot_date"
+     "pastdue.historical-vendor-eta-source/eta-source" "dimension_value"
+     "pastdue.historical-vendor-eta-source/target-past-due-count" "target_past_due_count"
+     "pastdue.historical-vendor-eta-source/previous-past-due-count" "previous_past_due_count"
+     "pastdue.historical-vendor-eta-source/past-due-count-change" "past_due_count_change"
+     "pastdue.historical-vendor-eta-source/target-country-contribution" "target_country_contribution"
+     "pastdue.historical-vendor-eta-source/previous-country-contribution" "previous_country_contribution"
+     "pastdue.historical-vendor-eta-source/delta-country-contribution" "delta_country_contribution"
+     "pastdue.historical-vendor-eta-source/positive-contribution-share" "positive_contribution_share"
+     "pastdue.historical-vendor-eta-source/cumulative-positive-share" "cumulative_positive_share"
+     "pastdue.historical-vendor-eta-source/contribution-rank" "contribution_rank"}}
+   :eql-params
+   {:limit {:type "integer" :field "_limit" :default 100 :description "Maximum buckets; request enough to apply five-value and 80-percent rules"}
+    :offset {:type "integer" :field "_offset" :default 0 :description "Rows to skip"}
+    :order_by {:type "string" :field "_order_by" :description "Mapped result column"}
+    :sort_dir {:type "string" :field "_sort_dir" :description "ASC or DESC"}}}
+
+  {:id "pastdue_historical_vendor_eta_source_changes"
+   :name "Vendor ETA Source All Changes for Explicit Pair"
+   :description "All positive, negative and zero ETA changes for an explicit validated snapshot pair, used by daily and historical reports. Fetch all pages before absolute-count-change Top-5 plus Other selection. No positive-share metrics in this projection."
+   :domain "PastDue"
+   :source-ref "eta-clickhouse-prod"
+   :input ["pastdue.historical-vendor-contribution/country-code"
+           "pastdue.historical-vendor-contribution/vendor-code"
+           "pastdue.historical-vendor-contribution/target-snapshot-date"
+           "pastdue.historical-vendor-contribution/previous-snapshot-date"]
+   :output [{:pastdue.historical-vendor-contribution/eta-source-changes
+             ["pastdue.historical-vendor-eta-source/country-code"
+              "pastdue.historical-vendor-eta-source/vendor-code"
+              "pastdue.historical-vendor-eta-source/target-snapshot-date"
+              "pastdue.historical-vendor-eta-source/previous-snapshot-date"
+              "pastdue.historical-vendor-eta-source/eta-source"
+              "pastdue.historical-vendor-eta-source/target-past-due-count"
+              "pastdue.historical-vendor-eta-source/previous-past-due-count"
+              "pastdue.historical-vendor-eta-source/past-due-count-change"
+              "pastdue.historical-vendor-eta-source/target-country-contribution"
+              "pastdue.historical-vendor-eta-source/previous-country-contribution"
+              "pastdue.historical-vendor-eta-source/delta-country-contribution"]}]
+   :source
+   {:type "sql" :result_type "list"
+    :query "WITH country_daily AS (SELECT snapshot_date, country_code, sum(toInt64(total_open_count)) AS country_open FROM past_due.vendor_past_due_daily WHERE snapshot_date < toDate(now('America/Los_Angeles')) AND country_code = :country_code GROUP BY snapshot_date, country_code), periods AS (SELECT country_code, toDate(:target_snapshot_date) AS target_snapshot_date, toDate(:previous_snapshot_date) AS previous_snapshot_date, sumIf(country_open, snapshot_date = toDate(:target_snapshot_date)) AS target_country_open, sumIf(country_open, snapshot_date = toDate(:previous_snapshot_date)) AS previous_country_open FROM country_daily GROUP BY country_code HAVING toDate(:target_snapshot_date) < toDate(now('America/Los_Angeles')) AND toDate(:previous_snapshot_date) < toDate(:target_snapshot_date) AND countIf(snapshot_date = toDate(:target_snapshot_date)) > 0 AND countIf(snapshot_date = toDate(:previous_snapshot_date)) > 0 AND maxIf(snapshot_date, snapshot_date < toDate(:target_snapshot_date)) = toDate(:previous_snapshot_date)), period_rows AS (SELECT country_code, target_snapshot_date, previous_snapshot_date, target_country_open, previous_country_open, target_snapshot_date AS snapshot_date FROM periods UNION ALL SELECT country_code, target_snapshot_date, previous_snapshot_date, target_country_open, previous_country_open, previous_snapshot_date AS snapshot_date FROM periods), bucket_period AS (SELECT d.country_code, d.vendor_code, if(empty(trim(BOTH ' ' FROM ifNull(d.source, ''))), 'UNKNOWN', trim(BOTH ' ' FROM ifNull(d.source, ''))) AS dimension_value, sumIf(toInt64(d.past_due_count), d.snapshot_date = p.target_snapshot_date) AS target_past_due_count, sumIf(toInt64(d.past_due_count), d.snapshot_date = p.previous_snapshot_date) AS previous_past_due_count, p.target_snapshot_date, p.previous_snapshot_date, p.target_country_open, p.previous_country_open FROM past_due.vendor_past_due_daily d INNER JOIN period_rows p ON d.country_code = p.country_code AND d.snapshot_date = p.snapshot_date WHERE d.vendor_code = :vendor_code GROUP BY d.country_code, d.vendor_code, dimension_value, p.target_snapshot_date, p.previous_snapshot_date, p.target_country_open, p.previous_country_open), calculated AS (SELECT *, if(target_country_open > 0, toDecimal64(toFloat64(target_past_due_count) / target_country_open, 9), toDecimal64(0, 9)) AS target_country_contribution, if(previous_country_open > 0, toDecimal64(toFloat64(previous_past_due_count) / previous_country_open, 9), toDecimal64(0, 9)) AS previous_country_contribution, target_country_contribution - previous_country_contribution AS delta_country_contribution FROM bucket_period) SELECT country_code, vendor_code, target_snapshot_date, previous_snapshot_date, dimension_value, target_past_due_count, previous_past_due_count, target_past_due_count - previous_past_due_count AS past_due_count_change, target_country_contribution, previous_country_contribution, delta_country_contribution FROM calculated"
+    :params {"country_code" "pastdue.historical-vendor-contribution/country-code"
+             "vendor_code" "pastdue.historical-vendor-contribution/vendor-code"
+             "target_snapshot_date" "pastdue.historical-vendor-contribution/target-snapshot-date"
+             "previous_snapshot_date" "pastdue.historical-vendor-contribution/previous-snapshot-date"}
+    :field_mapping
+    {"pastdue.historical-vendor-eta-source/country-code" "country_code"
+     "pastdue.historical-vendor-eta-source/vendor-code" "vendor_code"
+     "pastdue.historical-vendor-eta-source/target-snapshot-date" "target_snapshot_date"
+     "pastdue.historical-vendor-eta-source/previous-snapshot-date" "previous_snapshot_date"
+     "pastdue.historical-vendor-eta-source/eta-source" "dimension_value"
+     "pastdue.historical-vendor-eta-source/target-past-due-count" "target_past_due_count"
+     "pastdue.historical-vendor-eta-source/previous-past-due-count" "previous_past_due_count"
+     "pastdue.historical-vendor-eta-source/past-due-count-change" "past_due_count_change"
+     "pastdue.historical-vendor-eta-source/target-country-contribution" "target_country_contribution"
+     "pastdue.historical-vendor-eta-source/previous-country-contribution" "previous_country_contribution"
+     "pastdue.historical-vendor-eta-source/delta-country-contribution" "delta_country_contribution"}}
+   :eql-params
+   {:limit {:type "integer" :field "_limit" :default 100 :description "Page size, not display size; fetch all pages ordered by dimension_value before selecting five and aggregating Other"}
+    :offset {:type "integer" :field "_offset" :default 0 :description "Rows to skip"}
+    :order_by {:type "string" :field "_order_by" :description "Mapped result column"}
+    :sort_dir {:type "string" :field "_sort_dir" :description "ASC or DESC"}}}]}

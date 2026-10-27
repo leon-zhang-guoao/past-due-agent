@@ -1,0 +1,14 @@
+{
+  "status": "local-baseline-only",
+  "log_policy_version": "1.3.0",
+  "local_policy_version": "1.8.0",
+  "live_version": "UNVERIFIED",
+  "request_return_mismatch": "ROOT_CAUSE_UNCONFIRMED",
+  "sha256": {
+    "agent/SYSTEM_PROMPT.md": "89c031c6a5304254af9a690246c2c3b1ad138222ce9b7c15327222b0e3ea792a",
+    "skill/pastdue-analysis/SKILL.md": "0e60571e31faffbff6d7118fc30c2aad07c018789f7c38f9deb5092bed4b2529",
+    "skill/pastdue-analysis/references/policy.edn": "9d43d06bfae001255a4f4b19f03f19f0a813f8853010acc3bc2446d8789ea3ed",
+    "skill/pastdue-analysis/references/table-display-contract.edn": "1e7a53455a94a711a430da2b7c00e55fa28428fae6ec07ba7d097772bd295305",
+    "atlas/charts/pastdue.edn": "031c2042c27017237fcc10493e60e491146ca8dba90dfadc2286a43afd907bf0"
+  }
+}

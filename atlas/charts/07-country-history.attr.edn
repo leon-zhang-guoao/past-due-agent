@@ -1,0 +1,188 @@
+{:namespaces
+ {"pastdue.country-history-query"
+  {:label "PastDue Country History Query"
+   :domain "PastDue"
+   :description "Explicit PST date-range request for historical country snapshot comparisons and trigger discovery."}
+  "pastdue.country-trigger-event"
+  {:label "PastDue Country Trigger Event"
+   :domain "PastDue"
+   :description "One historical country snapshot pair whose target date is evaluated against the nearest prior available snapshot."}}
+
+ :attributes
+ {:pastdue.country-history-query/country-code
+  {:type :string :identity? true :label "Country Code"
+   :description "Country to scan; Atlas supports every actual country while the Agent policy monitors US and CA."
+   :synonyms ["国家" "国家代码" "country"] :format :code}
+  :pastdue.country-history-query/range-start-date
+  {:type :date :identity? true :label "Range Start Date"
+   :description "Inclusive PST target-snapshot start date. The comparison snapshot may be earlier than this date."
+   :synonyms ["回溯开始日期" "历史开始日期"] :format :date}
+  :pastdue.country-history-query/range-end-date
+  {:type :date :identity? true :label "Range End Date"
+   :description "Inclusive PST target-snapshot end date; only completed dates before the current PST date are eligible."
+   :synonyms ["回溯结束日期" "历史结束日期"] :format :date}
+  :pastdue.country-history-query/relative-change-threshold
+  {:type :decimal :identity? true :label "Relative Change Threshold"
+   :description "Required numeric fraction for both historical collections: filters trigger-events and classifies trigger-type in comparisons. 0.10 means 10%. Supply together with country-code, range-start-date and range-end-date."
+   :synonyms ["历史触发阈值"] :unit "%" :format :percent}
+
+  :pastdue.country-trigger-event/country-code
+  {:type :string :identity? true :label "Country Code"
+   :description "Country for this historical comparison event." :format :code}
+  :pastdue.country-trigger-event/target-snapshot-date
+  {:type :date :identity? true :label "Target Snapshot Date"
+   :description "Completed PST snapshot date whose change is being evaluated."
+   :synonyms ["目标快照日期" "历史触发日期"] :format :date}
+  :pastdue.country-trigger-event/previous-snapshot-date
+  {:type :date :identity? true :label "Previous Snapshot Date"
+   :description "Nearest available completed snapshot before the target snapshot for the same country."
+   :synonyms ["上一可用快照日期"] :format :date}
+  :pastdue.country-trigger-event/snapshot-gap-days
+  {:type :integer :label "Snapshot Gap Days"
+   :description "Calendar-day gap between the previous and target snapshots."
+   :unit "days" :format :number}
+  :pastdue.country-trigger-event/target-past-due-count
+  {:type :integer :label "Target Past-Due Count"
+   :description "Country past-due PO-line count in the target snapshot."
+   :unit "PO lines" :format :number}
+  :pastdue.country-trigger-event/previous-past-due-count
+  {:type :integer :label "Previous Past-Due Count"
+   :description "Country past-due PO-line count in the previous snapshot."
+   :unit "PO lines" :format :number}
+  :pastdue.country-trigger-event/target-open-count
+  {:type :integer :label "Target Open Count"
+   :description "Country open PO-line denominator in the target snapshot."
+   :unit "PO lines" :format :number}
+  :pastdue.country-trigger-event/previous-open-count
+  {:type :integer :label "Previous Open Count"
+   :description "Country open PO-line denominator in the previous snapshot."
+   :unit "PO lines" :format :number}
+  :pastdue.country-trigger-event/target-past-due-ratio
+  {:type :decimal :label "Target Past-Due Ratio"
+   :description "Unrounded target country past-due ratio."
+   :unit "%" :format :percent}
+  :pastdue.country-trigger-event/previous-past-due-ratio
+  {:type :decimal :label "Previous Past-Due Ratio"
+   :description "Unrounded previous country past-due ratio."
+   :unit "%" :format :percent}
+  :pastdue.country-trigger-event/relative-ratio-change
+  {:type :decimal :label "Relative Ratio Change"
+   :description "Relative change from the previous ratio to the target ratio; null for a zero baseline."
+   :unit "%" :format :percent :nullable? true}
+  :pastdue.country-trigger-event/percentage-point-change
+  {:type :decimal :label "Percentage-Point Change"
+   :description "Target ratio minus previous ratio; context only and not an additional trigger threshold."
+   :unit "percentage points" :format :number}
+  :pastdue.country-trigger-event/zero-baseline-increase
+  {:type :boolean :label "Zero Baseline Increase"
+   :description "True when the previous ratio is zero and the target ratio is positive."}
+  :pastdue.country-trigger-event/trigger-type
+  {:type :string :label "Trigger Type"
+   :description "RELATIVE_INCREASE, ZERO_BASELINE_INCREASE, or NORMAL for this historical comparison."
+   :enum {"RELATIVE_INCREASE" "Relative increase" "ZERO_BASELINE_INCREASE" "Zero baseline increase" "NORMAL" "Normal"}
+   :format :code}}
+
+ :resolvers
+ [{:id "pastdue_historical_country_comparisons"
+   :name "Historical Country Comparisons"
+   :description "Return every comparable target snapshot in an inclusive PST date range of at most 366 calendar dates. Requires all four pastdue.country-history-query inputs in :entity: country-code, range-start-date, range-end-date, relative-change-threshold. Threshold classifies trigger-type without filtering normal dates. Not an empty-entity root collection."
+   :domain "PastDue"
+   :source-ref "eta-clickhouse-prod"
+   :input ["pastdue.country-history-query/country-code"
+           "pastdue.country-history-query/range-start-date"
+           "pastdue.country-history-query/range-end-date"
+           "pastdue.country-history-query/relative-change-threshold"]
+   :output [{:pastdue.country-history-query/comparisons
+             ["pastdue.country-trigger-event/country-code"
+              "pastdue.country-trigger-event/target-snapshot-date"
+              "pastdue.country-trigger-event/previous-snapshot-date"
+              "pastdue.country-trigger-event/snapshot-gap-days"
+              "pastdue.country-trigger-event/target-past-due-count"
+              "pastdue.country-trigger-event/previous-past-due-count"
+              "pastdue.country-trigger-event/target-open-count"
+              "pastdue.country-trigger-event/previous-open-count"
+              "pastdue.country-trigger-event/target-past-due-ratio"
+              "pastdue.country-trigger-event/previous-past-due-ratio"
+              "pastdue.country-trigger-event/relative-ratio-change"
+              "pastdue.country-trigger-event/percentage-point-change"
+              "pastdue.country-trigger-event/zero-baseline-increase"
+              "pastdue.country-trigger-event/trigger-type"]}]
+   :source
+   {:type "sql" :result_type "list"
+    :query "WITH country_daily AS (SELECT snapshot_date, country_code, sum(toInt64(past_due_count)) AS past_due_count, sum(toInt64(total_open_count)) AS open_count FROM past_due.vendor_past_due_daily WHERE snapshot_date < toDate(now('America/Los_Angeles')) AND country_code = :country_code GROUP BY snapshot_date, country_code), sequenced AS (SELECT *, row_number() OVER (PARTITION BY country_code ORDER BY snapshot_date ASC) AS snapshot_seq FROM country_daily), previous_rows AS (SELECT country_code, snapshot_seq + 1 AS target_seq, snapshot_date AS previous_snapshot_date, past_due_count AS previous_past_due_count, open_count AS previous_open_count FROM sequenced), paired AS (SELECT c.country_code, c.snapshot_date AS target_snapshot_date, p.previous_snapshot_date, c.past_due_count AS target_past_due_count, p.previous_past_due_count, c.open_count AS target_open_count, p.previous_open_count FROM sequenced c INNER JOIN previous_rows p ON c.country_code = p.country_code AND c.snapshot_seq = p.target_seq WHERE toDate(:range_start_date) <= toDate(:range_end_date) AND dateDiff('day', toDate(:range_start_date), toDate(:range_end_date)) BETWEEN 0 AND 365 AND c.snapshot_date >= toDate(:range_start_date) AND c.snapshot_date <= toDate(:range_end_date) AND c.snapshot_date < toDate(now('America/Los_Angeles'))), ratios AS (SELECT *, if(target_open_count > 0, toDecimal64(toFloat64(target_past_due_count) / toFloat64(target_open_count), 9), toDecimal64(0, 9)) AS target_past_due_ratio, if(previous_open_count > 0, toDecimal64(toFloat64(previous_past_due_count) / toFloat64(previous_open_count), 9), toDecimal64(0, 9)) AS previous_past_due_ratio FROM paired), metrics AS (SELECT *, dateDiff('day', previous_snapshot_date, target_snapshot_date) AS snapshot_gap_days, if(previous_past_due_ratio > 0, toNullable(toDecimal64((target_past_due_ratio - previous_past_due_ratio) / previous_past_due_ratio, 9)), NULL) AS relative_ratio_change, target_past_due_ratio - previous_past_due_ratio AS percentage_point_change, if(previous_past_due_ratio = 0 AND target_past_due_ratio > 0, true, false) AS zero_baseline_increase FROM ratios) SELECT country_code, target_snapshot_date, previous_snapshot_date, snapshot_gap_days, target_past_due_count, previous_past_due_count, target_open_count, previous_open_count, target_past_due_ratio, previous_past_due_ratio, relative_ratio_change, percentage_point_change, zero_baseline_increase, multiIf(zero_baseline_increase = 1, 'ZERO_BASELINE_INCREASE', isNotNull(relative_ratio_change) AND relative_ratio_change >= toDecimal64(:relative_change_threshold, 9), 'RELATIVE_INCREASE', 'NORMAL') AS trigger_type FROM metrics ORDER BY target_snapshot_date DESC"
+    :params {"country_code" "pastdue.country-history-query/country-code"
+             "range_start_date" "pastdue.country-history-query/range-start-date"
+             "range_end_date" "pastdue.country-history-query/range-end-date"
+             "relative_change_threshold" "pastdue.country-history-query/relative-change-threshold"}
+    :field_mapping
+    {"pastdue.country-trigger-event/country-code" "country_code"
+     "pastdue.country-trigger-event/target-snapshot-date" "target_snapshot_date"
+     "pastdue.country-trigger-event/previous-snapshot-date" "previous_snapshot_date"
+     "pastdue.country-trigger-event/snapshot-gap-days" "snapshot_gap_days"
+     "pastdue.country-trigger-event/target-past-due-count" "target_past_due_count"
+     "pastdue.country-trigger-event/previous-past-due-count" "previous_past_due_count"
+     "pastdue.country-trigger-event/target-open-count" "target_open_count"
+     "pastdue.country-trigger-event/previous-open-count" "previous_open_count"
+     "pastdue.country-trigger-event/target-past-due-ratio" "target_past_due_ratio"
+     "pastdue.country-trigger-event/previous-past-due-ratio" "previous_past_due_ratio"
+     "pastdue.country-trigger-event/relative-ratio-change" "relative_ratio_change"
+     "pastdue.country-trigger-event/percentage-point-change" "percentage_point_change"
+     "pastdue.country-trigger-event/zero-baseline-increase" "zero_baseline_increase"
+     "pastdue.country-trigger-event/trigger-type" "trigger_type"}}
+   :eql-params
+   {:limit {:type "integer" :field "_limit" :default 367 :description "Maximum comparison rows in the inclusive range"}
+    :offset {:type "integer" :field "_offset" :default 0 :description "Rows to skip"}
+    :order_by {:type "string" :field "_order_by" :description "Mapped result column"}
+    :sort_dir {:type "string" :field "_sort_dir" :description "ASC or DESC"}}}
+
+  {:id "pastdue_historical_country_trigger_events"
+   :name "Historical Country Trigger Events"
+   :description "Return only historical comparisons meeting the supplied unrounded relative threshold or the zero-baseline rule. Requires all four pastdue.country-history-query inputs in :entity: country-code, range-start-date, range-end-date, relative-change-threshold. Not an empty-entity root collection. Child ratio/type attributes are target-past-due-ratio and trigger-type."
+   :domain "PastDue"
+   :source-ref "eta-clickhouse-prod"
+   :input ["pastdue.country-history-query/country-code"
+           "pastdue.country-history-query/range-start-date"
+           "pastdue.country-history-query/range-end-date"
+           "pastdue.country-history-query/relative-change-threshold"]
+   :output [{:pastdue.country-history-query/trigger-events
+             ["pastdue.country-trigger-event/country-code"
+              "pastdue.country-trigger-event/target-snapshot-date"
+              "pastdue.country-trigger-event/previous-snapshot-date"
+              "pastdue.country-trigger-event/snapshot-gap-days"
+              "pastdue.country-trigger-event/target-past-due-count"
+              "pastdue.country-trigger-event/previous-past-due-count"
+              "pastdue.country-trigger-event/target-open-count"
+              "pastdue.country-trigger-event/previous-open-count"
+              "pastdue.country-trigger-event/target-past-due-ratio"
+              "pastdue.country-trigger-event/previous-past-due-ratio"
+              "pastdue.country-trigger-event/relative-ratio-change"
+              "pastdue.country-trigger-event/percentage-point-change"
+              "pastdue.country-trigger-event/zero-baseline-increase"
+              "pastdue.country-trigger-event/trigger-type"]}]
+   :source
+   {:type "sql" :result_type "list"
+    :query "WITH country_daily AS (SELECT snapshot_date, country_code, sum(toInt64(past_due_count)) AS past_due_count, sum(toInt64(total_open_count)) AS open_count FROM past_due.vendor_past_due_daily WHERE snapshot_date < toDate(now('America/Los_Angeles')) AND country_code = :country_code GROUP BY snapshot_date, country_code), sequenced AS (SELECT *, row_number() OVER (PARTITION BY country_code ORDER BY snapshot_date ASC) AS snapshot_seq FROM country_daily), previous_rows AS (SELECT country_code, snapshot_seq + 1 AS target_seq, snapshot_date AS previous_snapshot_date, past_due_count AS previous_past_due_count, open_count AS previous_open_count FROM sequenced), paired AS (SELECT c.country_code, c.snapshot_date AS target_snapshot_date, p.previous_snapshot_date, c.past_due_count AS target_past_due_count, p.previous_past_due_count, c.open_count AS target_open_count, p.previous_open_count FROM sequenced c INNER JOIN previous_rows p ON c.country_code = p.country_code AND c.snapshot_seq = p.target_seq WHERE toDate(:range_start_date) <= toDate(:range_end_date) AND dateDiff('day', toDate(:range_start_date), toDate(:range_end_date)) BETWEEN 0 AND 365 AND c.snapshot_date >= toDate(:range_start_date) AND c.snapshot_date <= toDate(:range_end_date) AND c.snapshot_date < toDate(now('America/Los_Angeles'))), ratios AS (SELECT *, if(target_open_count > 0, toDecimal64(toFloat64(target_past_due_count) / toFloat64(target_open_count), 9), toDecimal64(0, 9)) AS target_past_due_ratio, if(previous_open_count > 0, toDecimal64(toFloat64(previous_past_due_count) / toFloat64(previous_open_count), 9), toDecimal64(0, 9)) AS previous_past_due_ratio FROM paired), metrics AS (SELECT *, dateDiff('day', previous_snapshot_date, target_snapshot_date) AS snapshot_gap_days, if(previous_past_due_ratio > 0, toNullable(toDecimal64((target_past_due_ratio - previous_past_due_ratio) / previous_past_due_ratio, 9)), NULL) AS relative_ratio_change, target_past_due_ratio - previous_past_due_ratio AS percentage_point_change, if(previous_past_due_ratio = 0 AND target_past_due_ratio > 0, true, false) AS zero_baseline_increase FROM ratios) SELECT country_code, target_snapshot_date, previous_snapshot_date, snapshot_gap_days, target_past_due_count, previous_past_due_count, target_open_count, previous_open_count, target_past_due_ratio, previous_past_due_ratio, relative_ratio_change, percentage_point_change, zero_baseline_increase, multiIf(zero_baseline_increase = 1, 'ZERO_BASELINE_INCREASE', 'RELATIVE_INCREASE') AS trigger_type FROM metrics WHERE zero_baseline_increase = 1 OR (isNotNull(relative_ratio_change) AND relative_ratio_change >= toDecimal64(:relative_change_threshold, 9)) ORDER BY target_snapshot_date DESC"
+    :params {"country_code" "pastdue.country-history-query/country-code"
+             "range_start_date" "pastdue.country-history-query/range-start-date"
+             "range_end_date" "pastdue.country-history-query/range-end-date"
+             "relative_change_threshold" "pastdue.country-history-query/relative-change-threshold"}
+    :field_mapping
+    {"pastdue.country-trigger-event/country-code" "country_code"
+     "pastdue.country-trigger-event/target-snapshot-date" "target_snapshot_date"
+     "pastdue.country-trigger-event/previous-snapshot-date" "previous_snapshot_date"
+     "pastdue.country-trigger-event/snapshot-gap-days" "snapshot_gap_days"
+     "pastdue.country-trigger-event/target-past-due-count" "target_past_due_count"
+     "pastdue.country-trigger-event/previous-past-due-count" "previous_past_due_count"
+     "pastdue.country-trigger-event/target-open-count" "target_open_count"
+     "pastdue.country-trigger-event/previous-open-count" "previous_open_count"
+     "pastdue.country-trigger-event/target-past-due-ratio" "target_past_due_ratio"
+     "pastdue.country-trigger-event/previous-past-due-ratio" "previous_past_due_ratio"
+     "pastdue.country-trigger-event/relative-ratio-change" "relative_ratio_change"
+     "pastdue.country-trigger-event/percentage-point-change" "percentage_point_change"
+     "pastdue.country-trigger-event/zero-baseline-increase" "zero_baseline_increase"
+     "pastdue.country-trigger-event/trigger-type" "trigger_type"}}
+   :eql-params
+   {:limit {:type "integer" :field "_limit" :default 367 :description "Maximum trigger-event rows in the inclusive range"}
+    :offset {:type "integer" :field "_offset" :default 0 :description "Rows to skip"}
+    :order_by {:type "string" :field "_order_by" :description "Mapped result column"}
+    :sort_dir {:type "string" :field "_sort_dir" :description "ASC or DESC"}}}]}

@@ -1,0 +1,74 @@
+[
+  {
+    "id": "A1",
+    "capability": "eta-code-changes",
+    "eql": "[:find (pull ?e [{:pastdue.historical-vendor-contribution/eta-code-changes [*]} {:pastdue.historical-vendor-contribution/eta-source-changes [*]}]) :where [?e]]",
+    "expect": "reject"
+  },
+  {
+    "id": "A2",
+    "capability": "master-mappings",
+    "eql": "[:find (pull ?e [*]) :where [?e :pastdue.vendor-master-mapping/vendor-code \"X\"]]",
+    "expect": "reject"
+  },
+  {
+    "id": "A3",
+    "capability": "positive-vendor-contributors",
+    "eql": "[:find (pull ?e [:pastdue.vendor-contribution/vendor-name :pastdue.vendor-contribution/latest-past-due-count :pastdue.vendor-contribution/previous-past-due-count]) :where [?e :pastdue.vendor-contribution/vendor-code \"40979\"]]",
+    "expect": "reject"
+  },
+  {
+    "id": "A4",
+    "capability": "owner-current-risks",
+    "eql": "[:find (pull ?e [{:pastdue.vendor-contribution/current-owner-risks [*]} {:pastdue.vendor-contribution/current-high-risk-lines [*]}]) :where [?e]]",
+    "expect": "reject"
+  },
+  {
+    "id": "A5",
+    "capability": "eta-code-changes",
+    "eql": "[:find (pull ?e [{:pastdue.historical-vendor-contribution/eta-code-changes [*]} {:pastdue.historical-vendor-contribution/positive-vendor-drivers [*]}]) :where [?e]]",
+    "expect": "reject"
+  },
+  {
+    "id": "A6",
+    "capability": "master-mappings",
+    "eql": "[:find (pull ?e [{:pastdue.vendor-master-mapping/rows [*]}]) :where [?e]]",
+    "expect": "reject"
+  },
+  {
+    "id": "A7",
+    "capability": "positive-vendor-contributors",
+    "eql": "[:find (pull ?e [:pastdue.vendor-contribution/vendor-name :pastdue.vendor-contribution/latest-past-due-ratio :pastdue.vendor-contribution/previous-past-due-ratio]) :where [?e :pastdue.vendor-contribution/country-code \"CA\"]]",
+    "expect": "reject"
+  },
+  {
+    "id": "A8",
+    "capability": "eta-source-changes",
+    "eql": "[:find (pull ?e [{:pastdue.historical-vendor-contribution/eta-code-changes [*]} {:pastdue.historical-vendor-contribution/eta-source-changes [*]} {:pastdue.historical-vendor-contribution/vendor-changes [*]}]) :where [?e]]",
+    "expect": "reject"
+  },
+  {
+    "id": "A9",
+    "capability": "current-high-risk-lines",
+    "eql": "[:find (pull ?e [{:pastdue.vendor-contribution/current-high-risk-lines [*]} {:pastdue.vendor-contribution/current-owner-risks [*]}]) :where [?e :pastdue.vendor-contribution/vendor-code \"V\"]]",
+    "expect": "reject"
+  },
+  {
+    "id": "A10",
+    "capability": "notification-recipients",
+    "eql": "[:find (pull ?e [{:pastdue.vendor-contribution/notification-recipients [*]} {:pastdue.vendor-contribution/master-mappings [*]}]) :where [?e]]",
+    "expect": "reject"
+  },
+  {
+    "id": "A11",
+    "capability": "master-mappings",
+    "eql": "[:find (pull ?e [{:pastdue.vendor-contribution/master-mappings [*]}]) :where [?e :pastdue.vendor-contribution/country-code \"CA\"] [?e :pastdue.vendor-contribution/vendor-code \"V1\"]]",
+    "expect": "allow"
+  },
+  {
+    "id": "A12",
+    "capability": "eta-code-changes",
+    "eql": "[:find (pull ?e [{:pastdue.historical-vendor-contribution/eta-code-changes [*]}]) :where [?e :pastdue.historical-vendor-contribution/country-code \"CA\"]]",
+    "expect": "allow"
+  }
+]

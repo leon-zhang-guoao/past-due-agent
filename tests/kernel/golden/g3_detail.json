@@ -1,0 +1,12 @@
+{
+  "id": "G3",
+  "ask": "Vendor X 的 detail / 每一行 PO 明细",
+  "context": {
+    "countries": ["US"],
+    "vendors": ["X"]
+  },
+  "expect": {
+    "must_include_capabilities": ["current-high-risk-lines"],
+    "forbid_eql_substrings": ["current-owner-risks [*]} {:pastdue.vendor-contribution/current-high-risk-lines"]
+  }
+}

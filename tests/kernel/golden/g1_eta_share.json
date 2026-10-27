@@ -1,0 +1,15 @@
+{
+  "id": "G1",
+  "ask": "CA Top-10 Vendor 的 ETA Code 占比和构成分别是什么",
+  "context": {
+    "countries": ["CA"],
+    "vendors": ["V1", "V2", "V3"],
+    "target-snapshot-date": "2026-10-18",
+    "previous-snapshot-date": "2026-10-17"
+  },
+  "expect": {
+    "must_include_capabilities": ["eta-code-changes"],
+    "forbid_capabilities": ["positive-vendor-drivers"],
+    "forbid_eql_substrings": ["eta-code-changes [*]} {:pastdue.historical-vendor-contribution/eta-source-changes"]
+  }
+}

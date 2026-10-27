@@ -1,0 +1,86 @@
+{:namespaces
+ {"pastdue.notification-recipient"
+  {:label "PastDue Notification Recipient"
+   :domain "PastDue"
+   :description "Governed contacts used only to display recommended To and CC recipients; this chart does not send email."}}
+ :attributes
+ {:pastdue.notification-recipient/country-code
+  {:type :string :identity? true :label "Country Code" :description "Country scope." :format :code}
+  :pastdue.notification-recipient/vendor-code
+  {:type :integer :identity? true :label "Vendor Code" :description "Vendor code; zero identifies a country-wide contact." :format :id}
+  :pastdue.notification-recipient/recipient-type
+  {:type :string :identity? true :label "Recipient Type" :description "VENDOR, EMT, or WAREHOUSE."
+   :enum {"VENDOR" "Vendor" "EMT" "EMT" "WAREHOUSE" "Warehouse"} :format :code}
+  :pastdue.notification-recipient/email
+  {:type :string :identity? true :label "Email" :description "Active email address for display only; never used by this bundle to send mail." :format :text :sensitivity :pii}
+  :pastdue.notification-recipient/contact-name
+  {:type :string :label "Contact Name" :description "Optional display name." :format :text :nullable? true :sensitivity :pii}
+  :pastdue.notification-recipient/is-active
+  {:type :boolean :label "Is Active" :description "Whether the contact is eligible for display."}
+  :pastdue.notification-recipient/source-system
+  {:type :string :label "Source System" :description "Approved contact source; must not contain credentials." :format :text}
+  :pastdue.notification-recipient/contact-role-hint
+  {:type :string :label "Contact Role Hint" :description "Content-derived role classification used to rank extracted contact candidates."
+   :enum {"VENDOR_CONTACT" "Vendor contact" "INTERNAL_OR_CC" "Internal or CC" "WAREHOUSE_CONTEXT" "Warehouse context" "UNKNOWN" "Unknown"} :format :code}
+  :pastdue.notification-recipient/contact-priority-score
+  {:type :decimal :label "Contact Priority Score" :description "Deterministic extraction score; higher values are preferred candidates." :format :number}
+  :pastdue.notification-recipient/is-internal-candidate
+  {:type :boolean :label "Internal Candidate" :description "Whether the email domain is configured as an internal domain."}
+  :pastdue.notification-recipient/is-recommended
+  {:type :boolean :label "Recommended Contact" :description "Whether the import rules recommend this candidate for notification routing."}
+  :pastdue.notification-recipient/selection-reason
+  {:type :string :label "Selection Reason" :description "Non-sensitive extraction and ranking reasons." :format :text}
+  :pastdue.notification-recipient/evidence-text
+  {:type :string :label "Evidence Text" :description "Redacted non-sensitive context around the extracted email; credentials and URLs are removed." :format :text}
+  :pastdue.notification-recipient/updated-at-utc
+  {:type :datetime :label "Updated At PST" :description "Last update time in PST." :format :datetime}}
+ :resolvers
+ [{:id "pastdue_notification_recipients_by_vendor"
+   :name "Notification Recipients by Country, Vendor and Type"
+   :description "Returns active, deduplicated contacts for Vendor or country-wide EMT/Warehouse routing. Display only; no mail action."
+   :domain "PastDue"
+   :source-ref "eta-clickhouse-prod"
+   :input ["pastdue.vendor-contribution/country-code"
+           "pastdue.vendor-contribution/vendor-code"
+           "pastdue.notification-recipient/recipient-type"]
+   :output [{:pastdue.vendor-contribution/notification-recipients
+             ["pastdue.notification-recipient/country-code"
+              "pastdue.notification-recipient/vendor-code"
+              "pastdue.notification-recipient/recipient-type"
+              "pastdue.notification-recipient/email"
+              "pastdue.notification-recipient/contact-name"
+              "pastdue.notification-recipient/is-active"
+              "pastdue.notification-recipient/source-system"
+              "pastdue.notification-recipient/contact-role-hint"
+              "pastdue.notification-recipient/contact-priority-score"
+              "pastdue.notification-recipient/is-internal-candidate"
+              "pastdue.notification-recipient/is-recommended"
+              "pastdue.notification-recipient/selection-reason"
+              "pastdue.notification-recipient/evidence-text"
+              "pastdue.notification-recipient/updated-at-utc"]}]
+   :source
+   {:type "sql" :result_type "list"
+    :query "SELECT country_code, toInt64(vendor_code) AS vendor_code, upper(trim(recipient_type)) AS recipient_type, lower(trim(email)) AS email, nullIf(trim(contact_name), '') AS contact_name, if(toInt64(is_active) = 1, true, false) AS is_active, source_system, contact_role_hint, toDecimal64(toFloat64(contact_priority_score), 9) AS contact_priority_score, if(toInt64(is_internal_candidate) = 1, true, false) AS is_internal_candidate, if(toInt64(is_recommended) = 1, true, false) AS is_recommended, selection_reason, evidence_text, updated_at_utc FROM past_due.vendor_eta_notification_contact WHERE country_code = :country_code AND upper(trim(recipient_type)) = upper(trim(:recipient_type)) AND toInt64(is_active) = 1 AND ((upper(trim(recipient_type)) = 'VENDOR' AND toInt64(vendor_code) = :vendor_code) OR (upper(trim(recipient_type)) IN ('EMT', 'WAREHOUSE') AND toInt64(vendor_code) = 0)) AND notEmpty(trim(email)) GROUP BY country_code, vendor_code, recipient_type, email, contact_name, is_active, source_system, contact_role_hint, contact_priority_score, is_internal_candidate, is_recommended, selection_reason, evidence_text, updated_at_utc"
+    :params {"country_code" "pastdue.vendor-contribution/country-code"
+             "vendor_code" "pastdue.vendor-contribution/vendor-code"
+             "recipient_type" "pastdue.notification-recipient/recipient-type"}
+    :field_mapping
+    {"pastdue.notification-recipient/country-code" "country_code"
+     "pastdue.notification-recipient/vendor-code" "vendor_code"
+     "pastdue.notification-recipient/recipient-type" "recipient_type"
+     "pastdue.notification-recipient/email" "email"
+     "pastdue.notification-recipient/contact-name" "contact_name"
+     "pastdue.notification-recipient/is-active" "is_active"
+     "pastdue.notification-recipient/source-system" "source_system"
+     "pastdue.notification-recipient/contact-role-hint" "contact_role_hint"
+     "pastdue.notification-recipient/contact-priority-score" "contact_priority_score"
+     "pastdue.notification-recipient/is-internal-candidate" "is_internal_candidate"
+     "pastdue.notification-recipient/is-recommended" "is_recommended"
+     "pastdue.notification-recipient/selection-reason" "selection_reason"
+     "pastdue.notification-recipient/evidence-text" "evidence_text"
+     "pastdue.notification-recipient/updated-at-utc" "updated_at_utc"}}
+   :eql-params
+   {:limit {:type "integer" :field "_limit" :default 100 :description "Maximum active contacts"}
+    :offset {:type "integer" :field "_offset" :default 0 :description "Rows to skip"}
+    :order_by {:type "string" :field "_order_by" :description "Mapped result column"}
+    :sort_dir {:type "string" :field "_sort_dir" :description "ASC or DESC"}}}]}

@@ -1,0 +1,79 @@
+{:namespaces
+ {"pastdue.owner-current-risk"
+  {:label "PastDue Current Owner Risk"
+   :domain "PastDue"
+   :description "Current-state owner distribution for high-risk or past-due PO lines; not a historical causal attribution."}}
+
+ :attributes
+ {:pastdue.owner-current-risk/country-code
+  {:type :string :identity? true :label "Country Code"
+   :description "Country component of the owner-risk identity." :format :code}
+  :pastdue.owner-current-risk/vendor-code
+  {:type :integer :identity? true :label "Vendor Code"
+   :description "Vendor component of the owner-risk identity." :format :id}
+  :pastdue.owner-current-risk/owner-role
+  {:type :string :identity? true :label "Owner Role"
+   :description "Current responsibility role: BUYER, PRIMARY, or MANAGER."
+   :enum {"BUYER" "Buyer" "PRIMARY" "Primary" "MANAGER" "Manager"} :format :code}
+  :pastdue.owner-current-risk/owner-display
+  {:type :string :identity? true :label "Owner"
+   :description "Current owner display value; blank and null values are normalized to UNASSIGNED."
+   :synonyms ["负责人" "owner"] :format :text :sensitivity :pii}
+  :pastdue.owner-current-risk/current-risk-line-count
+  {:type :integer :label "Current Risk Line Count"
+   :description "Distinct current PO lines where risk is HIGH_RISK or the line is past due for this owner."
+   :unit "PO lines" :format :number}
+  :pastdue.owner-current-risk/current-high-risk-line-count
+  {:type :integer :label "Current High-Risk Line Count"
+   :description "Distinct current PO lines whose risk level is HIGH_RISK for this owner."
+   :unit "PO lines" :format :number}
+  :pastdue.owner-current-risk/current-past-due-line-count
+  {:type :integer :label "Current Past-Due Line Count"
+   :description "Distinct current PO lines whose is_pastdue flag equals 1 for this owner."
+   :unit "PO lines" :format :number}
+  :pastdue.owner-current-risk/max-past-due-days
+  {:type :integer :label "Maximum Past-Due Days"
+   :description "Maximum current past-due days among this owner's matching lines."
+   :unit "days" :format :number :nullable? true}
+  :pastdue.owner-current-risk/queried-at-utc
+  {:type :datetime :label "Queried At PST"
+   :description "PST time at which the current-state owner facts were queried." :format :datetime}}
+
+ :resolvers
+ [{:id "pastdue_current_owner_risks_by_vendor"
+   :name "Current Owner Risks by Vendor"
+   :description "Current Buyer, Primary and Manager risk distribution for one country and vendor; PO-line identity is counted distinctly."
+   :domain "PastDue"
+   :source-ref "eta-clickhouse-prod"
+   :input ["pastdue.vendor-contribution/country-code"
+           "pastdue.vendor-contribution/vendor-code"]
+   :output [{:pastdue.vendor-contribution/current-owner-risks
+             ["pastdue.owner-current-risk/country-code"
+              "pastdue.owner-current-risk/vendor-code"
+              "pastdue.owner-current-risk/owner-role"
+              "pastdue.owner-current-risk/owner-display"
+              "pastdue.owner-current-risk/current-risk-line-count"
+              "pastdue.owner-current-risk/current-high-risk-line-count"
+              "pastdue.owner-current-risk/current-past-due-line-count"
+              "pastdue.owner-current-risk/max-past-due-days"
+              "pastdue.owner-current-risk/queried-at-utc"]}]
+   :source
+   {:type "sql" :result_type "list"
+    :query "WITH risk_rows AS (SELECT country_code, toInt64(from_acct_no) AS vendor_code, order_type, order_no, order_line_no, if(empty(trim(BOTH ' ' FROM ifNull(buyer_email, ''))), 'UNASSIGNED', trim(BOTH ' ' FROM buyer_email)) AS buyer_owner, if(empty(trim(BOTH ' ' FROM ifNull(master_primary, ''))), 'UNASSIGNED', trim(BOTH ' ' FROM master_primary)) AS primary_owner, if(empty(trim(BOTH ' ' FROM ifNull(master_manager, ''))), 'UNASSIGNED', trim(BOTH ' ' FROM master_manager)) AS manager_owner, risk_level, toInt64(is_pastdue) AS is_pastdue, toInt64OrZero(toString(pastdue_days)) AS pastdue_days FROM past_due.past_due_detail_view WHERE country_code = :country_code AND toInt64(from_acct_no) = :vendor_code AND (risk_level = 'HIGH_RISK' OR toInt64(is_pastdue) = 1)), owners AS (SELECT country_code, vendor_code, order_type, order_no, order_line_no, 'BUYER' AS owner_role, buyer_owner AS owner_display, risk_level, is_pastdue, pastdue_days FROM risk_rows UNION ALL SELECT country_code, vendor_code, order_type, order_no, order_line_no, 'PRIMARY' AS owner_role, primary_owner AS owner_display, risk_level, is_pastdue, pastdue_days FROM risk_rows UNION ALL SELECT country_code, vendor_code, order_type, order_no, order_line_no, 'MANAGER' AS owner_role, manager_owner AS owner_display, risk_level, is_pastdue, pastdue_days FROM risk_rows) SELECT country_code, vendor_code, owner_role, owner_display, toInt64(countDistinct(tuple(order_type, order_no, order_line_no))) AS current_risk_line_count, toInt64(countDistinctIf(tuple(order_type, order_no, order_line_no), risk_level = 'HIGH_RISK')) AS current_high_risk_line_count, toInt64(countDistinctIf(tuple(order_type, order_no, order_line_no), is_pastdue = 1)) AS current_past_due_line_count, maxIf(pastdue_days, is_pastdue = 1) AS max_past_due_days, now('America/Los_Angeles') AS queried_at_utc FROM owners GROUP BY country_code, vendor_code, owner_role, owner_display"
+    :params {"country_code" "pastdue.vendor-contribution/country-code"
+             "vendor_code" "pastdue.vendor-contribution/vendor-code"}
+    :field_mapping
+    {"pastdue.owner-current-risk/country-code" "country_code"
+     "pastdue.owner-current-risk/vendor-code" "vendor_code"
+     "pastdue.owner-current-risk/owner-role" "owner_role"
+     "pastdue.owner-current-risk/owner-display" "owner_display"
+     "pastdue.owner-current-risk/current-risk-line-count" "current_risk_line_count"
+     "pastdue.owner-current-risk/current-high-risk-line-count" "current_high_risk_line_count"
+     "pastdue.owner-current-risk/current-past-due-line-count" "current_past_due_line_count"
+     "pastdue.owner-current-risk/max-past-due-days" "max_past_due_days"
+     "pastdue.owner-current-risk/queried-at-utc" "queried_at_utc"}}
+   :eql-params
+   {:limit {:type "integer" :field "_limit" :default 100 :description "Maximum owner rows"}
+    :offset {:type "integer" :field "_offset" :default 0 :description "Rows to skip"}
+    :order_by {:type "string" :field "_order_by" :description "Mapped result column"}
+    :sort_dir {:type "string" :field "_sort_dir" :description "ASC or DESC"}}}]}

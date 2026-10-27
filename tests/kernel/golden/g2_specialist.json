@@ -1,0 +1,12 @@
+{
+  "id": "G2",
+  "ask": "这些 Top Vendor 的 ETA Specialist / ETAD 专员是谁",
+  "context": {
+    "countries": ["CA"],
+    "vendors": ["A", "B"]
+  },
+  "expect": {
+    "must_include_capabilities": ["master-mappings"],
+    "forbid_eql_substrings": [":pastdue.vendor-master-mapping/"]
+  }
+}

@@ -1,0 +1,28 @@
+{:version "3.0.0"
+  :code-normalization :trim-uppercase
+  :source-match :trim-case-insensitive-exact
+  :autous-canonical "AutoUS"
+  :autous-aliases []
+  :requires-joint-facts-for-us true
+  :unknown-code-action :retain-without-inventing-rule
+  :interpretation :risk-not-proven-cause
+  :rules [{:code "DD"
+     :meaning "Warehouse 收货不及时"
+     :verification "核查实际到货与收货登记进度"} {:code "SH"
+     :meaning "未及时送达／收货"
+     :verification "核查运输送达及收货进度，不单独归咎其中一方"} {:code "SC"
+     :meaning "Vendor 预计发货时间不准确"
+     :verification "核查承诺日期与更新情况"} {:code "NR"
+     :meaning "Vendor 已收到订单，但未提供预计发货时间"
+     :verification "核查预计发货时间补充进度"} {:code "RQ"
+     :meaning "未收到 Vendor 确认信息 ACK"
+     :verification "核查订单接收与 ACK 反馈"} {:code "US"
+     :source-condition "AUTOUS"
+     :meaning "Vendor 提供的 ETA 已 past due"
+     :verification "核查原 ETA 有效性与下一次更新"} {:code "US"
+     :source-condition "OTHER_KNOWN"
+     :meaning "Vendor 仅提供粗略时间 rough date"
+     :verification "核查更明确的交期"} {:code "US"
+     :source-condition "UNKNOWN"
+     :meaning "来源未知，无法区分具体业务含义"
+     :verification "先确认来源，不按其他来源解释"}]}

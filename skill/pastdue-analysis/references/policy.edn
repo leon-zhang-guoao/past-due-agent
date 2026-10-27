@@ -1,0 +1,54 @@
+{:policy-version "3.0.0"
+  :business-timezone "PST"
+  :business-timezone-iana "America/Los_Angeles"
+  :monitor-country-allowlist ["US" "CA"]
+  :atlas-country-scope :all-actual-authorized-countries
+  :snapshot-calendar {:default "WEEKDAYS"
+    :weekdays [1 2 3 4 5]
+    :holidays nil
+    :completed-before-current-pst-date true
+    :stale-after-workdays 2}
+  :country-trigger {:relative-ratio-change-gte 0.1
+    :minimum-percentage-point-change nil
+    :use-unrounded-counts true}
+  :vendor-selection {:mode "POSITIVE_TOP_N"
+    :maximum-vendors 10
+    :tie-breaker :vendor-code-ascending
+    :coverage-reference 0.8
+    :stop-at-coverage false}
+  :eta-selection {:maximum-values 5
+    :include-other true
+    :sort [:absolute-count-change-desc :target-count-desc :eta-value-asc]
+    :require-complete true
+    :normalize-empty-as "UNKNOWN"}
+  :historical-review {:maximum-range-calendar-days 366
+    :default-deep-dive :latest-trigger-per-country
+    :maximum-deep-dives-per-country 5
+    :previous-may-precede-range-start true
+    :event-list-only-supported true}
+  :test-mode {:entry "开始测试"
+    :force-drilldown true
+    :preserve-real-business-status true
+    :include-optional-modules-by-default false}
+  :execution {:concurrency-guidance 2
+    :maximum-corrected-retries 1
+    :recursive-fanout-fallback false
+    :host-hard-gate-installed false}
+  :po-line-limits {:maximum-per-vendor 5
+    :maximum-per-country 20
+    :allocation :one-per-vendor-then-rank-fill}
+  :current-context-order [:buyer :primary :manager]
+  :default-optional-modules []
+  :notification-routing {:mode :display-only
+    :send-enabled false
+    :contact-source :atlas
+    :rules [{:eta-codes ["SC" "NR" "US" "RQ"]
+       :to :vendor
+       :cc [:emt :buyer]} {:eta-codes ["SH" "LS"]
+       :to :buyer
+       :cc []} {:eta-codes ["DD"]
+       :to :warehouse
+       :cc [:buyer]}]}
+  :metric-version "3.0.0"
+  :selection-version "3.0.0"
+  :calendar-version "weekdays-v1-no-holidays"}

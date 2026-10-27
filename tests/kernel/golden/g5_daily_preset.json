@@ -1,0 +1,28 @@
+{
+  "id": "G5",
+  "ask": "latest daily monitor US CA",
+  "intent_ir": {
+    "intents": [
+      {"id": "country-health", "priority": 0},
+      {"id": "vendor-drivers", "priority": 1},
+      {"id": "eta-decomposition", "priority": 2}
+    ],
+    "scope": {
+      "countries": ["US", "CA"],
+      "vendors": ["U1", "C1"],
+      "target-snapshot-date": "2026-10-18",
+      "previous-snapshot-date": "2026-10-17"
+    }
+  },
+  "context": {
+    "countries": ["US", "CA"],
+    "vendors": ["U1", "C1"],
+    "target-snapshot-date": "2026-10-18",
+    "previous-snapshot-date": "2026-10-17"
+  },
+  "expect": {
+    "capabilities_ordered_prefix": ["country-monitor-all", "positive-vendor-contributors", "eta-code-changes"],
+    "must_include_capabilities": ["eta-source-changes"],
+    "forbid_eql_substrings": ["current-owner-risks [*]} {:pastdue.vendor-contribution/current-high-risk-lines"]
+  }
+}

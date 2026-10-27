@@ -1,0 +1,11 @@
+{
+  "id": "G9",
+  "ask": "CA 实时 past due vendor 排名 / 现在的状况",
+  "context": {
+    "countries": ["CA"]
+  },
+  "expect": {
+    "must_include_capabilities": ["current-vendor-past-due-ranks"],
+    "forbid_eql_substrings": [":pastdue.detail_view"]
+  }
+}

@@ -1,0 +1,14 @@
+interface:
+  display_name: "PastDue Analysis"
+  short_description: "Weekday PastDue monitoring, testing and governed analysis"
+  brand_color: "#B45309"
+  default_prompt: "Use $pastdue-analysis to run the PST US/CA weekday monitor, 开始测试, a historical review, or a current Vendor/ETA analysis."
+
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "open-altlas"
+      description: "Open Atlas graph access to governed PastDue ClickHouse facts"
+
+policy:
+  allow_implicit_invocation: true

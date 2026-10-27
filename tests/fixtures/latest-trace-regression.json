@@ -1,0 +1,23 @@
+{
+  "kind": "sanitized-regression-not-production-facts",
+  "country": "CA",
+  "selected_vendor_count": 10,
+  "eta_requests_observed": 4,
+  "expected_vendor_dimensions": 20,
+  "scope_key": ["CA", 40586, "code", "2026-10-26", "2026-10-23", "WEEKDAYS", "POSITIVE_TOP_10", "v3", "graph-v3"],
+  "conflict_classification": "CONFLICTING_FACTS",
+  "expected_final_status": "FAIL",
+  "prohibited_actions": [
+    "reassign_to_vendor_31420",
+    "sum_conflicting_results",
+    "select_first_latest_or_largest"
+  ],
+  "requests": [
+    {"vendor": 40586, "dimension": "code", "previous_total": 289, "target_total": 419},
+    {"vendor": 40586, "dimension": "source", "previous_total": 289, "target_total": 419},
+    {"vendor": 40586, "dimension": "code", "previous_total": 35, "target_total": 158},
+    {"vendor": 40586, "dimension": "source", "previous_total": 35, "target_total": 158}
+  ],
+  "required_behavior": "Never assign later results to Vendor 31420 based on totals. Quarantine identity inconsistency; incomplete work is not COMPLETE.",
+  "root_cause": "UNCONFIRMED_WITHOUT_SERVER_EVIDENCE"
+}

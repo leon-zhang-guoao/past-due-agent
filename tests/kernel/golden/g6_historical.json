@@ -1,0 +1,10 @@
+{
+  "id": "G6",
+  "ask": "过去一周有触发的时候嘛",
+  "context": {
+    "countries": ["US", "CA"]
+  },
+  "expect": {
+    "must_include_capabilities": ["historical-range"]
+  }
+}

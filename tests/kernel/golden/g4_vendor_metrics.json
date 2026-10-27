@@ -1,0 +1,12 @@
+{
+  "id": "G4",
+  "ask": "这个 vendor past due 多少 / snapshot counts 汇总",
+  "context": {
+    "countries": ["CA"],
+    "vendors": ["40979"]
+  },
+  "expect": {
+    "must_include_capabilities": ["positive-vendor-contributors"],
+    "forbid_eql_substrings": [":pastdue.vendor-contribution/latest-past-due-count"]
+  }
+}

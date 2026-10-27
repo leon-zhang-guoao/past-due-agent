@@ -1,0 +1,188 @@
+{:namespaces
+ {"pastdue.country-monitor"
+  {:label "PastDue Country Monitor"
+   :domain "PastDue"
+   :description "Latest-versus-previous completed PST snapshot metrics by country."}}
+
+ :attributes
+ {:pastdue.country-monitor/country-code
+  {:type :string :identity? true :label "Country Code"
+   :description "Country independently monitored in the latest two completed snapshots."
+   :synonyms ["国家" "国家代码" "country"] :format :code}
+
+  :pastdue.country-monitor/latest-snapshot-date
+  {:type :date :label "Latest Snapshot Date"
+   :description "Most recent snapshot date strictly earlier than the current PST date."
+   :synonyms ["最新完整快照日期" "latest completed snapshot"] :format :date}
+
+  :pastdue.country-monitor/previous-snapshot-date
+  {:type :date :label "Previous Snapshot Date"
+   :description "Most recent available completed snapshot before the latest snapshot for this country."
+   :synonyms ["上一快照日期" "previous completed snapshot"] :format :date :nullable? true}
+
+  :pastdue.country-monitor/snapshot-gap-days
+  {:type :integer :label "Snapshot Gap Days"
+   :description "Calendar-day gap between the latest and previous available snapshot dates."
+   :synonyms ["快照间隔天数"] :unit "days" :format :number :nullable? true}
+
+  :pastdue.country-monitor/latest-snapshot-age-days
+  {:type :integer :label "Latest Snapshot Age Days"
+   :description "PST calendar days from the latest completed snapshot date to the current PST date."
+   :synonyms ["最新快照陈旧天数"] :unit "days" :format :number}
+
+  :pastdue.country-monitor/latest-past-due-count
+  {:type :integer :label "Latest Past-Due Count"
+   :description "Past-due open PO-line count in the latest completed snapshot."
+   :synonyms ["最新逾期行数"] :unit "PO lines" :format :number}
+
+  :pastdue.country-monitor/previous-past-due-count
+  {:type :integer :label "Previous Past-Due Count"
+   :description "Past-due open PO-line count in the previous completed snapshot."
+   :synonyms ["上期逾期行数"] :unit "PO lines" :format :number :nullable? true}
+
+  :pastdue.country-monitor/past-due-count-change
+  {:type :integer :label "Past-Due Count Change"
+   :description "Latest minus previous past-due PO-line count."
+   :synonyms ["逾期行数变化"] :unit "PO lines" :format :number :nullable? true}
+
+  :pastdue.country-monitor/latest-open-count
+  {:type :integer :label "Latest Open Count"
+   :description "All open PO-line count used as the latest country denominator."
+   :synonyms ["最新开放行数" "latest denominator"] :unit "PO lines" :format :number}
+
+  :pastdue.country-monitor/previous-open-count
+  {:type :integer :label "Previous Open Count"
+   :description "All open PO-line count used as the previous country denominator."
+   :synonyms ["上期开放行数" "previous denominator"] :unit "PO lines" :format :number :nullable? true}
+
+  :pastdue.country-monitor/open-count-change
+  {:type :integer :label "Open Count Change"
+   :description "Latest minus previous open PO-line count."
+   :synonyms ["开放行数变化"] :unit "PO lines" :format :number :nullable? true}
+
+  :pastdue.country-monitor/latest-past-due-ratio
+  {:type :decimal :label "Latest Past-Due Ratio"
+   :description "Latest country past-due count divided by latest country open count, calculated without presentation rounding."
+   :synonyms ["最新逾期率" "latest past due ratio"] :unit "%" :format :percent}
+
+  :pastdue.country-monitor/previous-past-due-ratio
+  {:type :decimal :label "Previous Past-Due Ratio"
+   :description "Previous country past-due count divided by previous country open count, calculated without presentation rounding."
+   :synonyms ["上期逾期率" "previous past due ratio"] :unit "%" :format :percent :nullable? true}
+
+  :pastdue.country-monitor/relative-ratio-change
+  {:type :decimal :label "Relative Ratio Change"
+   :description "Relative change in country past-due ratio; null when the previous ratio is zero or unavailable."
+   :synonyms ["逾期率相对变化" "relative growth"] :unit "%" :format :percent :nullable? true}
+
+  :pastdue.country-monitor/percentage-point-change
+  {:type :decimal :label "Percentage-Point Change"
+   :description "Latest past-due ratio minus previous past-due ratio; displayed for context but not used as a trigger threshold."
+   :synonyms ["百分点变化" "ratio point change"] :unit "percentage points" :format :number :nullable? true}
+
+  :pastdue.country-monitor/zero-baseline-increase
+  {:type :boolean :label "Zero Baseline Increase"
+   :description "True when the previous ratio is zero and the latest ratio is greater than zero."
+   :synonyms ["零基线上升"]}
+
+  :pastdue.country-monitor/has-comparable-snapshots
+  {:type :boolean :label "Has Comparable Snapshots"
+   :description "True when at least two completed snapshots exist for the country."
+   :synonyms ["存在两个可比较快照"]}}
+
+ :resolvers
+ [{:id "pastdue_country_monitor_all"
+   :name "All Country Monitors"
+   :description "Return latest-versus-previous completed PST snapshot facts for every country present in the daily table."
+   :domain "PastDue"
+   :source-ref "eta-clickhouse-prod"
+   :input []
+   :output [{:pastdue.country-monitor/all
+             ["pastdue.country-monitor/country-code"
+              "pastdue.country-monitor/latest-snapshot-date"
+              "pastdue.country-monitor/previous-snapshot-date"
+              "pastdue.country-monitor/snapshot-gap-days"
+              "pastdue.country-monitor/latest-snapshot-age-days"
+              "pastdue.country-monitor/latest-past-due-count"
+              "pastdue.country-monitor/previous-past-due-count"
+              "pastdue.country-monitor/past-due-count-change"
+              "pastdue.country-monitor/latest-open-count"
+              "pastdue.country-monitor/previous-open-count"
+              "pastdue.country-monitor/open-count-change"
+              "pastdue.country-monitor/latest-past-due-ratio"
+              "pastdue.country-monitor/previous-past-due-ratio"
+              "pastdue.country-monitor/relative-ratio-change"
+              "pastdue.country-monitor/percentage-point-change"
+              "pastdue.country-monitor/zero-baseline-increase"
+              "pastdue.country-monitor/has-comparable-snapshots"]}]
+   :source
+   {:type "sql" :result_type "list"
+    :query "WITH country_daily AS (SELECT snapshot_date, country_code, sum(toInt64(past_due_count)) AS past_due_count, sum(toInt64(total_open_count)) AS open_count FROM past_due.vendor_past_due_daily WHERE snapshot_date < toDate(now('America/Los_Angeles')) GROUP BY snapshot_date, country_code), ranked AS (SELECT *, row_number() OVER (PARTITION BY country_code ORDER BY snapshot_date DESC) AS snapshot_rank FROM country_daily), paired AS (SELECT country_code, countIf(snapshot_rank <= 2) AS snapshot_count, maxIf(snapshot_date, snapshot_rank = 1) AS latest_snapshot_date, maxIf(snapshot_date, snapshot_rank = 2) AS previous_snapshot_date_raw, sumIf(past_due_count, snapshot_rank = 1) AS latest_past_due_count, sumIf(past_due_count, snapshot_rank = 2) AS previous_past_due_count_raw, sumIf(open_count, snapshot_rank = 1) AS latest_open_count, sumIf(open_count, snapshot_rank = 2) AS previous_open_count_raw FROM ranked WHERE snapshot_rank <= 2 GROUP BY country_code), metrics AS (SELECT country_code, latest_snapshot_date, if(snapshot_count >= 2, toNullable(previous_snapshot_date_raw), NULL) AS previous_snapshot_date, if(snapshot_count >= 2, toNullable(dateDiff('day', previous_snapshot_date_raw, latest_snapshot_date)), NULL) AS snapshot_gap_days, dateDiff('day', latest_snapshot_date, toDate(now('America/Los_Angeles'))) AS latest_snapshot_age_days, latest_past_due_count, if(snapshot_count >= 2, toNullable(previous_past_due_count_raw), NULL) AS previous_past_due_count, if(snapshot_count >= 2, toNullable(latest_past_due_count - previous_past_due_count_raw), NULL) AS past_due_count_change, latest_open_count, if(snapshot_count >= 2, toNullable(previous_open_count_raw), NULL) AS previous_open_count, if(snapshot_count >= 2, toNullable(latest_open_count - previous_open_count_raw), NULL) AS open_count_change, if(latest_open_count > 0, toDecimal64(toFloat64(latest_past_due_count) / toFloat64(latest_open_count), 9), toDecimal64(0, 9)) AS latest_past_due_ratio, if(snapshot_count >= 2, toNullable(if(previous_open_count_raw > 0, toDecimal64(toFloat64(previous_past_due_count_raw) / toFloat64(previous_open_count_raw), 9), toDecimal64(0, 9))), NULL) AS previous_past_due_ratio FROM paired) SELECT country_code, latest_snapshot_date, previous_snapshot_date, snapshot_gap_days, latest_snapshot_age_days, latest_past_due_count, previous_past_due_count, past_due_count_change, latest_open_count, previous_open_count, open_count_change, latest_past_due_ratio, previous_past_due_ratio, if(isNotNull(previous_past_due_ratio) AND previous_past_due_ratio > 0, toNullable(toDecimal64((latest_past_due_ratio - previous_past_due_ratio) / previous_past_due_ratio, 9)), NULL) AS relative_ratio_change, if(isNotNull(previous_past_due_ratio), toNullable(latest_past_due_ratio - previous_past_due_ratio), NULL) AS percentage_point_change, if(isNotNull(previous_past_due_ratio) AND previous_past_due_ratio = 0 AND latest_past_due_ratio > 0, true, false) AS zero_baseline_increase, if(isNotNull(previous_snapshot_date), true, false) AS has_comparable_snapshots FROM metrics"
+    :field_mapping
+    {"pastdue.country-monitor/country-code" "country_code"
+     "pastdue.country-monitor/latest-snapshot-date" "latest_snapshot_date"
+     "pastdue.country-monitor/previous-snapshot-date" "previous_snapshot_date"
+     "pastdue.country-monitor/snapshot-gap-days" "snapshot_gap_days"
+     "pastdue.country-monitor/latest-snapshot-age-days" "latest_snapshot_age_days"
+     "pastdue.country-monitor/latest-past-due-count" "latest_past_due_count"
+     "pastdue.country-monitor/previous-past-due-count" "previous_past_due_count"
+     "pastdue.country-monitor/past-due-count-change" "past_due_count_change"
+     "pastdue.country-monitor/latest-open-count" "latest_open_count"
+     "pastdue.country-monitor/previous-open-count" "previous_open_count"
+     "pastdue.country-monitor/open-count-change" "open_count_change"
+     "pastdue.country-monitor/latest-past-due-ratio" "latest_past_due_ratio"
+     "pastdue.country-monitor/previous-past-due-ratio" "previous_past_due_ratio"
+     "pastdue.country-monitor/relative-ratio-change" "relative_ratio_change"
+     "pastdue.country-monitor/percentage-point-change" "percentage_point_change"
+     "pastdue.country-monitor/zero-baseline-increase" "zero_baseline_increase"
+     "pastdue.country-monitor/has-comparable-snapshots" "has_comparable_snapshots"}}
+   :eql-params
+   {:limit {:type "integer" :field "_limit" :default 100 :description "Maximum countries"}
+    :offset {:type "integer" :field "_offset" :default 0 :description "Rows to skip"}
+    :order_by {:type "string" :field "_order_by" :description "Mapped result column"}
+    :sort_dir {:type "string" :field "_sort_dir" :description "ASC or DESC"}}}
+
+  {:id "pastdue_country_monitor_by_country"
+   :name "Country Monitor by Country"
+   :description "Return latest-versus-previous completed PST snapshot facts for one country."
+   :domain "PastDue"
+   :source-ref "eta-clickhouse-prod"
+   :input ["pastdue.country-monitor/country-code"]
+   :output ["pastdue.country-monitor/latest-snapshot-date"
+            "pastdue.country-monitor/previous-snapshot-date"
+            "pastdue.country-monitor/snapshot-gap-days"
+            "pastdue.country-monitor/latest-snapshot-age-days"
+            "pastdue.country-monitor/latest-past-due-count"
+            "pastdue.country-monitor/previous-past-due-count"
+            "pastdue.country-monitor/past-due-count-change"
+            "pastdue.country-monitor/latest-open-count"
+            "pastdue.country-monitor/previous-open-count"
+            "pastdue.country-monitor/open-count-change"
+            "pastdue.country-monitor/latest-past-due-ratio"
+            "pastdue.country-monitor/previous-past-due-ratio"
+            "pastdue.country-monitor/relative-ratio-change"
+            "pastdue.country-monitor/percentage-point-change"
+            "pastdue.country-monitor/zero-baseline-increase"
+            "pastdue.country-monitor/has-comparable-snapshots"]
+   :source
+   {:type "sql" :result_type "single"
+    :query "WITH country_daily AS (SELECT snapshot_date, country_code, sum(toInt64(past_due_count)) AS past_due_count, sum(toInt64(total_open_count)) AS open_count FROM past_due.vendor_past_due_daily WHERE snapshot_date < toDate(now('America/Los_Angeles')) AND country_code = :country_code GROUP BY snapshot_date, country_code), ranked AS (SELECT *, row_number() OVER (PARTITION BY country_code ORDER BY snapshot_date DESC) AS snapshot_rank FROM country_daily), paired AS (SELECT country_code, countIf(snapshot_rank <= 2) AS snapshot_count, maxIf(snapshot_date, snapshot_rank = 1) AS latest_snapshot_date, maxIf(snapshot_date, snapshot_rank = 2) AS previous_snapshot_date_raw, sumIf(past_due_count, snapshot_rank = 1) AS latest_past_due_count, sumIf(past_due_count, snapshot_rank = 2) AS previous_past_due_count_raw, sumIf(open_count, snapshot_rank = 1) AS latest_open_count, sumIf(open_count, snapshot_rank = 2) AS previous_open_count_raw FROM ranked WHERE snapshot_rank <= 2 GROUP BY country_code), metrics AS (SELECT country_code, latest_snapshot_date, if(snapshot_count >= 2, toNullable(previous_snapshot_date_raw), NULL) AS previous_snapshot_date, if(snapshot_count >= 2, toNullable(dateDiff('day', previous_snapshot_date_raw, latest_snapshot_date)), NULL) AS snapshot_gap_days, dateDiff('day', latest_snapshot_date, toDate(now('America/Los_Angeles'))) AS latest_snapshot_age_days, latest_past_due_count, if(snapshot_count >= 2, toNullable(previous_past_due_count_raw), NULL) AS previous_past_due_count, if(snapshot_count >= 2, toNullable(latest_past_due_count - previous_past_due_count_raw), NULL) AS past_due_count_change, latest_open_count, if(snapshot_count >= 2, toNullable(previous_open_count_raw), NULL) AS previous_open_count, if(snapshot_count >= 2, toNullable(latest_open_count - previous_open_count_raw), NULL) AS open_count_change, if(latest_open_count > 0, toDecimal64(toFloat64(latest_past_due_count) / toFloat64(latest_open_count), 9), toDecimal64(0, 9)) AS latest_past_due_ratio, if(snapshot_count >= 2, toNullable(if(previous_open_count_raw > 0, toDecimal64(toFloat64(previous_past_due_count_raw) / toFloat64(previous_open_count_raw), 9), toDecimal64(0, 9))), NULL) AS previous_past_due_ratio FROM paired) SELECT country_code, latest_snapshot_date, previous_snapshot_date, snapshot_gap_days, latest_snapshot_age_days, latest_past_due_count, previous_past_due_count, past_due_count_change, latest_open_count, previous_open_count, open_count_change, latest_past_due_ratio, previous_past_due_ratio, if(isNotNull(previous_past_due_ratio) AND previous_past_due_ratio > 0, toNullable(toDecimal64((latest_past_due_ratio - previous_past_due_ratio) / previous_past_due_ratio, 9)), NULL) AS relative_ratio_change, if(isNotNull(previous_past_due_ratio), toNullable(latest_past_due_ratio - previous_past_due_ratio), NULL) AS percentage_point_change, if(isNotNull(previous_past_due_ratio) AND previous_past_due_ratio = 0 AND latest_past_due_ratio > 0, true, false) AS zero_baseline_increase, if(isNotNull(previous_snapshot_date), true, false) AS has_comparable_snapshots FROM metrics"
+    :params {"country_code" "pastdue.country-monitor/country-code"}
+    :field_mapping
+    {"pastdue.country-monitor/country-code" "country_code"
+     "pastdue.country-monitor/latest-snapshot-date" "latest_snapshot_date"
+     "pastdue.country-monitor/previous-snapshot-date" "previous_snapshot_date"
+     "pastdue.country-monitor/snapshot-gap-days" "snapshot_gap_days"
+     "pastdue.country-monitor/latest-snapshot-age-days" "latest_snapshot_age_days"
+     "pastdue.country-monitor/latest-past-due-count" "latest_past_due_count"
+     "pastdue.country-monitor/previous-past-due-count" "previous_past_due_count"
+     "pastdue.country-monitor/past-due-count-change" "past_due_count_change"
+     "pastdue.country-monitor/latest-open-count" "latest_open_count"
+     "pastdue.country-monitor/previous-open-count" "previous_open_count"
+     "pastdue.country-monitor/open-count-change" "open_count_change"
+     "pastdue.country-monitor/latest-past-due-ratio" "latest_past_due_ratio"
+     "pastdue.country-monitor/previous-past-due-ratio" "previous_past_due_ratio"
+     "pastdue.country-monitor/relative-ratio-change" "relative_ratio_change"
+     "pastdue.country-monitor/percentage-point-change" "percentage_point_change"
+     "pastdue.country-monitor/zero-baseline-increase" "zero_baseline_increase"
+     "pastdue.country-monitor/has-comparable-snapshots" "has_comparable_snapshots"}}}]}

@@ -1,0 +1,42 @@
+{:release-version "3.0.0"
+  :status "PENDING_LIVE_ACCEPTANCE"
+  :atlas-semantic-format "2.0.0"
+  :required-resolvers {"pastdue_v3_analysis_query_vendor_comparisons" [:pastdue.analysis-query/country-code :pastdue.analysis-query/target-snapshot-date :pastdue.analysis-query/previous-snapshot-date :pastdue.analysis-query/calendar-mode :pastdue.analysis-query/selection-mode :pastdue.analysis-query/top-n :pastdue.analysis-query/vendor-code]
+    "pastdue_v3_analysis_query_eta_code_changes" [:pastdue.analysis-query/country-code :pastdue.analysis-query/target-snapshot-date :pastdue.analysis-query/previous-snapshot-date :pastdue.analysis-query/calendar-mode :pastdue.analysis-query/selection-mode :pastdue.analysis-query/top-n :pastdue.analysis-query/vendor-code]
+    "pastdue_v3_analysis_query_eta_source_changes" [:pastdue.analysis-query/country-code :pastdue.analysis-query/target-snapshot-date :pastdue.analysis-query/previous-snapshot-date :pastdue.analysis-query/calendar-mode :pastdue.analysis-query/selection-mode :pastdue.analysis-query/top-n :pastdue.analysis-query/vendor-code]
+    "pastdue_v3_analysis_query_us_source_changes" [:pastdue.analysis-query/country-code :pastdue.analysis-query/target-snapshot-date :pastdue.analysis-query/previous-snapshot-date :pastdue.analysis-query/calendar-mode :pastdue.analysis-query/selection-mode :pastdue.analysis-query/top-n :pastdue.analysis-query/vendor-code]
+    "pastdue_v3_analysis_query_vendor_checks" [:pastdue.analysis-query/country-code :pastdue.analysis-query/target-snapshot-date :pastdue.analysis-query/previous-snapshot-date :pastdue.analysis-query/calendar-mode :pastdue.analysis-query/selection-mode :pastdue.analysis-query/top-n :pastdue.analysis-query/vendor-code]
+    "pastdue_v3_monitor_query_countries" [:pastdue.monitor-query/calendar-mode :pastdue.monitor-query/relative-change-threshold]
+    "pastdue_v3_history_query_comparisons" [:pastdue.history-query/country-code :pastdue.history-query/calendar-mode :pastdue.history-query/range-start-date :pastdue.history-query/range-end-date :pastdue.history-query/relative-change-threshold]
+    "pastdue_v3_history_query_trigger_events" [:pastdue.history-query/country-code :pastdue.history-query/calendar-mode :pastdue.history-query/range-start-date :pastdue.history-query/range-end-date :pastdue.history-query/relative-change-threshold]
+    "pastdue_v3_current_analysis_query_rows" [:pastdue.current-analysis-query/country-code :pastdue.current-analysis-query/grain :pastdue.current-analysis-query/vendor-code-filter :pastdue.current-analysis-query/department-type-filter :pastdue.current-analysis-query/master-primary-filter :pastdue.current-analysis-query/master-manager-filter :pastdue.current-analysis-query/denominator-scope]
+    "pastdue_v3_analysis_query_scope_status" [:pastdue.analysis-query/country-code :pastdue.analysis-query/target-snapshot-date :pastdue.analysis-query/previous-snapshot-date :pastdue.analysis-query/calendar-mode :pastdue.analysis-query/selection-mode :pastdue.analysis-query/top-n :pastdue.analysis-query/vendor-code]}
+  :offline-contracts "PASS"
+  :local-clickhouse-sql "PASS_SYNTHETIC_CHDB_24.8.4.1"
+  :skill-structure "PASS"
+  :platform-config-check "NOT_RUN"
+  :deployed-jdbc-sql "NOT_RUN"
+  :real-agent-eval "NOT_RUN"
+  :manifest-self-hash "excluded-to-avoid-recursion"
+  :sha256 {"ACCEPTANCE_TESTS.md" "c11b47f72a1f83fb4a21dc47b3eca6c7770b731c0bffae8201ac0bfdf21ff4e2"
+    "README.md" "3fd27413b772905dd8d59068899918c2667b47226e7cf1bf33b4a9db48a88003"
+    "agent/INVOCATION_EXAMPLES.md" "c9335adf8ee80aedb5ee2dfebaa239d24b0ddf83a5d824e07179778d3fc15114"
+    "agent/SYSTEM_PROMPT.md" "61bda4b475012690918563e1c5f7e73912f99feeb1264f9b728bf20bb8a39f42"
+    "atlas/charts/pastdue.edn" "14d5e78e0bb04ef7c48daa47eaf1b7fbaa94cba10986dfea5141a9804b6e5f55"
+    "atlas/sources.edn" "b8b16ae7a9e151de2e4d59350e469affb6cf118cd9af87f0101c32a8c69d5a70"
+    "docs/API_V3.md" "b3fef0425f1e6c9fe753d2e97f79dae58e7988243e246670295e81da60edce08"
+    "docs/DEPLOYMENT_V3.md" "6ec64d391786c1710f952f283e21ef24dd3290b59e03cc0a48fda5294c5ea4b8"
+    "docs/PASTDUE_AGENT_REDESIGN.md" "59c071a1ec3be5b0ac26c5bdbdac6bd6b802242a78304877984f26becec7c904"
+    "docs/VALIDATION_V3.md" "a20aef1d058529464a184b1682c6a2f0a3eb8ae0998ead9838564d359d78e873"
+    "skill/pastdue-analysis/SKILL.md" "ebf1e1da569e349edff18b6516b1caa5046a773fa8e1db26de7b26558d53ee8d"
+    "skill/pastdue-analysis/agents/openai.yaml" "f96952f6e696aaaaf36f64cbdc68072484b5c4ef2f4811ed939751848d58fdec"
+    "skill/pastdue-analysis/references/atlas-query-playbook.md" "c343bd4b62beb53042a0dc96601a6d4fde2c37892fe9c36b27adda3f476c4b94"
+    "skill/pastdue-analysis/references/completion-contract.md" "df6af552fb5840ee5e3cc02af3fe3287e590d371845b8abc740571aef29ea88c"
+    "skill/pastdue-analysis/references/current-context.md" "88c72d1808a06ab581078a192d855cd3752b2625ef9ea176d7b5be3801a3df46"
+    "skill/pastdue-analysis/references/data-contract.md" "12aecf80fc8d29d93a94fa70ce4e008b1bc150068897922f841c19186777a251"
+    "skill/pastdue-analysis/references/eta-diagnostic-rules.edn" "7917ceee99f13d2ebfa7fcfb8045cc2a064ebdc27965a06872b76dd184de82fb"
+    "skill/pastdue-analysis/references/metric-definitions.md" "4570aa8b907a7d3b38027428b8dc843ff62b50c407293474370ad385ca9c60d7"
+    "skill/pastdue-analysis/references/policy.edn" "2e164075640d65bb163053f48287c3926d167ed2d27d89add347001306097e87"
+    "skill/pastdue-analysis/references/report-format.md" "cf5ff39578a093ba4fcab9ddcc44c6d6151c094f0ea826a3dbd355d69520ed15"
+    "skill/pastdue-analysis/references/table-display-contract.edn" "b6faa9daf13f8edad1631068e111b60f2399a8a45e5ef4111f6582c42bfa16b7"
+    "skill/pastdue-analysis/references/table-display-contract.md" "a755afb9d6fb0529ad0076b9c6205b9908f504796d45760ee2f8d350aca39e5f"}}

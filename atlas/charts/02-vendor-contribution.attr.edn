@@ -1,0 +1,190 @@
+{:namespaces
+ {"pastdue.vendor-contribution"
+  {:label "PastDue Vendor Contribution"
+   :domain "PastDue"
+   :description "Vendor-level decomposition of the latest country past-due-ratio change."}}
+
+ :attributes
+ {:pastdue.vendor-contribution/country-code
+  {:type :string :identity? true :label "Country Code"
+   :description "Country component of the vendor analysis identity."
+   :synonyms ["国家" "country"] :format :code}
+  :pastdue.vendor-contribution/vendor-code
+  {:type :integer :identity? true :label "Vendor Code"
+   :description "Vendor component of the identity; vendor code is not assumed globally unique across countries."
+   :synonyms ["供应商代码" "vendor"] :format :id}
+  :pastdue.vendor-contribution/vendor-name
+  {:type :string :label "Vendor Name"
+   :description "Latest available nonblank vendor name across the compared snapshots."
+   :synonyms ["供应商名称"] :format :text :nullable? true}
+  :pastdue.vendor-contribution/latest-snapshot-date
+  {:type :date :label "Latest Snapshot Date"
+   :description "Latest completed snapshot used in this decomposition." :format :date}
+  :pastdue.vendor-contribution/previous-snapshot-date
+  {:type :date :label "Previous Snapshot Date"
+   :description "Previous available completed snapshot used in this decomposition." :format :date}
+  :pastdue.vendor-contribution/latest-past-due-count
+  {:type :integer :label "Latest Vendor Past-Due Count"
+   :description "Vendor past-due PO-line count in the latest snapshot." :unit "PO lines" :format :number}
+  :pastdue.vendor-contribution/previous-past-due-count
+  {:type :integer :label "Previous Vendor Past-Due Count"
+   :description "Vendor past-due PO-line count in the previous snapshot." :unit "PO lines" :format :number}
+  :pastdue.vendor-contribution/past-due-count-change
+  {:type :integer :label "Vendor Past-Due Count Change"
+   :description "Latest minus previous vendor past-due count." :unit "PO lines" :format :number}
+  :pastdue.vendor-contribution/latest-open-count
+  {:type :integer :label "Latest Vendor Open Count"
+   :description "Vendor open PO-line count in the latest snapshot." :unit "PO lines" :format :number}
+  :pastdue.vendor-contribution/previous-open-count
+  {:type :integer :label "Previous Vendor Open Count"
+   :description "Vendor open PO-line count in the previous snapshot." :unit "PO lines" :format :number}
+  :pastdue.vendor-contribution/open-count-change
+  {:type :integer :label "Vendor Open Count Change"
+   :description "Latest minus previous vendor open count." :unit "PO lines" :format :number}
+  :pastdue.vendor-contribution/latest-vendor-ratio
+  {:type :decimal :label "Latest Vendor Past-Due Ratio"
+   :description "Latest vendor past-due count divided by latest vendor open count." :unit "%" :format :percent}
+  :pastdue.vendor-contribution/previous-vendor-ratio
+  {:type :decimal :label "Previous Vendor Past-Due Ratio"
+   :description "Previous vendor past-due count divided by previous vendor open count." :unit "%" :format :percent}
+  :pastdue.vendor-contribution/vendor-ratio-change
+  {:type :decimal :label "Vendor Ratio Change"
+   :description "Latest vendor ratio minus previous vendor ratio." :unit "percentage points" :format :number}
+  :pastdue.vendor-contribution/latest-country-contribution
+  {:type :decimal :label "Latest Country Contribution"
+   :description "Latest vendor past-due count divided by latest country open count." :unit "%" :format :percent}
+  :pastdue.vendor-contribution/previous-country-contribution
+  {:type :decimal :label "Previous Country Contribution"
+   :description "Previous vendor past-due count divided by previous country open count." :unit "%" :format :percent}
+  :pastdue.vendor-contribution/delta-country-contribution
+  {:type :decimal :label "Delta Country Contribution"
+   :description "Vendor contribution to country ratio change: latest country contribution minus previous country contribution."
+   :synonyms ["对国家逾期率变化的贡献" "vendor contribution"] :unit "percentage points" :format :number}
+  :pastdue.vendor-contribution/positive-contribution-share
+  {:type :decimal :label "Positive Contribution Share"
+   :description "This vendor's positive delta divided by the sum of positive vendor deltas in the country."
+   :synonyms ["正向贡献占比"] :unit "%" :format :percent}
+  :pastdue.vendor-contribution/cumulative-positive-share
+  {:type :decimal :label "Cumulative Positive Share"
+   :description "Cumulative positive contribution share in descending delta order."
+   :synonyms ["累计正向贡献占比"] :unit "%" :format :percent}
+  :pastdue.vendor-contribution/contribution-rank
+  {:type :integer :label "Contribution Rank"
+   :description "Stable descending positive-contribution rank within the country." :format :number}}
+
+ :resolvers
+ [{:id "pastdue_positive_vendor_contributors"
+   :name "Positive Vendor Contributors"
+   :description "Positive vendor contributors for a country, pre-ranked with cumulative positive share; the Skill selects fixed positive Top-10; 80 percent is only a coverage reference."
+   :domain "PastDue"
+   :source-ref "eta-clickhouse-prod"
+   :input ["pastdue.country-monitor/country-code"]
+   :output [{:pastdue.country-monitor/positive-vendor-contributors
+             ["pastdue.vendor-contribution/country-code"
+              "pastdue.vendor-contribution/vendor-code"
+              "pastdue.vendor-contribution/vendor-name"
+              "pastdue.vendor-contribution/latest-snapshot-date"
+              "pastdue.vendor-contribution/previous-snapshot-date"
+              "pastdue.vendor-contribution/latest-past-due-count"
+              "pastdue.vendor-contribution/previous-past-due-count"
+              "pastdue.vendor-contribution/past-due-count-change"
+              "pastdue.vendor-contribution/latest-open-count"
+              "pastdue.vendor-contribution/previous-open-count"
+              "pastdue.vendor-contribution/open-count-change"
+              "pastdue.vendor-contribution/latest-vendor-ratio"
+              "pastdue.vendor-contribution/previous-vendor-ratio"
+              "pastdue.vendor-contribution/vendor-ratio-change"
+              "pastdue.vendor-contribution/latest-country-contribution"
+              "pastdue.vendor-contribution/previous-country-contribution"
+              "pastdue.vendor-contribution/delta-country-contribution"
+              "pastdue.vendor-contribution/positive-contribution-share"
+              "pastdue.vendor-contribution/cumulative-positive-share"
+              "pastdue.vendor-contribution/contribution-rank"]}]
+   :source
+   {:type "sql" :result_type "list"
+    :query "WITH country_daily AS (SELECT snapshot_date, country_code, sum(toInt64(past_due_count)) AS country_past_due, sum(toInt64(total_open_count)) AS country_open FROM past_due.vendor_past_due_daily WHERE snapshot_date < toDate(now('America/Los_Angeles')) AND country_code = :country_code GROUP BY snapshot_date, country_code), periods AS (SELECT country_code, maxIf(snapshot_date, snapshot_rank = 1) AS latest_snapshot_date, maxIf(snapshot_date, snapshot_rank = 2) AS previous_snapshot_date, sumIf(country_open, snapshot_rank = 1) AS latest_country_open, sumIf(country_open, snapshot_rank = 2) AS previous_country_open, count() AS period_count FROM (SELECT *, row_number() OVER (ORDER BY snapshot_date DESC) AS snapshot_rank FROM country_daily) WHERE snapshot_rank <= 2 GROUP BY country_code HAVING period_count = 2), period_rows AS (SELECT country_code, latest_snapshot_date, previous_snapshot_date, latest_country_open, previous_country_open, latest_snapshot_date AS snapshot_date FROM periods UNION ALL SELECT country_code, latest_snapshot_date, previous_snapshot_date, latest_country_open, previous_country_open, previous_snapshot_date AS snapshot_date FROM periods), vendor_period AS (SELECT d.country_code, d.vendor_code, argMax(ifNull(d.vendor_name, ''), d.snapshot_date) AS vendor_name, sumIf(toInt64(d.past_due_count), d.snapshot_date = p.latest_snapshot_date) AS latest_past_due_count, sumIf(toInt64(d.past_due_count), d.snapshot_date = p.previous_snapshot_date) AS previous_past_due_count, sumIf(toInt64(d.total_open_count), d.snapshot_date = p.latest_snapshot_date) AS latest_open_count, sumIf(toInt64(d.total_open_count), d.snapshot_date = p.previous_snapshot_date) AS previous_open_count, p.latest_snapshot_date, p.previous_snapshot_date, p.latest_country_open, p.previous_country_open FROM past_due.vendor_past_due_daily d INNER JOIN period_rows p ON d.country_code = p.country_code AND d.snapshot_date = p.snapshot_date GROUP BY d.country_code, d.vendor_code, p.latest_snapshot_date, p.previous_snapshot_date, p.latest_country_open, p.previous_country_open), calculated AS (SELECT *, if(latest_open_count > 0, toDecimal64(toFloat64(latest_past_due_count) / latest_open_count, 9), toDecimal64(0, 9)) AS latest_vendor_ratio, if(previous_open_count > 0, toDecimal64(toFloat64(previous_past_due_count) / previous_open_count, 9), toDecimal64(0, 9)) AS previous_vendor_ratio, if(latest_country_open > 0, toDecimal64(toFloat64(latest_past_due_count) / latest_country_open, 9), toDecimal64(0, 9)) AS latest_country_contribution, if(previous_country_open > 0, toDecimal64(toFloat64(previous_past_due_count) / previous_country_open, 9), toDecimal64(0, 9)) AS previous_country_contribution, latest_country_contribution - previous_country_contribution AS delta_country_contribution FROM vendor_period), positive AS (SELECT *, sum(delta_country_contribution) OVER () AS total_positive_delta FROM calculated WHERE delta_country_contribution > 0), ranked AS (SELECT *, row_number() OVER (ORDER BY delta_country_contribution DESC, vendor_code ASC) AS contribution_rank, ifNull(toDecimal64(delta_country_contribution / nullIf(total_positive_delta, 0), 9), toDecimal64(0, 9)) AS positive_contribution_share FROM positive) SELECT country_code, vendor_code, vendor_name, latest_snapshot_date, previous_snapshot_date, latest_past_due_count, previous_past_due_count, latest_past_due_count - previous_past_due_count AS past_due_count_change, latest_open_count, previous_open_count, latest_open_count - previous_open_count AS open_count_change, latest_vendor_ratio, previous_vendor_ratio, latest_vendor_ratio - previous_vendor_ratio AS vendor_ratio_change, latest_country_contribution, previous_country_contribution, delta_country_contribution, positive_contribution_share, toDecimal64(ifNull(sum(positive_contribution_share) OVER (ORDER BY contribution_rank ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW), toDecimal64(0, 9)), 9) AS cumulative_positive_share, toInt64(contribution_rank) AS contribution_rank FROM ranked"
+    :params {"country_code" "pastdue.country-monitor/country-code"}
+    :field_mapping
+    {"pastdue.vendor-contribution/country-code" "country_code"
+     "pastdue.vendor-contribution/vendor-code" "vendor_code"
+     "pastdue.vendor-contribution/vendor-name" "vendor_name"
+     "pastdue.vendor-contribution/latest-snapshot-date" "latest_snapshot_date"
+     "pastdue.vendor-contribution/previous-snapshot-date" "previous_snapshot_date"
+     "pastdue.vendor-contribution/latest-past-due-count" "latest_past_due_count"
+     "pastdue.vendor-contribution/previous-past-due-count" "previous_past_due_count"
+     "pastdue.vendor-contribution/past-due-count-change" "past_due_count_change"
+     "pastdue.vendor-contribution/latest-open-count" "latest_open_count"
+     "pastdue.vendor-contribution/previous-open-count" "previous_open_count"
+     "pastdue.vendor-contribution/open-count-change" "open_count_change"
+     "pastdue.vendor-contribution/latest-vendor-ratio" "latest_vendor_ratio"
+     "pastdue.vendor-contribution/previous-vendor-ratio" "previous_vendor_ratio"
+     "pastdue.vendor-contribution/vendor-ratio-change" "vendor_ratio_change"
+     "pastdue.vendor-contribution/latest-country-contribution" "latest_country_contribution"
+     "pastdue.vendor-contribution/previous-country-contribution" "previous_country_contribution"
+     "pastdue.vendor-contribution/delta-country-contribution" "delta_country_contribution"
+     "pastdue.vendor-contribution/positive-contribution-share" "positive_contribution_share"
+     "pastdue.vendor-contribution/cumulative-positive-share" "cumulative_positive_share"
+     "pastdue.vendor-contribution/contribution-rank" "contribution_rank"}}
+   :eql-params
+   {:limit {:type "integer" :field "_limit" :default 100 :description "Maximum vendor rows; return fixed positive Top-10 without stopping at 80 percent"}
+    :offset {:type "integer" :field "_offset" :default 0 :description "Rows to skip"}
+    :order_by {:type "string" :field "_order_by" :description "Mapped result column"}
+    :sort_dir {:type "string" :field "_sort_dir" :description "ASC or DESC"}}}
+
+  {:id "pastdue_vendor_changes"
+   :name "All Vendor Changes"
+   :description "All vendor changes, including positive, negative and zero contribution, for questions about deterioration and offsets."
+   :domain "PastDue"
+   :source-ref "eta-clickhouse-prod"
+   :input ["pastdue.country-monitor/country-code"]
+   :output [{:pastdue.country-monitor/vendor-changes
+             ["pastdue.vendor-contribution/country-code"
+              "pastdue.vendor-contribution/vendor-code"
+              "pastdue.vendor-contribution/vendor-name"
+              "pastdue.vendor-contribution/latest-snapshot-date"
+              "pastdue.vendor-contribution/previous-snapshot-date"
+              "pastdue.vendor-contribution/latest-past-due-count"
+              "pastdue.vendor-contribution/previous-past-due-count"
+              "pastdue.vendor-contribution/past-due-count-change"
+              "pastdue.vendor-contribution/latest-open-count"
+              "pastdue.vendor-contribution/previous-open-count"
+              "pastdue.vendor-contribution/open-count-change"
+              "pastdue.vendor-contribution/latest-vendor-ratio"
+              "pastdue.vendor-contribution/previous-vendor-ratio"
+              "pastdue.vendor-contribution/vendor-ratio-change"
+              "pastdue.vendor-contribution/latest-country-contribution"
+              "pastdue.vendor-contribution/previous-country-contribution"
+              "pastdue.vendor-contribution/delta-country-contribution"
+              "pastdue.vendor-contribution/positive-contribution-share"
+              "pastdue.vendor-contribution/cumulative-positive-share"
+              "pastdue.vendor-contribution/contribution-rank"]}]
+   :source
+   {:type "sql" :result_type "list"
+    :query "WITH country_daily AS (SELECT snapshot_date, country_code, sum(toInt64(total_open_count)) AS country_open FROM past_due.vendor_past_due_daily WHERE snapshot_date < toDate(now('America/Los_Angeles')) AND country_code = :country_code GROUP BY snapshot_date, country_code), periods AS (SELECT country_code, maxIf(snapshot_date, snapshot_rank = 1) AS latest_snapshot_date, maxIf(snapshot_date, snapshot_rank = 2) AS previous_snapshot_date, sumIf(country_open, snapshot_rank = 1) AS latest_country_open, sumIf(country_open, snapshot_rank = 2) AS previous_country_open, count() AS period_count FROM (SELECT *, row_number() OVER (ORDER BY snapshot_date DESC) AS snapshot_rank FROM country_daily) WHERE snapshot_rank <= 2 GROUP BY country_code HAVING period_count = 2), period_rows AS (SELECT country_code, latest_snapshot_date, previous_snapshot_date, latest_country_open, previous_country_open, latest_snapshot_date AS snapshot_date FROM periods UNION ALL SELECT country_code, latest_snapshot_date, previous_snapshot_date, latest_country_open, previous_country_open, previous_snapshot_date AS snapshot_date FROM periods), vendor_period AS (SELECT d.country_code, d.vendor_code, argMax(ifNull(d.vendor_name, ''), d.snapshot_date) AS vendor_name, sumIf(toInt64(d.past_due_count), d.snapshot_date = p.latest_snapshot_date) AS latest_past_due_count, sumIf(toInt64(d.past_due_count), d.snapshot_date = p.previous_snapshot_date) AS previous_past_due_count, sumIf(toInt64(d.total_open_count), d.snapshot_date = p.latest_snapshot_date) AS latest_open_count, sumIf(toInt64(d.total_open_count), d.snapshot_date = p.previous_snapshot_date) AS previous_open_count, p.latest_snapshot_date, p.previous_snapshot_date, p.latest_country_open, p.previous_country_open FROM past_due.vendor_past_due_daily d INNER JOIN period_rows p ON d.country_code = p.country_code AND d.snapshot_date = p.snapshot_date GROUP BY d.country_code, d.vendor_code, p.latest_snapshot_date, p.previous_snapshot_date, p.latest_country_open, p.previous_country_open), calculated AS (SELECT *, if(latest_open_count > 0, toDecimal64(toFloat64(latest_past_due_count) / latest_open_count, 9), toDecimal64(0, 9)) AS latest_vendor_ratio, if(previous_open_count > 0, toDecimal64(toFloat64(previous_past_due_count) / previous_open_count, 9), toDecimal64(0, 9)) AS previous_vendor_ratio, if(latest_country_open > 0, toDecimal64(toFloat64(latest_past_due_count) / latest_country_open, 9), toDecimal64(0, 9)) AS latest_country_contribution, if(previous_country_open > 0, toDecimal64(toFloat64(previous_past_due_count) / previous_country_open, 9), toDecimal64(0, 9)) AS previous_country_contribution, latest_country_contribution - previous_country_contribution AS delta_country_contribution FROM vendor_period), totals AS (SELECT *, sumIf(delta_country_contribution, delta_country_contribution > 0) OVER () AS total_positive_delta FROM calculated), ranked AS (SELECT *, if(delta_country_contribution > 0, row_number() OVER (ORDER BY if(delta_country_contribution > 0, 0, 1), delta_country_contribution DESC, vendor_code ASC), 0) AS contribution_rank, if(delta_country_contribution > 0 AND total_positive_delta > 0, toDecimal64(delta_country_contribution / total_positive_delta, 9), toDecimal64(0, 9)) AS positive_contribution_share FROM totals) SELECT country_code, vendor_code, vendor_name, latest_snapshot_date, previous_snapshot_date, latest_past_due_count, previous_past_due_count, latest_past_due_count - previous_past_due_count AS past_due_count_change, latest_open_count, previous_open_count, latest_open_count - previous_open_count AS open_count_change, latest_vendor_ratio, previous_vendor_ratio, latest_vendor_ratio - previous_vendor_ratio AS vendor_ratio_change, latest_country_contribution, previous_country_contribution, delta_country_contribution, positive_contribution_share, toDecimal64(ifNull(if(delta_country_contribution > 0, sum(positive_contribution_share) OVER (ORDER BY if(delta_country_contribution > 0, 0, 1), delta_country_contribution DESC, vendor_code ASC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW), toDecimal64(0, 9)), toDecimal64(0, 9)), 9) AS cumulative_positive_share, toInt64(contribution_rank) AS contribution_rank FROM ranked"
+    :params {"country_code" "pastdue.country-monitor/country-code"}
+    :field_mapping
+    {"pastdue.vendor-contribution/country-code" "country_code"
+     "pastdue.vendor-contribution/vendor-code" "vendor_code"
+     "pastdue.vendor-contribution/vendor-name" "vendor_name"
+     "pastdue.vendor-contribution/latest-snapshot-date" "latest_snapshot_date"
+     "pastdue.vendor-contribution/previous-snapshot-date" "previous_snapshot_date"
+     "pastdue.vendor-contribution/latest-past-due-count" "latest_past_due_count"
+     "pastdue.vendor-contribution/previous-past-due-count" "previous_past_due_count"
+     "pastdue.vendor-contribution/past-due-count-change" "past_due_count_change"
+     "pastdue.vendor-contribution/latest-open-count" "latest_open_count"
+     "pastdue.vendor-contribution/previous-open-count" "previous_open_count"
+     "pastdue.vendor-contribution/open-count-change" "open_count_change"
+     "pastdue.vendor-contribution/latest-vendor-ratio" "latest_vendor_ratio"
+     "pastdue.vendor-contribution/previous-vendor-ratio" "previous_vendor_ratio"
+     "pastdue.vendor-contribution/vendor-ratio-change" "vendor_ratio_change"
+     "pastdue.vendor-contribution/latest-country-contribution" "latest_country_contribution"
+     "pastdue.vendor-contribution/previous-country-contribution" "previous_country_contribution"
+     "pastdue.vendor-contribution/delta-country-contribution" "delta_country_contribution"
+     "pastdue.vendor-contribution/positive-contribution-share" "positive_contribution_share"
+     "pastdue.vendor-contribution/cumulative-positive-share" "cumulative_positive_share"
+     "pastdue.vendor-contribution/contribution-rank" "contribution_rank"}}
+   :eql-params
+   {:limit {:type "integer" :field "_limit" :default 1000 :description "Maximum vendor rows"}
+    :offset {:type "integer" :field "_offset" :default 0 :description "Rows to skip"}
+    :order_by {:type "string" :field "_order_by" :description "Mapped result column"}
+    :sort_dir {:type "string" :field "_sort_dir" :description "ASC or DESC"}}}]}

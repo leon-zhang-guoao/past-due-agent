@@ -1,0 +1,21 @@
+{:version "0.2.0"
+ :mode :display-recipients-only
+ :send-enabled false
+ :contact-source :atlas
+ :contact-entity "pastdue.notification-recipient"
+ :contact-collection "pastdue.notification-recipient/contacts"
+ :rules
+ [{:eta-codes ["SC" "NR" "US" "RQ"] :to :vendor :cc [:emt :buyer]}
+  {:eta-codes ["SH" "LS"] :to :buyer :cc []}
+  {:eta-codes ["DD"] :to :warehouse :cc [:buyer]}]
+ :contact-query
+ {:identity [:country-code :vendor-code :recipient-type]
+  :vendor-code-for-global-contacts 0
+  :active-only true
+  :normalize :trim-uppercase
+  :deduplicate-by :email}
+ :output
+ {:location :triggered-alert-body
+  :fields [:to :cc :routing-rule :contact-source :status :missing-contacts]
+  :status-when-missing :RECIPIENT_UNRESOLVED
+  :send-operation false}}

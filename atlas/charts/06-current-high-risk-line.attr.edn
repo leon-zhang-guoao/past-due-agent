@@ -1,0 +1,132 @@
+{:namespaces
+ {"pastdue.current-high-risk-line"
+  {:label "PastDue Current High-Risk PO Line"
+   :domain "PastDue"
+   :description "Current high-risk or past-due PO-line context; not a historical causal record."}}
+
+ :attributes
+ {:pastdue.current-high-risk-line/country-code
+  {:type :string :label "Country Code"
+   :description "Country of the current PO line." :format :code}
+  :pastdue.current-high-risk-line/vendor-code
+  {:type :integer :label "Vendor Code"
+   :description "Vendor account number for the current PO line." :format :id}
+  :pastdue.current-high-risk-line/order-type
+  {:type :integer :identity? true :label "PO Type"
+   :description "Order type component of the PO-line identity." :format :code}
+  :pastdue.current-high-risk-line/po-number
+  {:type :integer :identity? true :label "PO Number"
+   :description "Purchase-order number component of the PO-line identity." :format :id}
+  :pastdue.current-high-risk-line/po-line-number
+  {:type :integer :identity? true :label "PO Line Number"
+   :description "Line-number component of the PO-line identity." :format :id}
+  :pastdue.current-high-risk-line/sku-number
+  {:type :integer :label "SKU Number"
+   :description "Internal SKU number on the current PO line." :format :id :nullable? true}
+  :pastdue.current-high-risk-line/ordered-quantity
+  {:type :integer :label "Ordered Quantity"
+   :description "Quantity ordered on the PO line." :unit "units" :format :number :nullable? true}
+  :pastdue.current-high-risk-line/shipped-quantity
+  {:type :integer :label "Shipped Quantity"
+   :description "Quantity currently recorded as shipped." :unit "units" :format :number :nullable? true}
+  :pastdue.current-high-risk-line/received-quantity
+  {:type :integer :label "Received Quantity"
+   :description "Quantity currently recorded as received." :unit "units" :format :number :nullable? true}
+  :pastdue.current-high-risk-line/eta-code
+  {:type :string :label "ETA Code"
+   :description "Current normalized ETA code; blank and null values are UNKNOWN." :format :code}
+  :pastdue.current-high-risk-line/eta-date
+  {:type :datetime :label "ETA Date"
+   :description "Current estimated arrival date." :format :datetime :nullable? true}
+  :pastdue.current-high-risk-line/eta-source
+  {:type :string :label "ETA Source"
+   :description "Current normalized ETA information source; blank and null values are UNKNOWN." :format :code}
+  :pastdue.current-high-risk-line/risk-level
+  {:type :string :label "Risk Level"
+   :description "Current calculated risk level." :format :code}
+  :pastdue.current-high-risk-line/is-past-due
+  {:type :boolean :label "Is Past Due"
+   :description "True when the current PO line is past due."}
+  :pastdue.current-high-risk-line/past-due-days
+  {:type :integer :label "Past-Due Days"
+   :description "Current whole days past due, when applicable." :unit "days" :format :number :nullable? true}
+  :pastdue.current-high-risk-line/action-type
+  {:type :string :label "Action Type"
+   :description "Current source-view action classification." :format :code :nullable? true}
+  :pastdue.current-high-risk-line/buyer-owner
+  {:type :string :label "Buyer"
+   :description "Current buyer display value; missing assignments are UNASSIGNED."
+   :format :text :sensitivity :pii}
+  :pastdue.current-high-risk-line/primary-owner
+  {:type :string :label "Primary Owner"
+   :description "Current primary owner display values; missing assignments are UNASSIGNED."
+   :format :text :sensitivity :pii}
+  :pastdue.current-high-risk-line/manager-owner
+  {:type :string :label "Manager Owner"
+   :description "Current manager owner display values; missing assignments are UNASSIGNED."
+   :format :text :sensitivity :pii}
+  :pastdue.current-high-risk-line/risk-priority-rank
+  {:type :integer :label "Risk Priority Rank"
+   :description "Stable current risk rank within a country and vendor: HIGH_RISK, past-due flag, past-due days, ETA date, PO identity."
+   :format :number}}
+
+ :resolvers
+ [{:id "pastdue_current_high_risk_lines_by_vendor"
+   :name "Current High-Risk PO Lines by Vendor"
+   :description "Deduplicated current high-risk or past-due PO lines for one country and vendor, pre-ranked for the Skill's allocation policy."
+   :domain "PastDue"
+   :source-ref "eta-clickhouse-prod"
+   :input ["pastdue.vendor-contribution/country-code"
+           "pastdue.vendor-contribution/vendor-code"]
+   :output [{:pastdue.vendor-contribution/current-high-risk-lines
+             ["pastdue.current-high-risk-line/country-code"
+              "pastdue.current-high-risk-line/vendor-code"
+              "pastdue.current-high-risk-line/order-type"
+              "pastdue.current-high-risk-line/po-number"
+              "pastdue.current-high-risk-line/po-line-number"
+              "pastdue.current-high-risk-line/sku-number"
+              "pastdue.current-high-risk-line/ordered-quantity"
+              "pastdue.current-high-risk-line/shipped-quantity"
+              "pastdue.current-high-risk-line/received-quantity"
+              "pastdue.current-high-risk-line/eta-code"
+              "pastdue.current-high-risk-line/eta-date"
+              "pastdue.current-high-risk-line/eta-source"
+              "pastdue.current-high-risk-line/risk-level"
+              "pastdue.current-high-risk-line/is-past-due"
+              "pastdue.current-high-risk-line/past-due-days"
+              "pastdue.current-high-risk-line/action-type"
+              "pastdue.current-high-risk-line/buyer-owner"
+              "pastdue.current-high-risk-line/primary-owner"
+              "pastdue.current-high-risk-line/manager-owner"
+              "pastdue.current-high-risk-line/risk-priority-rank"]}]
+   :source
+   {:type "sql" :result_type "list"
+    :query "WITH grouped AS (SELECT country_code, toInt64(from_acct_no) AS vendor_code, order_type, order_no, order_line_no, any(sku_no) AS sku_number, any(order_qty) AS ordered_quantity, any(ship_qty) AS shipped_quantity, any(rec_qty) AS received_quantity, if(empty(trim(BOTH ' ' FROM ifNull(any(eta_code), ''))), 'UNKNOWN', trim(BOTH ' ' FROM ifNull(any(eta_code), ''))) AS eta_code, any(eta_date) AS eta_date, if(empty(trim(BOTH ' ' FROM ifNull(any(source), ''))), 'UNKNOWN', trim(BOTH ' ' FROM ifNull(any(source), ''))) AS eta_source, if(countIf(risk_level = 'HIGH_RISK') > 0, 'HIGH_RISK', any(risk_level)) AS risk_level_agg, max(toInt64(is_pastdue)) AS is_past_due_int, maxIf(toInt64OrZero(toString(pastdue_days)), toInt64(is_pastdue) = 1) AS past_due_days, any(action_type) AS action_type, if(empty(trim(BOTH ' ' FROM ifNull(any(buyer_email), ''))), 'UNASSIGNED', trim(BOTH ' ' FROM ifNull(any(buyer_email), ''))) AS buyer_owner, if(empty(arrayStringConcat(arraySort(arrayDistinct(groupArrayIf(trim(BOTH ' ' FROM ifNull(master_primary, '')), notEmpty(trim(BOTH ' ' FROM ifNull(master_primary, '')))))), '; ')), 'UNASSIGNED', arrayStringConcat(arraySort(arrayDistinct(groupArrayIf(trim(BOTH ' ' FROM ifNull(master_primary, '')), notEmpty(trim(BOTH ' ' FROM ifNull(master_primary, '')))))), '; ')) AS primary_owner, if(empty(arrayStringConcat(arraySort(arrayDistinct(groupArrayIf(trim(BOTH ' ' FROM ifNull(master_manager, '')), notEmpty(trim(BOTH ' ' FROM ifNull(master_manager, '')))))), '; ')), 'UNASSIGNED', arrayStringConcat(arraySort(arrayDistinct(groupArrayIf(trim(BOTH ' ' FROM ifNull(master_manager, '')), notEmpty(trim(BOTH ' ' FROM ifNull(master_manager, '')))))), '; ')) AS manager_owner FROM past_due.past_due_detail_view WHERE country_code = :country_code AND toInt64(from_acct_no) = :vendor_code AND (risk_level = 'HIGH_RISK' OR toInt64(is_pastdue) = 1) GROUP BY country_code, vendor_code, order_type, order_no, order_line_no), ranked AS (SELECT *, row_number() OVER (PARTITION BY country_code, vendor_code ORDER BY if(risk_level_agg = 'HIGH_RISK', 0, 1) ASC, if(is_past_due_int = 1, 0, 1) ASC, past_due_days DESC, isNull(eta_date) ASC, eta_date ASC, order_type ASC, order_no ASC, order_line_no ASC) AS risk_priority_rank FROM grouped) SELECT country_code, vendor_code, order_type, order_no AS po_number, order_line_no AS po_line_number, sku_number, ordered_quantity, shipped_quantity, received_quantity, eta_code, eta_date, eta_source, risk_level_agg AS risk_level, if(is_past_due_int = 1, true, false) AS is_past_due, if(is_past_due_int = 1, toNullable(past_due_days), NULL) AS past_due_days, action_type, buyer_owner, primary_owner, manager_owner, toInt64(risk_priority_rank) AS risk_priority_rank FROM ranked"
+    :params {"country_code" "pastdue.vendor-contribution/country-code"
+             "vendor_code" "pastdue.vendor-contribution/vendor-code"}
+    :field_mapping
+    {"pastdue.current-high-risk-line/country-code" "country_code"
+     "pastdue.current-high-risk-line/vendor-code" "vendor_code"
+     "pastdue.current-high-risk-line/order-type" "order_type"
+     "pastdue.current-high-risk-line/po-number" "po_number"
+     "pastdue.current-high-risk-line/po-line-number" "po_line_number"
+     "pastdue.current-high-risk-line/sku-number" "sku_number"
+     "pastdue.current-high-risk-line/ordered-quantity" "ordered_quantity"
+     "pastdue.current-high-risk-line/shipped-quantity" "shipped_quantity"
+     "pastdue.current-high-risk-line/received-quantity" "received_quantity"
+     "pastdue.current-high-risk-line/eta-code" "eta_code"
+     "pastdue.current-high-risk-line/eta-date" "eta_date"
+     "pastdue.current-high-risk-line/eta-source" "eta_source"
+     "pastdue.current-high-risk-line/risk-level" "risk_level"
+     "pastdue.current-high-risk-line/is-past-due" "is_past_due"
+     "pastdue.current-high-risk-line/past-due-days" "past_due_days"
+     "pastdue.current-high-risk-line/action-type" "action_type"
+     "pastdue.current-high-risk-line/buyer-owner" "buyer_owner"
+     "pastdue.current-high-risk-line/primary-owner" "primary_owner"
+     "pastdue.current-high-risk-line/manager-owner" "manager_owner"
+     "pastdue.current-high-risk-line/risk-priority-rank" "risk_priority_rank"}}
+   :eql-params
+   {:limit {:type "integer" :field "_limit" :default 20 :description "Maximum current PO lines; Skill enforces five per vendor and twenty per country"}
+    :offset {:type "integer" :field "_offset" :default 0 :description "Rows to skip"}
+    :order_by {:type "string" :field "_order_by" :description "Mapped result column"}
+    :sort_dir {:type "string" :field "_sort_dir" :description "ASC or DESC"}}}]}

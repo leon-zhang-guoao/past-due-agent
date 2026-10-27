@@ -1,0 +1,11 @@
+{
+  "id": "G7",
+  "ask": "invented unknown fact family xyzzy",
+  "intent_ir": {
+    "intents": [{"id": "totally-unknown-intent", "priority": 0}],
+    "capability_gap": false
+  },
+  "expect": {
+    "capability_gap": true
+  }
+}
