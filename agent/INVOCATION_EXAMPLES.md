@@ -1,9 +1,9 @@
-# Requests — Agent contract 3.1.3
+# Requests — Agent contract 3.2.0
 
 | Request | Route / resolved intent |
 |---|---|
-| start daily monitor | Monitor, then report preset for real US/CA triggers only; English |
-| start test | Force applicable report preset; real trigger unchanged; fully English |
+| start daily monitor | Monitor, then fixed fact-block report for real US/CA triggers only; English |
+| start test | Force applicable fixed fact-block report; real trigger unchanged; fully English |
 | 开始测试 | Same test preset, fully Chinese |
 | 开始测试，只测试 CA | One Country, all selected Vendors, Chinese |
 | start test for snapshot 2026-10-26 | Explicit completed target; previous available weekday; English |
@@ -36,3 +36,10 @@ CUSTOM display scope; it does not claim full-report test PASS.
 Country Vendor analysis appears immediately after each Country Vendor ranking.
 Conditional-source conclusions are integrated there, not a default joint-source
 column/table. Explicit requests for ETA Code=US Source detail remain supported.
+
+
+3.2.0 standard tests use language-bound fixed blocks and disclose data reconciliation,
+blocks read and NOT_INDEPENDENTLY_VERIFIED final-output status separately. They do
+not award overall report PASS. Start with `start test, CA only, snapshot 2026-10-26`
+and the same target in Chinese after Atlas config/source checks; illustrative dates
+must be actual available eligible pairs. No live execution is claimed by this file.

@@ -1,10 +1,56 @@
-# Atlas v3.1 query playbook — manually maintained examples
+# Atlas query playbook — 3.2.0
+
+
+## Default report route — 3.2.0
+
+Read fact-block-contract.md and report-format.md first for standard report work.
+Use the new language-bound block endpoints below; old raw examples later in this
+file remain for explicit structured audits/interactive evidence, NOT an alternate
+default template. Missing block endpoint is a deployment gap. Do not answer by
+rebuilding a full standard report from old raw rows. Only retry a specific
+recoverable issue once. No per-Vendor fanout.
+
+### Monitor blocks (MCP execute_eql)
+
+```clojure
+{:entity {:pastdue.monitor-block-query/calendar-mode "WEEKDAYS"
+          :pastdue.monitor-block-query/relative-change-threshold 0.10
+          :pastdue.monitor-block-query/language "en"}
+ :query [{:pastdue.monitor-block-query/countries
+          [:pastdue.monitor-block/country-code
+           :pastdue.monitor-block/scope-key
+           :pastdue.monitor-block/language
+           :pastdue.monitor-block/template-version
+           :pastdue.monitor-block/content-markdown]}]}
+```
+
+The complete runnable query in fact-block-queries.eql
+uses actual fields (business/data status, dates/counts/ratios, language/template,
+expected counts, provenance and content). This short shape illustrates routing
+only, not a sufficient projection.
+
+### Report blocks (eight required inputs)
+
+Inputs are same pinned Country/P/T/calendar/selection/top-n/Vendor values as raw
+report-query plus language zh/en. Discover actual columns; project all fields in
+fact-block-contract.md and complete examples in fact-block-queries.eql. Plain
+Studio joins avoid the observed semantic.studio/query-shape rejection; MCP paging
+may use the actual supported parameterized join shape, default200/max1000. Normal
+positive Top10 returns <=11 blocks, but long string previews/spill can still truncate.
+Read full content values, not just record counts or schema. Stable sort row-ordinal.
+
+Project content-markdown, diagnostic-evidence, identity, block/count/check and
+source provenance fields together. Do not query old raw rows again merely to
+recreate numbers already in blocks. One server block query internally reuses the
+same report source SQL; changing output limit doesn't reduce fact aggregation.
+Maintain serial exact-handle association before independent concurrency.
+
 
 ## Discovery and interaction budget
 Discover live entities, inputs, attributes and collection paging with Atlas MCP
 list_entities/list_attributes. Copy exact namespaces from the schema; reuse that
 knowledge in the same environment/version. EQL is `{:entity ... :query ...}`, not
-Datalog. Missing explore/report v3.1 → deployment gap; never silent legacy fallback.
+Datalog. Missing required explore/block capability → deployment gap; never silent legacy fallback.
 These examples were manually rewritten against EXPLORE_INPUTS, EXPLORE_FIELDS and
 REPORT_FIELDS; they are NOT release-generated templates or observed live results.
 All dates/Vendors below are examples, never runtime defaults.
@@ -19,7 +65,7 @@ regardless of discovery/read/page calls.
 
 Daily/history/test REPORT PRESETS have **no six-request cap**. Attempt monitor/
 history and every applicable Country report with all selected Vendors and checks.
-Use one tagged report per Country/event, never separate calls per Vendor/dimension.
+Use one block query per Country/event, never separate calls per Vendor/dimension.
 Cache valid discovery, batch where supported, and do not invent metadata batching.
 Explicitly bound broad historical or optional user scope if necessary and disclose
 what was not executed; never silently skip mandatory preset work.
@@ -33,7 +79,7 @@ truncated; never assert full coverage without expected counts. Discover actual
 paging support in each host instead of guessing a Studio parameter schema.
 
 Start monitor → materialize its EXACT returned handle → validate association →
-report US → validate → report CA serially. Only consider independent concurrency
+block report US → validate → block report CA serially. Only consider independent concurrency
 after reliable per-request handle association is established. If execute returned
 handle A, analyze_result MUST NOT use B from memory/examples/another capture;
 stop that scope and disclose ASSOCIATION_ERROR. Missing linkage is UNVERIFIED,
@@ -42,7 +88,7 @@ Code 394 QUERY_WAS_CANCELLED proves cancellation, not its initiator. Reducing
 limit/projection does not fix source aggregation; do not spend a retry on it
 without evidence. Do not drop delta-country-contribution to attempt a repair.
 
-## Monitor: one request supplies both Countries
+## Legacy structured monitor: retained raw audit / history context
 ```clojure
 {:entity {:pastdue.monitor-query/calendar-mode "WEEKDAYS"
           :pastdue.monitor-query/relative-change-threshold 0.10}
@@ -73,7 +119,7 @@ trusted runtime America/Los_Angeles today, not latest snapshot as a clock.
 Normal daily only drills TRIGGERED/ZERO_BASELINE_INCREASE with valid comparable
 positive Open and data OK/DELAYED. Test forces applicable valid pairs, warns stale.
 
-## Report preset: one seven-input request, all tagged facts
+## Raw report audit: retained seven-input structured facts (not default report)
 ```clojure
 {:entity {:pastdue.report-query/country-code "CA"
           :pastdue.report-query/target-snapshot-date "2026-10-26"
@@ -307,28 +353,3 @@ compares COMMON semantic fact fields in paired raw same-scope responses, not who
 payload shape: projection-only fields, handles or timestamps differing aren't a
 conflict, and an unprojected field is unknown, not contradictory.
 
-## Consume once, bind once, render consistently (Agent contract 3.1.2)
-
-For standard report queries project the complete identity, record-type, dimension,
-row-kind, metric, selection/coverage and check fields described in data-contract.md.
-Do not use a narrow overview-only projection and then guess missing detail fields.
-After handle-bound materialization, follow `data-contract.md#report-row-binding`:
-control → freeze VENDOR_METRICS selection → attach dimension summaries/checks by
-identity → review → render the literal `report-format.md` skeleton. Discovery and
-pagination are reused; formatting changes do not require new business queries.
-
-A mismatch found in a draft is corrected from the original bound row and reviewed
-again. If original evidence is unavailable, show an unavailable field or affected
-dimension, not a speculative “+?” or a new raw-conflict allegation. Only use the
-single permitted retry for a specific recoverable query/projection/attachment issue,
-not to repeatedly hunt for numbers matching a drafted report. Retain independent
-verified Countries, Vendors and dimensions; no per-Vendor fallback storm.
-
-
-### 3.1.3 presentation-only change
-
-Retain applicable US_SOURCE_SUMMARY and dimension=us VENDOR_CHECK projection,
-retrieval and reconciliation. Standard reports no longer render a joint-source
-module: integrate material verified findings into Country Vendor analysis directly
-after that Country's Vendor ranking. No extra query or marginal-source stitching
-is needed for this presentation change. Optional explicit detail remains available.

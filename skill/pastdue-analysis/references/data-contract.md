@@ -1,10 +1,17 @@
-# Atlas v3.1 data contract
+# Default standard-report route
+
+Agent 3.2.0 uses `pastdue.report-block-query/blocks` and
+`pastdue.monitor-block-query/countries`; exact fields/identity/assembly are in
+fact-block-contract.md. Existing raw report and monitor semantics below are retained
+for structured review/history/interactive use, not an alternative standard layout.
+Metric 3.1.0 remains unchanged; block template/publication is 3.2.0.
+
+# Atlas data contract — 3.2.0
 
 Confirm the live MCP schema before execution; these contracts do not prove a
 particular environment is deployed. The development source is
 `scripts/build_v31_contract.py` (REPORT_FIELDS, EXPLORE_INPUTS, EXPLORE_FIELDS).
-It is not an Agent runtime dependency. The integrated graph has 35 resolvers and
-595 attributes; graph size is a static integration check, not online acceptance.
+It is not an Agent runtime dependency. New display-only block collections are additive. Inventory counts are not online acceptance.
 Required new interfaces missing → deployment gap, never silent v3/v2 fallback.
 
 ## Flexible analysis: pastdue.explore-query/rows
@@ -74,7 +81,7 @@ changed by denominator-scope. `*-open-count` is grouped row Open, not necessaril
 `*-ratio-denominator`. Org filters use deduplicated CURRENT_MAPPING even for
 historical data; disclose that it is not historical ownership.
 
-## Compact full report: pastdue.report-query/rows
+## Retained raw report audit: pastdue.report-query/rows
 
 Same seven inputs as `pastdue.analysis-query`:
 country-code, target-snapshot-date, previous-snapshot-date, calendar-mode,

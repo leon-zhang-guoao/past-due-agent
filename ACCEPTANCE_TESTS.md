@@ -1,3 +1,16 @@
+# Current 3.2.0 acceptance scope
+
+Status PENDING_LIVE_PILOT; no tests in this document were executed for 3.2.0.
+User requested no offline tests. Use docs/FACT_BLOCKS_3_2_0.md and independent
+queries in docs/FACT_BLOCKS_PILOT.eql for actual single-Country source/Agent pilot.
+A model cannot award its own report PASS. Separate server data reconciliation,
+client block receipt and independent final-output evaluation. Source hashes do
+not certify delivered text. Missing native renderer remains an explicit limit.
+
+The older checklist below is historical development guidance for v3.1 structured
+interfaces, not the default 3.2.0 block presentation and not evidence of executed
+checks. Old counts and PASS statements apply only to their original artifacts.
+
 # Acceptance v3.1 — three independent gates
 
 Record exact artifact/environment, input/scope-key, raw responses, captures,

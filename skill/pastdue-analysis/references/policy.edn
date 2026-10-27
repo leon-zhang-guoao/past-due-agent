@@ -1,4 +1,4 @@
-{:policy-version "3.1.3"
+{:policy-version "3.2.0"
   :business-timezone "America/Los_Angeles"
   :business-timezone-iana "America/Los_Angeles"
   :display-timezone {:daylight-saving true
@@ -15,9 +15,11 @@
     :minimum-percentage-point-change nil
     :use-unrounded-counts true}
   :interfaces {:flexible :pastdue.explore-query/rows
-    :report :pastdue.report-query/rows
+    :report :pastdue.report-block-query/blocks
     :missing-required :deployment-gap
-    :silent-legacy-fallback false}
+    :silent-legacy-fallback false
+    :monitor :pastdue.monitor-block-query/countries
+    :raw-report-audit :pastdue.report-query/rows}
   :explore {:time-bases ["CURRENT" "SNAPSHOT" "PAIR" "RANGE"]
     :pair-policies ["PREVIOUS_AVAILABLE" "EXPLICIT"]
     :grains ["COUNTRY" "VENDOR" "VENDOR_CODE" "VENDOR_SOURCE" "VENDOR_CODE_SOURCE"]
@@ -91,12 +93,14 @@
   :metric-version "3.1.0"
   :selection-version "3.1.0"
   :calendar-version "weekdays-v1-no-holidays"
-  :report-rendering {:contract-version "3.1.3"
-    :standard-layout "report-format.md canonical bilingual skeleton"
-    :vendor-summary-is-index-only true
-    :record-type-bound-facts true
+  :report-rendering {:contract-version "3.2.0"
+    :standard-layout "report-format.md fixed fact-block assembly"
+    :fact-blocks-preserve-literal-content true
+    :country-summary-position "after Vendor ranking, before individual Vendor blocks"
     :interactive-composable true
     :custom-output-explicit true
-    :country-summary-position "immediately after Vendor ranking"
     :joint-source-default-table false
-    :joint-source-analysis-retained true}}
+    :joint-source-analysis-retained true
+    :final-output-verification "NOT_INDEPENDENTLY_VERIFIED unless actual independent evaluation"
+    :self-awarded-report-pass false
+    :native-renderer-installed false}}

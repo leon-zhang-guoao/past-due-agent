@@ -1,3 +1,9 @@
+> Current 3.2.0 update: docs/FACT_BLOCKS_3_2_0.md supersedes older default
+> report rendering/completion descriptions below. Atlas fixed fact blocks + Agent
+> Country interpretation; explore/raw APIs retained. New Atlas deployment required.
+> No model-issued overall report PASS; final output NOT_INDEPENDENTLY_VERIFIED
+> absent independent evidence. All new source/platform/Agent checks NOT_RUN.
+
 # v3.1 implementation notes
 
 The authoritative merged graph is built by the development-only builders, sharing

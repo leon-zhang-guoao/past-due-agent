@@ -1,20 +1,25 @@
-# PastDue Analysis Agent v3.1
+# PastDue Analysis Agent — 3.2.0 pilot
 
-**Agent release 3.1.3; Atlas publication 3.1.1 / compatible metric/API 3.1.0.**
+**Atlas publication/template 3.2.0, source revision 3; metric semantics 3.1.0 unchanged.**
+**PENDING_LIVE_PILOT — no offline tests, target SQL or real Agent acceptance run.**
 
-Report layout and flat-row fact binding are updated. Daily/history/test share a
-literal bilingual skeleton, separate Vendor totals from ETA buckets, preserve
-per-Vendor checks and localize failures. Interactive analysis remains composable.
-Country Vendor analysis now follows its Vendor ranking directly; material
-ETA Code=US Source findings are integrated into this narrative, without a separate
-technical column/table. Underlying evidence checks and all Vendor detail remain.
-See [current update](docs/COUNTRY_VENDOR_SUMMARY_3_1_3.md) and
-[base rendering changes](docs/REPORT_RENDERING_3_1_2.md).
+Fixed fact blocks separate report facts from Agent interpretation. Standard reports
+use `pastdue.report-block-query/blocks` and `pastdue.monitor-block-query/countries`;
+flexible questions retain explore structured facts. Old report/monitor interfaces
+are retained for explicit review, not silent fallback. The model relays fixed
+Country/Vendor tables and writes Country Vendor analysis after each ranking.
+No standalone US conditional-source table, no self-awarded overall report PASS.
 
-This update does NOT change Atlas SQL. Update the System Prompt and **complete
-Skill** together; an already deployed 3.1.1 graph need not be reuploaded. New
-packages are versioned 3.1.3; previous archives are preserved for rollback.
-**No offline tests run at the user's request. Real Agent/Atlas acceptance pending.**
+**This release DOES require Atlas EDN deployment first**, followed by matching
+Prompt + complete Skill. New SQL/string formatting must be tried on the actual
+ClickHouse 22.8 / JDBC / Atlas, one Country first. No native renderer is installed;
+source hashes do not prove final model text correctness. See
+[design and rollout](docs/FACT_BLOCKS_3_2_0.md),
+[plain Studio pilot queries](docs/FACT_BLOCKS_PILOT.eql) and
+[actual validation state](docs/VALIDATION_V3.md).
+
+Full ZIP: releases/pastdue-agent-v3.2.0.zip. Skill ZIP:
+releases/pastdue-analysis-skill-v3.2.0.zip. Prior 3.1.3 packages preserved for rollback.
 
 A unified governed analysis capability with a compact full-Vendor report preset.
 Business facts come only from Atlas MCP; no arbitrary SQL, runtime Python, local
@@ -48,7 +53,7 @@ not source SQL, joins, writes or metric/denominator/rank recomputation.
 See docs/API_V3.md, docs/DEPLOYMENT_V3.md, ACCEPTANCE_TESTS.md and the Skill's
 manual atlas-query-playbook.md. Deploy matching System Prompt, complete Skill
 references/metadata and combined Atlas graph with approved source binding.
-The expanded graph inventory is 35 resolvers / 595 attributes; only live platform
+The expanded graph inventory is additive compatible resolvers/attributes; only live platform
 checks prove deployed capabilities. scope-key/capture time is not a transaction.
 
 Release metadata/archive generation is a separate owner-controlled step. A retained

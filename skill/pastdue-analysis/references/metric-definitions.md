@@ -117,3 +117,12 @@ actual joint row; any unrecognized nonempty raw value is diagnostically UNKNOWN,
 not rough-date. Preserve raw spelling and counts; classification doesn't rewrite
 Source identity/filtering or add semantics from a Source name. No new table or
 assumed catalog endpoint is required. Mixed OTHER can't establish membership.
+
+
+## 3.2.0 execution versus presentation
+
+Metric formulas, time/selection and denominator semantics above are unchanged.
+Standard report facts are server-formatted blocks; analysis_status COMPLETE denotes
+fact execution/reconciliation scope only, never the accuracy of model-delivered
+text. Final-output verification is separately NOT_INDEPENDENTLY_VERIFIED without
+actual independent evidence. No Agent-issued overall report/test PASS.

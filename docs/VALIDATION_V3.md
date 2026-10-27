@@ -1,34 +1,41 @@
-# Validation record — 3.1.3 Agent/report update
+# Evidence record — 3.2.0 fact-block pilot
 
-Status: **PENDING_LIVE_ACCEPTANCE**.
+Status: **PENDING_LIVE_PILOT**. No production certification.
 
-| Area | Actual status | Evidence boundary |
+| Area | Actual status | Boundary |
 |---|---|---|
-| Prompt / Skill / display changes | Implemented locally | Not a real Agent execution |
-| Offline contracts / Skill structure / regressions | NOT_RUN | Explicit user request; no suites run |
-| Local ClickHouse SQL | NOT_RUN | Atlas SQL unchanged from 3.1.1 |
-| Platform config / deployed JDBC / pagination | NOT_RUN | No live environment used |
-| Real Agent report correctness / repeatability | NOT_RUN | Requires raw tool evidence and final reports |
-| Packaging | Content hashes and ZIPs only | Does not certify any analysis or report |
+| Block SQL/mapping, Prompt/Skill | Implemented locally | Source generation, not execution evidence |
+| Offline contracts, unit/golden/SQL tests | NOT_RUN | Explicit user request; no suites executed |
+| Platform formal config-check | NOT_RUN | New vocabulary/resolver uses existing supported schema patterns; still requires actual check |
+| Target ClickHouse 22.8 / JDBC/source execution | NOT_RUN | New SQL formatting/windows require actual target run |
+| Source query plan/performance | NOT_RUN | No measured scan/latency/timeout claim |
+| Real Agent fixed-block relay | NOT_RUN | No native renderer; model may still alter/omit content |
+| Packaging | File hashes and allowlisted ZIPs | Not data/LLM-output acceptance |
 
-Agent contract 3.1.3 uses unchanged Atlas publication 3.1.1/revision 2 and compatible
-metric version 3.1.0. `COUNTRY_VENDOR_SUMMARY_3_1_3.md` records the current presentation change;
-`REPORT_RENDERING_3_1_2.md` records the base rendering changes and evidence
-limits, deployment instructions and pending real-run checks. `VALIDATION_V3_1_1.md`
-is historical evidence only; its PASS claims do NOT apply to changed 3.1.3 files.
+New endpoints are additive. Existing raw-report/explore/monitor SQL is retained;
+source generation doesn't prove new nested wrapper compatibility. Metric version
+3.1.0 unchanged, Atlas publication/template 3.2.0/revision 3. No token or direct
+production connection used. Historical 3.1.1 offline PASS does not apply here.
 
-Packaging command used for this delivery:
+Only packaging command used:
 
 ```sh
 python3 -B scripts/build_release.py --package-only
 ```
 
-This path does not import or execute the offline test runner or accept prior SQL
-receipts. It records NOT_RUN, no validation input hashes, and separate artifact
-hashes. The archive-integrity/sensitive-file checks are packaging safeguards, not
-business-logic tests. Production acceptance stays pending even when ZIPs are built.
+No validation runner is imported/executed by package-only. Manifest records
+NOT_RUN with empty validation input hashes and separate artifact hashes. ZIP
+integrity and sensitive-file checks are packaging safeguards, not offline tests.
 
-No credentials, direct production database access, mail or runtime Python used.
-No actual Agent/Atlas verification, performance measurement or host hard gate is
-claimed. Real-run acceptance must record identities, handle linkage, expected vs
-received scope, reconciliations and final bilingual output, not just file counts.
+Before rollout follow FACT_BLOCKS_3_2_0.md and each independent query in
+FACT_BLOCKS_PILOT.eql: actual platform config → single-Country real source query →
+raw block/count/check review → same-date zh/en Agent relay → two Countries/history/
+interactive regression. Save original handles/raw content and final response.
+Do not use the final report's model-written “verified” claim as raw source proof.
+
+Server reconciliation, client receipt, and final report verification are separate.
+No model self-awarded overall PASS. Default final text state is
+NOT_INDEPENDENTLY_VERIFIED absent actual independent evaluation. Source content
+hash identifies returned bytes; it does not prove final answer matches those bytes.
+If the real pilot fails, diagnose its actual error and keep production acceptance
+pending; don't claim another prompt edit has solved it without execution evidence.

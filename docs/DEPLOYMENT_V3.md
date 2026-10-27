@@ -1,14 +1,9 @@
-> Agent/report 3.1.3 update: use COUNTRY_VENDOR_SUMMARY_3_1_3.md and the current
-> VALIDATION_V3.md. Replace Prompt + complete Skill together. Atlas remains
-> publication 3.1.1/revision 2, metric/API 3.1.0; no graph reupload if already there.
-> This delivery uses --package-only: offline and live checks NOT_RUN. The general
-> rollout checklist below lists available checks, NOT checks performed this turn.
-> Previous validation details moved to VALIDATION_V3_1_1.md (historical only).
-
-> 3.1.1 SQL cancellation patch: deploy `atlas/charts/pastdue.edn` from the
-> matching 3.1.1 ZIP (publication 3.1.1, source revision 2; metric version stays
-> 3.1.0), then Prompt/Skill. See REPORT_SQL_FIX_3_1_1.md for exact Studio smoke
-> query, preserved 3.1.0 rollback, and pending ClickHouse 22.8 acceptance.
+> Current 3.2.0 is a PENDING_LIVE_PILOT, not a production acceptance.
+> Deploy the NEW Atlas EDN (publication 3.2.0/revision 3) before new Prompt/Skill.
+> FACT_BLOCKS_3_2_0.md is the current rollout/rollback authority; use independent
+> plain queries from FACT_BLOCKS_PILOT.eql for single-Country real pilot first.
+> --package-only ran; offline/platform/source/real-Agent checks NOT_RUN.
+> The historical general checklist below is not execution evidence for this release.
 
 # Deployment and rollback — v3.1
 
@@ -23,7 +18,7 @@ as certification of these changed v3.1 contracts.
    never reuse historical chat tokens. Policy allowlists aren't RLS.
 3. Read API_V3.md and the version-specific update/validation notes. Offline
    regressions are optional owner-selected development work, not evidence of live
-   Agent correctness; none were run for 3.1.2/3.1.3 per user request. There is no Agent
+   Agent correctness; none were run for 3.1.2/3.1.3/3.2.0 per user request. There is no Agent
    runtime Python. Old evidence applies only to its recorded artifact/version.
 4. Release owner verifies combined Atlas v3.1 graph, source-slot binding and actual
    formal platform config-check. Static inventory: 35 resolvers / 595 attributes;
@@ -55,7 +50,7 @@ as certification of these changed v3.1 contracts.
    columns FROM data ORDER BY discovered row-ordinal. Do not assume a separate
    structured-read tool. No source SQL, joins, writes or metric/denominator/rank/
    selection changes. Handle materialization isn't a new logical fact request.
-6. Run `start test` (fully English), `开始测试` (fully Chinese), normal daily
+6. After single-Country pilot, run `start test` (fully English), `开始测试` (fully Chinese), normal daily
    no-trigger and real triggered fixtures, historical events/full and interactive
    cases. Test forces applicable drilldown without inventing triggers. Every selected
    Vendor gets fixed compact full sections and bilingual rule diagnosis. AUTO US
@@ -72,7 +67,7 @@ as certification of these changed v3.1 contracts.
    stable metric/denominator, dates, selected set, module/field order.
 9. Save release/environment, original inputs/scope-key, all raw results/handles,
    captures, reconciliation, request count and final report in approved restricted
-   evidence storage. Production-ready only after real Atlas/JDBC/Agent gates pass.
+   evidence storage. Production-ready only after real Atlas/JDBC/Agent acceptance; never model-issued PASS.
 
 ## Rollback
 Restore saved graph/source binding and matching Prompt/Skill/release metadata as

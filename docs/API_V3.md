@@ -1,3 +1,14 @@
+# 3.2.0 additive block API — current standard report route
+
+Standard reports use pastdue.report-block-query/blocks (seven report inputs +
+language zh/en) and pastdue.monitor-block-query/countries (calendar, threshold,
+language). See FACT_BLOCKS_3_2_0.md and the shipped Skill fact-block-contract.md.
+Old report/monitor and flexible explore definitions below keep their metrics and
+remain available; they are not a silent alternate default report renderer.
+Underlying metrics remain 3.1.0; publication/template 3.2.0, source revision 3.
+Actual platform config/JDBC/source compatibility is NOT_RUN pending one-Country
+pilot; additional SQL formatter cost is unmeasured. No new runtime/service/table.
+
 # API v3.1 — unified flexible analysis + report preset
 
 Application contracts 3.1.0; Atlas semantic format remains 2.0.0. The integrated

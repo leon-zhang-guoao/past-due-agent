@@ -15,7 +15,7 @@ from pathlib import Path, PurePosixPath
 from edn_io import read, loads, dumps, K
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = '3.1.3'
+VERSION = '3.2.0'
 SKILL = 'skill/pastdue-analysis/'
 MANIFEST_PATH = SKILL + 'references/release-manifest.edn'
 MANIFEST = ROOT / MANIFEST_PATH
@@ -28,11 +28,11 @@ ROOT_FILES = {'agent/SYSTEM_PROMPT.md', 'agent/INVOCATION_EXAMPLES.md',
               'ACCEPTANCE_TESTS.md', 'DESIGN.md', 'AGENT_SKILL_EDN_DESIGN.md',
               'IMPLEMENTATION_NOTES.md', 'docs/PASTDUE_AGENT_REDESIGN.md', 'docs/API_V3.md',
               'docs/DEPLOYMENT_V3.md', 'docs/VALIDATION_V3.md', 'docs/VALIDATION_V3_1_1.md',
-              'docs/REPORT_RENDERING_3_1_2.md', 'docs/COUNTRY_VENDOR_SUMMARY_3_1_3.md', 'docs/BASELINE_V3_1.md', 'docs/REPORT_SQL_FIX_3_1_1.md'}
+              'docs/REPORT_RENDERING_3_1_2.md', 'docs/COUNTRY_VENDOR_SUMMARY_3_1_3.md', 'docs/FACT_BLOCKS_3_2_0.md', 'docs/FACT_BLOCKS_PILOT.eql', 'docs/BASELINE_V3_1.md', 'docs/REPORT_SQL_FIX_3_1_1.md'}
 REF_NAMES = {'atlas-query-playbook.md', 'completion-contract.md', 'current-context.md',
              'data-contract.md', 'eta-diagnostic-rules.edn', 'metric-definitions.md',
              'policy.edn', 'report-format.md', 'table-display-contract.edn',
-             'table-display-contract.md'}
+             'table-display-contract.md', 'fact-block-contract.md', 'fact-block-queries.eql'}
 SECRET = re.compile(r'oat_v1\.|Authorization\s*:\s*Bearer\s+\S+|'
                     r'jdbc:clickhouse://(?!\$)|-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY|'
                     r'\b(?:sk-(?:proj-)?[A-Za-z0-9_-]{20,}|gh[pousr]_[A-Za-z0-9]{20,})|'
@@ -179,7 +179,7 @@ def rollback(root=ROOT):
 
 def _manifest(full, skill, offline, sql, inputs, doc, baseline):
     manifest = {
-        ':release-version': VERSION, ':status': 'PENDING_LIVE_ACCEPTANCE',
+        ':release-version': VERSION, ':status': 'PENDING_LIVE_PILOT',
         ':atlas-semantic-format': '2.0.0',
         ':required-resolvers': {rid: r[':input'] for rid,r in doc[':execution'][':resolvers'].items() if rid.startswith('pastdue_v3_')},
         ':offline-contracts': offline['status'], ':skill-structure': next((c['status'] for c in offline['checks'] if c['name'] == 'validate_bundle.py'), 'NOT_RUN'),
@@ -190,7 +190,7 @@ def _manifest(full, skill, offline, sql, inputs, doc, baseline):
         ':validation-input-sha256': {} if offline['status'] == 'NOT_RUN' else inputs,
         ':artifact-input-sha256': inputs,
         ':agent-contract-version': VERSION,
-        ':required-atlas-publication': '3.1.1',
+        ':required-atlas-publication': '3.2.0',
         ':compatible-metric-version': '3.1.0',
         ':manifest-self-hash': 'excluded-to-avoid-recursion',
         ':sha256': {k: sha(v) for k,v in full.items()},
@@ -307,7 +307,7 @@ def main():
             receipt = json.loads(args.sql_receipt.read_text()) if args.sql_receipt else None
             result = build(sql_receipt=receipt, package_only=args.package_only)
             print('Built', ARCHIVE, 'and', SKILL_ARCHIVE)
-            print('PENDING_LIVE_ACCEPTANCE; local SQL:', result[':local-clickhouse-sql'], '; live checks NOT_RUN')
+            print('PENDING_LIVE_PILOT; local SQL:', result[':local-clickhouse-sql'], '; live checks NOT_RUN')
         return 0
     except (OSError, ValueError, KeyError, zipfile.BadZipFile, subprocess.CalledProcessError) as exc:
         print('FAIL', exc)

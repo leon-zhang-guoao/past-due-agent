@@ -53,18 +53,33 @@
        :example/parameters {}
        :example/requires #{:query/pagination-v1 :connector/sql :query/sort-v1}
        :example/expected {:result/cardinality :many
-         :result/fields [:pastdue.analysis-scope/country-code :pastdue.analysis-scope/target-snapshot-date :pastdue.analysis-scope/previous-snapshot-date :pastdue.analysis-scope/calendar-mode :pastdue.analysis-scope/scope-status :pastdue.analysis-scope/selected-vendor-count :pastdue.analysis-scope/target-country-open :pastdue.analysis-scope/previous-country-open :pastdue.analysis-scope/row-ordinal]}}]
+         :result/fields [:pastdue.analysis-scope/country-code :pastdue.analysis-scope/target-snapshot-date :pastdue.analysis-scope/previous-snapshot-date :pastdue.analysis-scope/calendar-mode :pastdue.analysis-scope/scope-status :pastdue.analysis-scope/selected-vendor-count :pastdue.analysis-scope/target-country-open :pastdue.analysis-scope/previous-country-open :pastdue.analysis-scope/row-ordinal]}} {:example/id "v3-fixed-report-blocks"
+       :example/title "Fixed fact blocks — live pilot required"
+       :example/description "Illustrative dates only; plain Studio join. No live acceptance claimed."
+       :example/entity {:pastdue.report-block-query/country-code "CA"
+         :pastdue.report-block-query/target-snapshot-date "2026-10-26"
+         :pastdue.report-block-query/previous-snapshot-date "2026-10-23"
+         :pastdue.report-block-query/calendar-mode "WEEKDAYS"
+         :pastdue.report-block-query/selection-mode "POSITIVE_TOP_N"
+         :pastdue.report-block-query/top-n 10
+         :pastdue.report-block-query/vendor-code 0
+         :pastdue.report-block-query/language "en"}
+       :example/eql "[{:pastdue.report-block-query/blocks [:pastdue.report-block/scope-key :pastdue.report-block/country-code :pastdue.report-block/calendar-mode :pastdue.report-block/selection-mode :pastdue.report-block/language :pastdue.report-block/block-id :pastdue.report-block/block-type :pastdue.report-block/vendor-name :pastdue.report-block/scope-status :pastdue.report-block/data-check-status :pastdue.report-block/data-check-reason :pastdue.report-block/metric-version :pastdue.report-block/template-version :pastdue.report-block/business-timezone :pastdue.report-block/content-markdown :pastdue.report-block/diagnostic-evidence :pastdue.report-block/source-checks-json :pastdue.report-block/selected-vendors-json :pastdue.report-block/country-control-json :pastdue.report-block/content-sha256 :pastdue.report-block/source-checks-schema :pastdue.report-block/target-snapshot-date :pastdue.report-block/previous-snapshot-date :pastdue.report-block/queried-at-local :pastdue.report-block/vendor-code :pastdue.report-block/contribution-rank :pastdue.report-block/selected-vendor-count :pastdue.report-block/expected-block-count :pastdue.report-block/source-record-count :pastdue.report-block/expected-source-record-count :pastdue.report-block/row-ordinal :pastdue.report-block/source-row-start :pastdue.report-block/source-row-end]}]"
+       :example/parameters {}
+       :example/requires #{:connector/sql :query/pagination-v1 :query/sort-v1}
+       :example/expected {:result/cardinality :many
+         :result/fields [:pastdue.report-block/scope-key :pastdue.report-block/country-code :pastdue.report-block/calendar-mode :pastdue.report-block/selection-mode :pastdue.report-block/language :pastdue.report-block/block-id :pastdue.report-block/block-type :pastdue.report-block/vendor-name :pastdue.report-block/scope-status :pastdue.report-block/data-check-status :pastdue.report-block/data-check-reason :pastdue.report-block/metric-version :pastdue.report-block/template-version :pastdue.report-block/business-timezone :pastdue.report-block/content-markdown :pastdue.report-block/diagnostic-evidence :pastdue.report-block/source-checks-json :pastdue.report-block/selected-vendors-json :pastdue.report-block/country-control-json :pastdue.report-block/content-sha256 :pastdue.report-block/source-checks-schema :pastdue.report-block/target-snapshot-date :pastdue.report-block/previous-snapshot-date :pastdue.report-block/queried-at-local :pastdue.report-block/vendor-code :pastdue.report-block/contribution-rank :pastdue.report-block/selected-vendor-count :pastdue.report-block/expected-block-count :pastdue.report-block/source-record-count :pastdue.report-block/expected-source-record-count :pastdue.report-block/row-ordinal :pastdue.report-block/source-row-start :pastdue.report-block/source-row-end]}}]
     :graph/exposure :restricted
     :graph/usage-guide {:guide/purpose "Detect worsening ETA past-due ratios per country (latest vs previous completed PST snapshot), attribute the increase to vendors, explain it by ETA code / ETA source, and find owners, high-risk PO lines and notification recipients."
       :guide/asset-scope "Read-only ClickHouse aggregates over past_due.vendor_past_due_daily, past_due.past_due_detail_view, past_due.vendor_master_mapping_view and past_due.vendor_eta_notification_contact; current and historical (date-range) views."
       :guide/applicability "Countries are analysed independently (US, CA in scope). Snapshots strictly before the current PST date only. Relative change is (latest - previous) / previous; a zero previous ratio yields null plus zero-baseline-increase."
-      :guide/limitations ["Legacy v2 entries retain calendar-day behavior; v3 uses explicit calendar mode." "v3 SQL selects Vendor Top N and computes ETA Top-5/Other summaries before paging." "Read and reconcile every facts/check page; returned-result completeness alone is insufficient." "Permissions/RLS must be enforced by the actual deployment; Skill allowlists are not access control." "No cross-query transaction or production usability claim without live validation."]
+      :guide/limitations ["Legacy v2 entries retain calendar-day behavior; v3 uses explicit calendar mode." "v3 SQL selects Vendor Top N and computes ETA Top-5/Other summaries before paging." "Read and reconcile every facts/check page; returned-result completeness alone is insufficient." "Permissions/RLS must be enforced by the actual deployment; Skill allowlists are not access control." "No cross-query transaction or production usability claim without live validation." "Fixed fact blocks require real ClickHouse/Atlas and Agent pilot; hashes/SQL checks do not verify final model output."]
       :guide/composition "Standalone Graph with one logical SQL Source Slot (eta-clickhouse); no dependencies."
-      :guide/examples ["v3-weekday-monitor" "v3-fixed-pair-scope-validation"]}
+      :guide/examples ["v3-weekday-monitor" "v3-fixed-pair-scope-validation" "v3-fixed-report-blocks"]}
     :graph/dependencies []
     :graph/terms []
-    :graph/entities ["pastdue.country-history-query" "pastdue.country-monitor" "pastdue.country-trigger-event" "pastdue.current-high-risk-line" "pastdue.current-vendor-past-due-rank" "pastdue.current-vendor-rank-query" "pastdue.current-vendor-alert-type-count" "pastdue.current-alert-type-query" "pastdue.current-detail-line" "pastdue.current-detail-query" "pastdue.historical-vendor-contribution" "pastdue.historical-vendor-eta-code" "pastdue.historical-vendor-eta-source" "pastdue.notification-recipient" "pastdue.owner-current-risk" "pastdue.vendor-contribution" "pastdue.vendor-eta-code" "pastdue.vendor-eta-source" "pastdue.vendor-master-mapping" "pastdue.vendor-master-mapping-query" "pastdue.vendor-master-mapping-rollup" "pastdue.analysis-query" "pastdue.analysis-vendor" "pastdue.analysis-eta-code" "pastdue.analysis-eta-source" "pastdue.analysis-eta-us-source" "pastdue.analysis-check" "pastdue.monitor-query" "pastdue.monitor-fact" "pastdue.history-query" "pastdue.history-fact" "pastdue.current-analysis-query" "pastdue.current-analysis-fact" "pastdue.analysis-scope" "pastdue.report-query" "pastdue.report-fact" "pastdue.explore-query" "pastdue.explore-fact"]
-    :graph/resolvers ["pastdue_country_monitor_all" "pastdue_country_monitor_by_country" "pastdue_positive_vendor_contributors" "pastdue_vendor_changes" "pastdue_vendor_eta_code_drivers" "pastdue_vendor_eta_source_drivers" "pastdue_current_owner_risks_by_vendor" "pastdue_current_high_risk_lines_by_vendor" "pastdue_current_vendor_past_due_ranks" "pastdue_current_vendor_alert_type_counts" "pastdue_current_detail_matching_lines" "pastdue_historical_country_comparisons" "pastdue_historical_country_trigger_events" "pastdue_historical_positive_vendor_contributors" "pastdue_historical_vendor_changes" "pastdue_historical_vendor_eta_code_drivers" "pastdue_historical_vendor_eta_code_changes" "pastdue_historical_vendor_eta_source_drivers" "pastdue_historical_vendor_eta_source_changes" "pastdue_notification_recipients_by_vendor" "pastdue_vendor_master_mappings_by_vendor" "pastdue_vendor_master_mappings_by_filter" "pastdue_vendor_master_mapping_rollups_by_country" "pastdue_v3_analysis_query_vendor_comparisons" "pastdue_v3_analysis_query_eta_code_changes" "pastdue_v3_analysis_query_eta_source_changes" "pastdue_v3_analysis_query_us_source_changes" "pastdue_v3_analysis_query_vendor_checks" "pastdue_v3_monitor_query_countries" "pastdue_v3_history_query_comparisons" "pastdue_v3_history_query_trigger_events" "pastdue_v3_current_analysis_query_rows" "pastdue_v3_analysis_query_scope_status" "pastdue_v3_report_query_rows" "pastdue_v3_explore_query_rows"]
+    :graph/entities ["pastdue.country-history-query" "pastdue.country-monitor" "pastdue.country-trigger-event" "pastdue.current-high-risk-line" "pastdue.current-vendor-past-due-rank" "pastdue.current-vendor-rank-query" "pastdue.current-vendor-alert-type-count" "pastdue.current-alert-type-query" "pastdue.current-detail-line" "pastdue.current-detail-query" "pastdue.historical-vendor-contribution" "pastdue.historical-vendor-eta-code" "pastdue.historical-vendor-eta-source" "pastdue.notification-recipient" "pastdue.owner-current-risk" "pastdue.vendor-contribution" "pastdue.vendor-eta-code" "pastdue.vendor-eta-source" "pastdue.vendor-master-mapping" "pastdue.vendor-master-mapping-query" "pastdue.vendor-master-mapping-rollup" "pastdue.analysis-query" "pastdue.analysis-vendor" "pastdue.analysis-eta-code" "pastdue.analysis-eta-source" "pastdue.analysis-eta-us-source" "pastdue.analysis-check" "pastdue.monitor-query" "pastdue.monitor-fact" "pastdue.history-query" "pastdue.history-fact" "pastdue.current-analysis-query" "pastdue.current-analysis-fact" "pastdue.analysis-scope" "pastdue.report-query" "pastdue.report-fact" "pastdue.explore-query" "pastdue.explore-fact" "pastdue.report-block-query" "pastdue.report-block" "pastdue.monitor-block-query" "pastdue.monitor-block"]
+    :graph/resolvers ["pastdue_country_monitor_all" "pastdue_country_monitor_by_country" "pastdue_positive_vendor_contributors" "pastdue_vendor_changes" "pastdue_vendor_eta_code_drivers" "pastdue_vendor_eta_source_drivers" "pastdue_current_owner_risks_by_vendor" "pastdue_current_high_risk_lines_by_vendor" "pastdue_current_vendor_past_due_ranks" "pastdue_current_vendor_alert_type_counts" "pastdue_current_detail_matching_lines" "pastdue_historical_country_comparisons" "pastdue_historical_country_trigger_events" "pastdue_historical_positive_vendor_contributors" "pastdue_historical_vendor_changes" "pastdue_historical_vendor_eta_code_drivers" "pastdue_historical_vendor_eta_code_changes" "pastdue_historical_vendor_eta_source_drivers" "pastdue_historical_vendor_eta_source_changes" "pastdue_notification_recipients_by_vendor" "pastdue_vendor_master_mappings_by_vendor" "pastdue_vendor_master_mappings_by_filter" "pastdue_vendor_master_mapping_rollups_by_country" "pastdue_v3_analysis_query_vendor_comparisons" "pastdue_v3_analysis_query_eta_code_changes" "pastdue_v3_analysis_query_eta_source_changes" "pastdue_v3_analysis_query_us_source_changes" "pastdue_v3_analysis_query_vendor_checks" "pastdue_v3_monitor_query_countries" "pastdue_v3_history_query_comparisons" "pastdue_v3_history_query_trigger_events" "pastdue_v3_current_analysis_query_rows" "pastdue_v3_analysis_query_scope_status" "pastdue_v3_report_query_rows" "pastdue_v3_explore_query_rows" "pastdue_v3_report_block_query_blocks" "pastdue_v3_monitor_block_query_countries"]
     :graph/label "PastDue Monitoring"}
   :vocabulary {:entities {"pastdue.country-history-query" {:entity/label "PastDue Country History Query"
         :entity/identity [:pastdue.country-history-query/country-code :pastdue.country-history-query/range-end-date :pastdue.country-history-query/range-start-date :pastdue.country-history-query/relative-change-threshold]
@@ -217,6 +232,22 @@
       "pastdue.explore-fact" {:entity/label "Explore Fact"
         :entity/identity [:pastdue.explore-fact/scope-key :pastdue.explore-fact/country-code :pastdue.explore-fact/time-basis :pastdue.explore-fact/calendar-mode :pastdue.explore-fact/grain :pastdue.explore-fact/target-snapshot-date :pastdue.explore-fact/previous-snapshot-date :pastdue.explore-fact/vendor-code :pastdue.explore-fact/eta-code :pastdue.explore-fact/eta-source :pastdue.explore-fact/denominator-scope :pastdue.explore-fact/record-type]
         :entity/attributes [:pastdue.explore-fact/scope-key :pastdue.explore-fact/record-type :pastdue.explore-fact/scope-status :pastdue.explore-fact/country-code :pastdue.explore-fact/vendor-code :pastdue.explore-fact/vendor-name :pastdue.explore-fact/target-snapshot-date :pastdue.explore-fact/previous-snapshot-date :pastdue.explore-fact/calendar-mode :pastdue.explore-fact/time-basis :pastdue.explore-fact/grain :pastdue.explore-fact/eta-code :pastdue.explore-fact/eta-source :pastdue.explore-fact/denominator-scope :pastdue.explore-fact/metric-version :pastdue.explore-fact/organization-basis :pastdue.explore-fact/business-timezone :pastdue.explore-fact/queried-at-local :pastdue.explore-fact/target-past-due-count :pastdue.explore-fact/previous-past-due-count :pastdue.explore-fact/target-open-count :pastdue.explore-fact/previous-open-count :pastdue.explore-fact/target-ratio-denominator :pastdue.explore-fact/previous-ratio-denominator :pastdue.explore-fact/target-share-denominator :pastdue.explore-fact/previous-share-denominator :pastdue.explore-fact/target-country-open :pastdue.explore-fact/previous-country-open :pastdue.explore-fact/past-due-count-change :pastdue.explore-fact/selection-rank :pastdue.explore-fact/expected-record-count :pastdue.explore-fact/row-ordinal :pastdue.explore-fact/target-past-due-ratio :pastdue.explore-fact/previous-past-due-ratio :pastdue.explore-fact/target-past-due-share :pastdue.explore-fact/previous-past-due-share :pastdue.explore-fact/past-due-count-relative-change :pastdue.explore-fact/past-due-ratio-change :pastdue.explore-fact/delta-country-contribution]
+        :entity/description "Analysis contract; America/Los_Angeles (PST/PDT), fixed scope and verifiable facts."}
+      "pastdue.report-block-query" {:entity/label "Report Block Query"
+        :entity/identity [:pastdue.report-block-query/country-code :pastdue.report-block-query/target-snapshot-date :pastdue.report-block-query/previous-snapshot-date :pastdue.report-block-query/calendar-mode :pastdue.report-block-query/selection-mode :pastdue.report-block-query/top-n :pastdue.report-block-query/vendor-code :pastdue.report-block-query/language]
+        :entity/attributes [:pastdue.report-block-query/country-code :pastdue.report-block-query/target-snapshot-date :pastdue.report-block-query/previous-snapshot-date :pastdue.report-block-query/calendar-mode :pastdue.report-block-query/selection-mode :pastdue.report-block-query/top-n :pastdue.report-block-query/vendor-code :pastdue.report-block-query/language :pastdue.report-block-query/blocks]
+        :entity/description "Analysis contract; America/Los_Angeles (PST/PDT), fixed scope and verifiable facts."}
+      "pastdue.report-block" {:entity/label "Report Block"
+        :entity/identity [:pastdue.report-block/block-id :pastdue.report-block/template-version]
+        :entity/attributes [:pastdue.report-block/scope-key :pastdue.report-block/country-code :pastdue.report-block/calendar-mode :pastdue.report-block/selection-mode :pastdue.report-block/language :pastdue.report-block/block-id :pastdue.report-block/block-type :pastdue.report-block/vendor-name :pastdue.report-block/scope-status :pastdue.report-block/data-check-status :pastdue.report-block/data-check-reason :pastdue.report-block/metric-version :pastdue.report-block/template-version :pastdue.report-block/business-timezone :pastdue.report-block/content-markdown :pastdue.report-block/diagnostic-evidence :pastdue.report-block/source-checks-json :pastdue.report-block/selected-vendors-json :pastdue.report-block/country-control-json :pastdue.report-block/content-sha256 :pastdue.report-block/source-checks-schema :pastdue.report-block/target-snapshot-date :pastdue.report-block/previous-snapshot-date :pastdue.report-block/queried-at-local :pastdue.report-block/vendor-code :pastdue.report-block/contribution-rank :pastdue.report-block/selected-vendor-count :pastdue.report-block/expected-block-count :pastdue.report-block/source-record-count :pastdue.report-block/expected-source-record-count :pastdue.report-block/row-ordinal :pastdue.report-block/source-row-start :pastdue.report-block/source-row-end]
+        :entity/description "Analysis contract; America/Los_Angeles (PST/PDT), fixed scope and verifiable facts."}
+      "pastdue.monitor-block-query" {:entity/label "Monitor Block Query"
+        :entity/identity [:pastdue.monitor-block-query/calendar-mode :pastdue.monitor-block-query/relative-change-threshold :pastdue.monitor-block-query/language]
+        :entity/attributes [:pastdue.monitor-block-query/calendar-mode :pastdue.monitor-block-query/relative-change-threshold :pastdue.monitor-block-query/language :pastdue.monitor-block-query/countries]
+        :entity/description "Analysis contract; America/Los_Angeles (PST/PDT), fixed scope and verifiable facts."}
+      "pastdue.monitor-block" {:entity/label "Monitor Block"
+        :entity/identity [:pastdue.monitor-block/scope-key :pastdue.monitor-block/country-code :pastdue.monitor-block/target-snapshot-date :pastdue.monitor-block/language :pastdue.monitor-block/template-version]
+        :entity/attributes [:pastdue.monitor-block/country-code :pastdue.monitor-block/target-snapshot-date :pastdue.monitor-block/previous-snapshot-date :pastdue.monitor-block/calendar-mode :pastdue.monitor-block/expected-target-date :pastdue.monitor-block/has-comparable-snapshots :pastdue.monitor-block/business-status :pastdue.monitor-block/data-status :pastdue.monitor-block/target-past-due-count :pastdue.monitor-block/previous-past-due-count :pastdue.monitor-block/target-open-count :pastdue.monitor-block/previous-open-count :pastdue.monitor-block/snapshot-gap-days :pastdue.monitor-block/target-lag-workdays :pastdue.monitor-block/missing-workdays-between :pastdue.monitor-block/target-past-due-ratio :pastdue.monitor-block/previous-past-due-ratio :pastdue.monitor-block/relative-ratio-change :pastdue.monitor-block/percentage-point-change :pastdue.monitor-block/scope-key :pastdue.monitor-block/language :pastdue.monitor-block/template-version :pastdue.monitor-block/business-timezone :pastdue.monitor-block/queried-at-local :pastdue.monitor-block/content-markdown :pastdue.monitor-block/content-sha256 :pastdue.monitor-block/row-ordinal :pastdue.monitor-block/expected-record-count]
         :entity/description "Analysis contract; America/Los_Angeles (PST/PDT), fixed scope and verifiable facts."}}
     :attributes {:pastdue.country-history-query/comparisons {:attribute/label "Comparisons"
         :attribute/type :ref
@@ -2995,7 +3026,307 @@
       :pastdue.explore-fact/scope-key {:attribute/label "Scope Key"
         :attribute/type :string
         :attribute/nullable? false
-        :attribute/description "v3 scope-key; see shipped semantic contract. Identity is from actual result grouping."}}
+        :attribute/description "v3 scope-key; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.report-block-query/country-code {:attribute/label "Country Code"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "v3 country-code; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.report-block-query/target-snapshot-date {:attribute/label "Target Snapshot Date"
+        :attribute/type :date
+        :attribute/nullable? false
+        :attribute/description "v3 target-snapshot-date; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.report-block-query/previous-snapshot-date {:attribute/label "Previous Snapshot Date"
+        :attribute/type :date
+        :attribute/nullable? false
+        :attribute/description "v3 previous-snapshot-date; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.report-block-query/calendar-mode {:attribute/label "Calendar Mode"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "v3 calendar-mode; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.report-block-query/selection-mode {:attribute/label "Selection Mode"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "v3 selection-mode; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.report-block-query/top-n {:attribute/label "Top N"
+        :attribute/type :integer
+        :attribute/nullable? false
+        :attribute/description "v3 top-n; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.report-block-query/vendor-code {:attribute/label "Vendor Code"
+        :attribute/type :integer
+        :attribute/nullable? false
+        :attribute/description "v3 vendor-code; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.report-block-query/language {:attribute/label "Language"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "v3 language; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.report-block/scope-key {:attribute/label "Scope Key"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "v3 scope-key; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.report-block/country-code {:attribute/label "Country Code"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "v3 country-code; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.report-block/calendar-mode {:attribute/label "Calendar Mode"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "v3 calendar-mode; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.report-block/selection-mode {:attribute/label "Selection Mode"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "v3 selection-mode; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.report-block/language {:attribute/label "Language"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "v3 language; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.report-block/block-id {:attribute/label "Block Id"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "v3 block-id; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.report-block/block-type {:attribute/label "Block Type"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "v3 block-type; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.report-block/vendor-name {:attribute/label "Vendor Name"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "v3 vendor-name; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.report-block/scope-status {:attribute/label "Scope Status"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "v3 scope-status; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.report-block/data-check-status {:attribute/label "Data Check Status"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "v3 data-check-status; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.report-block/data-check-reason {:attribute/label "Data Check Reason"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "v3 data-check-reason; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.report-block/metric-version {:attribute/label "Metric Version"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "v3 metric-version; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.report-block/template-version {:attribute/label "Template Version"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "v3 template-version; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.report-block/business-timezone {:attribute/label "Business Timezone"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "v3 business-timezone; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.report-block/content-markdown {:attribute/label "Content Markdown"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "v3 content-markdown; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.report-block/diagnostic-evidence {:attribute/label "Diagnostic Evidence"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "v3 diagnostic-evidence; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.report-block/source-checks-json {:attribute/label "Source Checks Json"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "v3 source-checks-json; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.report-block/selected-vendors-json {:attribute/label "Selected Vendors Json"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "v3 selected-vendors-json; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.report-block/country-control-json {:attribute/label "Country Control Json"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "v3 country-control-json; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.report-block/content-sha256 {:attribute/label "Content Sha256"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "v3 content-sha256; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.report-block/target-snapshot-date {:attribute/label "Target Snapshot Date"
+        :attribute/type :date
+        :attribute/nullable? false
+        :attribute/description "v3 target-snapshot-date; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.report-block/previous-snapshot-date {:attribute/label "Previous Snapshot Date"
+        :attribute/type :date
+        :attribute/nullable? false
+        :attribute/description "v3 previous-snapshot-date; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.report-block/queried-at-local {:attribute/label "Queried At Local"
+        :attribute/type :datetime
+        :attribute/nullable? false
+        :attribute/description "v3 queried-at-local; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.report-block/vendor-code {:attribute/label "Vendor Code"
+        :attribute/type :integer
+        :attribute/nullable? false
+        :attribute/description "v3 vendor-code; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.report-block/contribution-rank {:attribute/label "Contribution Rank"
+        :attribute/type :integer
+        :attribute/nullable? false
+        :attribute/description "v3 contribution-rank; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.report-block/selected-vendor-count {:attribute/label "Selected Vendor Count"
+        :attribute/type :integer
+        :attribute/nullable? false
+        :attribute/description "v3 selected-vendor-count; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.report-block/expected-block-count {:attribute/label "Expected Block Count"
+        :attribute/type :integer
+        :attribute/nullable? false
+        :attribute/description "v3 expected-block-count; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.report-block/source-record-count {:attribute/label "Source Record Count"
+        :attribute/type :integer
+        :attribute/nullable? false
+        :attribute/description "v3 source-record-count; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.report-block/expected-source-record-count {:attribute/label "Expected Source Record Count"
+        :attribute/type :integer
+        :attribute/nullable? false
+        :attribute/description "v3 expected-source-record-count; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.report-block/row-ordinal {:attribute/label "Row Ordinal"
+        :attribute/type :integer
+        :attribute/nullable? false
+        :attribute/description "v3 row-ordinal; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.report-block/source-row-start {:attribute/label "Source Row Start"
+        :attribute/type :integer
+        :attribute/nullable? false
+        :attribute/description "v3 source-row-start; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.report-block/source-row-end {:attribute/label "Source Row End"
+        :attribute/type :integer
+        :attribute/nullable? false
+        :attribute/description "v3 source-row-end; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.report-block-query/blocks {:attribute/label "Blocks"
+        :attribute/type :ref
+        :attribute/nullable? false
+        :attribute/description "v3 bounded facts; fetch and reconcile every page before declaring completeness."
+        :attribute/target "pastdue.report-block"
+        :attribute/cardinality :many}
+      :pastdue.monitor-block-query/calendar-mode {:attribute/label "Calendar Mode"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "v3 calendar-mode; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.monitor-block-query/relative-change-threshold {:attribute/label "Relative Change Threshold"
+        :attribute/type :decimal
+        :attribute/nullable? false
+        :attribute/description "v3 relative-change-threshold; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.monitor-block-query/language {:attribute/label "Language"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "v3 language; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.monitor-block/country-code {:attribute/label "Country Code"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "v3 country-code; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.monitor-block/target-snapshot-date {:attribute/label "Target Snapshot Date"
+        :attribute/type :date
+        :attribute/nullable? false
+        :attribute/description "v3 target-snapshot-date; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.monitor-block/previous-snapshot-date {:attribute/label "Previous Snapshot Date"
+        :attribute/type :date
+        :attribute/nullable? true
+        :attribute/description "v3 previous-snapshot-date; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.monitor-block/calendar-mode {:attribute/label "Calendar Mode"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "v3 calendar-mode; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.monitor-block/expected-target-date {:attribute/label "Expected Target Date"
+        :attribute/type :date
+        :attribute/nullable? false
+        :attribute/description "v3 expected-target-date; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.monitor-block/has-comparable-snapshots {:attribute/label "Has Comparable Snapshots"
+        :attribute/type :boolean
+        :attribute/nullable? false
+        :attribute/description "v3 has-comparable-snapshots; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.monitor-block/business-status {:attribute/label "Business Status"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "v3 business-status; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.monitor-block/data-status {:attribute/label "Data Status"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "v3 data-status; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.monitor-block/target-past-due-count {:attribute/label "Target Past Due Count"
+        :attribute/type :integer
+        :attribute/nullable? false
+        :attribute/description "v3 target-past-due-count; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.monitor-block/previous-past-due-count {:attribute/label "Previous Past Due Count"
+        :attribute/type :integer
+        :attribute/nullable? true
+        :attribute/description "v3 previous-past-due-count; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.monitor-block/target-open-count {:attribute/label "Target Open Count"
+        :attribute/type :integer
+        :attribute/nullable? false
+        :attribute/description "v3 target-open-count; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.monitor-block/previous-open-count {:attribute/label "Previous Open Count"
+        :attribute/type :integer
+        :attribute/nullable? true
+        :attribute/description "v3 previous-open-count; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.monitor-block/snapshot-gap-days {:attribute/label "Snapshot Gap Days"
+        :attribute/type :integer
+        :attribute/nullable? true
+        :attribute/description "v3 snapshot-gap-days; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.monitor-block/target-lag-workdays {:attribute/label "Target Lag Workdays"
+        :attribute/type :integer
+        :attribute/nullable? false
+        :attribute/description "v3 target-lag-workdays; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.monitor-block/missing-workdays-between {:attribute/label "Missing Workdays Between"
+        :attribute/type :integer
+        :attribute/nullable? true
+        :attribute/description "v3 missing-workdays-between; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.monitor-block/target-past-due-ratio {:attribute/label "Target Past Due Ratio"
+        :attribute/type :decimal
+        :attribute/nullable? true
+        :attribute/description "v3 target-past-due-ratio; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.monitor-block/previous-past-due-ratio {:attribute/label "Previous Past Due Ratio"
+        :attribute/type :decimal
+        :attribute/nullable? true
+        :attribute/description "v3 previous-past-due-ratio; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.monitor-block/relative-ratio-change {:attribute/label "Relative Ratio Change"
+        :attribute/type :decimal
+        :attribute/nullable? true
+        :attribute/description "v3 relative-ratio-change; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.monitor-block/percentage-point-change {:attribute/label "Percentage Point Change"
+        :attribute/type :decimal
+        :attribute/nullable? true
+        :attribute/description "v3 percentage-point-change; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.monitor-block/scope-key {:attribute/label "Scope Key"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "v3 scope-key; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.monitor-block/language {:attribute/label "Language"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "v3 language; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.monitor-block/template-version {:attribute/label "Template Version"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "v3 template-version; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.monitor-block/business-timezone {:attribute/label "Business Timezone"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "v3 business-timezone; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.monitor-block/queried-at-local {:attribute/label "Queried At Local"
+        :attribute/type :datetime
+        :attribute/nullable? false
+        :attribute/description "v3 queried-at-local; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.monitor-block/content-markdown {:attribute/label "Content Markdown"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "v3 content-markdown; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.monitor-block/content-sha256 {:attribute/label "Content Sha256"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "v3 content-sha256; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.monitor-block/row-ordinal {:attribute/label "Row Ordinal"
+        :attribute/type :integer
+        :attribute/nullable? false
+        :attribute/description "v3 row-ordinal; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.monitor-block/expected-record-count {:attribute/label "Expected Record Count"
+        :attribute/type :integer
+        :attribute/nullable? false
+        :attribute/description "v3 expected-record-count; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.monitor-block-query/countries {:attribute/label "Countries"
+        :attribute/type :ref
+        :attribute/nullable? false
+        :attribute/description "v3 bounded facts; fetch and reconcile every page before declaring completeness."
+        :attribute/target "pastdue.monitor-block"
+        :attribute/cardinality :many}
+      :pastdue.report-block/source-checks-schema {:attribute/label "Source Checks Schema"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "v3 source-checks-schema; see shipped semantic contract. Identity is from actual result grouping."}}
     :terms {}
     :units {"%" {:unit/label "%"}
       "PO lines" {:unit/label "PO lines"}
@@ -3351,7 +3682,27 @@
         :pagination {:default 200
           :max 1000}
         :sort {:allowed [:pastdue.explore-fact/scope-key :pastdue.explore-fact/record-type :pastdue.explore-fact/scope-status :pastdue.explore-fact/country-code :pastdue.explore-fact/vendor-code :pastdue.explore-fact/vendor-name :pastdue.explore-fact/target-snapshot-date :pastdue.explore-fact/previous-snapshot-date :pastdue.explore-fact/calendar-mode :pastdue.explore-fact/time-basis :pastdue.explore-fact/grain :pastdue.explore-fact/eta-code :pastdue.explore-fact/eta-source :pastdue.explore-fact/denominator-scope :pastdue.explore-fact/metric-version :pastdue.explore-fact/organization-basis :pastdue.explore-fact/business-timezone :pastdue.explore-fact/queried-at-local :pastdue.explore-fact/target-past-due-count :pastdue.explore-fact/previous-past-due-count :pastdue.explore-fact/target-open-count :pastdue.explore-fact/previous-open-count :pastdue.explore-fact/target-ratio-denominator :pastdue.explore-fact/previous-ratio-denominator :pastdue.explore-fact/target-share-denominator :pastdue.explore-fact/previous-share-denominator :pastdue.explore-fact/target-country-open :pastdue.explore-fact/previous-country-open :pastdue.explore-fact/past-due-count-change :pastdue.explore-fact/selection-rank :pastdue.explore-fact/expected-record-count :pastdue.explore-fact/row-ordinal :pastdue.explore-fact/target-past-due-ratio :pastdue.explore-fact/previous-past-due-ratio :pastdue.explore-fact/target-past-due-share :pastdue.explore-fact/previous-past-due-share :pastdue.explore-fact/past-due-count-relative-change :pastdue.explore-fact/past-due-ratio-change :pastdue.explore-fact/delta-country-contribution]
-          :default [:pastdue.explore-fact/row-ordinal :asc]}}}
+          :default [:pastdue.explore-fact/row-ordinal :asc]}}
+      "pastdue_v3_report_block_query_blocks" {:label "blocks"
+        :description "Fixed bilingual fact blocks from shared report facts; data reconciliation is not final Agent-output acceptance. language zh/en. No new metric semantics."
+        :effect :read
+        :input [:pastdue.report-block-query/country-code :pastdue.report-block-query/target-snapshot-date :pastdue.report-block-query/previous-snapshot-date :pastdue.report-block-query/calendar-mode :pastdue.report-block-query/selection-mode :pastdue.report-block-query/top-n :pastdue.report-block-query/vendor-code :pastdue.report-block-query/language]
+        :output [{:pastdue.report-block-query/blocks [:pastdue.report-block/scope-key :pastdue.report-block/country-code :pastdue.report-block/calendar-mode :pastdue.report-block/selection-mode :pastdue.report-block/language :pastdue.report-block/block-id :pastdue.report-block/block-type :pastdue.report-block/vendor-name :pastdue.report-block/scope-status :pastdue.report-block/data-check-status :pastdue.report-block/data-check-reason :pastdue.report-block/metric-version :pastdue.report-block/template-version :pastdue.report-block/business-timezone :pastdue.report-block/content-markdown :pastdue.report-block/diagnostic-evidence :pastdue.report-block/source-checks-json :pastdue.report-block/selected-vendors-json :pastdue.report-block/country-control-json :pastdue.report-block/content-sha256 :pastdue.report-block/source-checks-schema :pastdue.report-block/target-snapshot-date :pastdue.report-block/previous-snapshot-date :pastdue.report-block/queried-at-local :pastdue.report-block/vendor-code :pastdue.report-block/contribution-rank :pastdue.report-block/selected-vendor-count :pastdue.report-block/expected-block-count :pastdue.report-block/source-record-count :pastdue.report-block/expected-source-record-count :pastdue.report-block/row-ordinal :pastdue.report-block/source-row-start :pastdue.report-block/source-row-end]}]
+        :result/cardinality :many
+        :pagination {:default 200
+          :max 1000}
+        :sort {:allowed [:pastdue.report-block/scope-key :pastdue.report-block/country-code :pastdue.report-block/calendar-mode :pastdue.report-block/selection-mode :pastdue.report-block/language :pastdue.report-block/block-id :pastdue.report-block/block-type :pastdue.report-block/vendor-name :pastdue.report-block/scope-status :pastdue.report-block/data-check-status :pastdue.report-block/data-check-reason :pastdue.report-block/metric-version :pastdue.report-block/template-version :pastdue.report-block/business-timezone :pastdue.report-block/content-markdown :pastdue.report-block/diagnostic-evidence :pastdue.report-block/source-checks-json :pastdue.report-block/selected-vendors-json :pastdue.report-block/country-control-json :pastdue.report-block/content-sha256 :pastdue.report-block/source-checks-schema :pastdue.report-block/target-snapshot-date :pastdue.report-block/previous-snapshot-date :pastdue.report-block/queried-at-local :pastdue.report-block/vendor-code :pastdue.report-block/contribution-rank :pastdue.report-block/selected-vendor-count :pastdue.report-block/expected-block-count :pastdue.report-block/source-record-count :pastdue.report-block/expected-source-record-count :pastdue.report-block/row-ordinal :pastdue.report-block/source-row-start :pastdue.report-block/source-row-end]
+          :default [:pastdue.report-block/row-ordinal :asc]}}
+      "pastdue_v3_monitor_block_query_countries" {:label "countries"
+        :description "v3 fixed-scope read-only analysis"
+        :effect :read
+        :input [:pastdue.monitor-block-query/calendar-mode :pastdue.monitor-block-query/relative-change-threshold :pastdue.monitor-block-query/language]
+        :output [{:pastdue.monitor-block-query/countries [:pastdue.monitor-block/country-code :pastdue.monitor-block/target-snapshot-date :pastdue.monitor-block/previous-snapshot-date :pastdue.monitor-block/calendar-mode :pastdue.monitor-block/expected-target-date :pastdue.monitor-block/has-comparable-snapshots :pastdue.monitor-block/business-status :pastdue.monitor-block/data-status :pastdue.monitor-block/target-past-due-count :pastdue.monitor-block/previous-past-due-count :pastdue.monitor-block/target-open-count :pastdue.monitor-block/previous-open-count :pastdue.monitor-block/snapshot-gap-days :pastdue.monitor-block/target-lag-workdays :pastdue.monitor-block/missing-workdays-between :pastdue.monitor-block/target-past-due-ratio :pastdue.monitor-block/previous-past-due-ratio :pastdue.monitor-block/relative-ratio-change :pastdue.monitor-block/percentage-point-change :pastdue.monitor-block/scope-key :pastdue.monitor-block/language :pastdue.monitor-block/template-version :pastdue.monitor-block/business-timezone :pastdue.monitor-block/queried-at-local :pastdue.monitor-block/content-markdown :pastdue.monitor-block/content-sha256 :pastdue.monitor-block/row-ordinal :pastdue.monitor-block/expected-record-count]}]
+        :result/cardinality :many
+        :pagination {:default 200
+          :max 1000}
+        :sort {:allowed [:pastdue.monitor-block/country-code :pastdue.monitor-block/target-snapshot-date :pastdue.monitor-block/previous-snapshot-date :pastdue.monitor-block/calendar-mode :pastdue.monitor-block/expected-target-date :pastdue.monitor-block/has-comparable-snapshots :pastdue.monitor-block/business-status :pastdue.monitor-block/data-status :pastdue.monitor-block/target-past-due-count :pastdue.monitor-block/previous-past-due-count :pastdue.monitor-block/target-open-count :pastdue.monitor-block/previous-open-count :pastdue.monitor-block/snapshot-gap-days :pastdue.monitor-block/target-lag-workdays :pastdue.monitor-block/missing-workdays-between :pastdue.monitor-block/target-past-due-ratio :pastdue.monitor-block/previous-past-due-ratio :pastdue.monitor-block/relative-ratio-change :pastdue.monitor-block/percentage-point-change :pastdue.monitor-block/scope-key :pastdue.monitor-block/language :pastdue.monitor-block/template-version :pastdue.monitor-block/business-timezone :pastdue.monitor-block/queried-at-local :pastdue.monitor-block/content-markdown :pastdue.monitor-block/content-sha256 :pastdue.monitor-block/row-ordinal :pastdue.monitor-block/expected-record-count]
+          :default [:pastdue.monitor-block/row-ordinal :asc]}}}
     :operations {}
     :sources {"eta-clickhouse" {:source/kind "sql"
         :source/effects #{:read}}}
@@ -4290,7 +4641,89 @@
           :pastdue.explore-fact/previous-past-due-share "previous_past_due_share"
           :pastdue.explore-fact/past-due-count-relative-change "past_due_count_relative_change"
           :pastdue.explore-fact/past-due-ratio-change "past_due_ratio_change"
-          :pastdue.explore-fact/delta-country-contribution "delta_country_contribution"}}}
+          :pastdue.explore-fact/delta-country-contribution "delta_country_contribution"}}
+      "pastdue_v3_report_block_query_blocks-sql" {:binding/for [:resolver "pastdue_v3_report_block_query_blocks"]
+        :binding/source "eta-clickhouse"
+        :binding/effect :read
+        :binding/implementation {:query "WITH raw_facts AS (WITH\n date_guard AS (\n SELECT countIf(snapshot_date=toDate(:target_snapshot_date)) AS target_exists,\n countIf(snapshot_date=toDate(:previous_snapshot_date)) AS previous_exists,\n maxIf(snapshot_date,snapshot_date<toDate(:target_snapshot_date)) AS nearest_previous\n FROM (SELECT DISTINCT snapshot_date FROM past_due.vendor_past_due_daily\n WHERE country_code=:country_code\n AND snapshot_date BETWEEN toDate(:previous_snapshot_date) AND toDate(:target_snapshot_date)\n AND snapshot_date < toDate(now('America/Los_Angeles'))\n AND (:calendar_mode='CALENDAR_DAYS' OR (:calendar_mode='WEEKDAYS' AND toDayOfWeek(snapshot_date)<=5)))),\n period_raw AS (\n SELECT toInt64(vendor_code) AS vendor_code,vendor_name,snapshot_date,\n if(empty(trim(ifNull(eta_code,''))),'UNKNOWN',upper(trim(eta_code))) AS raw_code,\n if(empty(trim(ifNull(source,''))),'UNKNOWN',trim(source)) AS raw_source,\n toInt64(past_due_count) AS pd,toInt64(total_open_count) AS op,false AS is_control\n FROM past_due.vendor_past_due_daily\n WHERE country_code=:country_code\n AND snapshot_date IN (toDate(:target_snapshot_date),toDate(:previous_snapshot_date))\n UNION ALL\n SELECT toInt64(0),'',toDate('1970-01-01'),'','',toInt64(0),toInt64(0),true),\n expanded AS (SELECT *,arrayJoin(if(is_control,[tuple('control','',false)],\n [tuple('metrics','',false),tuple('code',raw_code,true),tuple('source',raw_source,true),\n tuple('code','',false),tuple('source','',false),tuple('us','',false),\n tuple(if(raw_code='US','us','skip'),raw_source,true)])) AS dim FROM period_raw),\n grouped AS (SELECT vendor_code,is_control,min(vendor_name) AS bucket_vendor_name,\n tupleElement(dim,1) AS dimension,tupleElement(dim,2) AS eta_value,tupleElement(dim,3) AS is_bucket,\n sumIf(pd,snapshot_date=toDate(:previous_snapshot_date) AND (dimension='metrics' OR is_bucket)) AS previous_count,\n sumIf(pd,snapshot_date=toDate(:target_snapshot_date) AND (dimension='metrics' OR is_bucket)) AS target_count,\n sumIf(op,snapshot_date=toDate(:previous_snapshot_date) AND dimension='metrics') AS previous_metric_open,\n sumIf(op,snapshot_date=toDate(:target_snapshot_date) AND dimension='metrics') AS target_metric_open,\n sumIf(pd,snapshot_date=toDate(:previous_snapshot_date) AND dimension='metrics' AND raw_code='US') AS previous_metric_us,\n sumIf(pd,snapshot_date=toDate(:target_snapshot_date) AND dimension='metrics' AND raw_code='US') AS target_metric_us,\n max(pd<0 OR op<0 OR pd>op) AS bad_row\n FROM expanded WHERE tupleElement(dim,1)!='skip'\n GROUP BY vendor_code,is_control,dimension,eta_value,is_bucket),\n totals AS (SELECT *,min(bucket_vendor_name) OVER v AS vendor_name,\n sumIf(previous_count,dimension='metrics') OVER v AS previous_past_due_count,\n sumIf(target_count,dimension='metrics') OVER v AS target_past_due_count,\n sum(previous_metric_open) OVER v AS previous_open_count,sum(target_metric_open) OVER v AS target_open_count,\n sum(previous_metric_us) OVER v AS previous_us_total,sum(target_metric_us) OVER v AS target_us_total,\n sumIf(previous_count,dimension='metrics') OVER () AS previous_country_past_due,\n sumIf(target_count,dimension='metrics') OVER () AS target_country_past_due,\n sum(previous_metric_open) OVER () AS previous_country_open,sum(target_metric_open) OVER () AS target_country_open,\n max(bad_row) OVER () AS invalid_facts\n FROM grouped WINDOW v AS (PARTITION BY is_control,vendor_code)),\n calculated AS (SELECT *,target_past_due_count-previous_past_due_count AS past_due_count_change,\n toDecimal128(toDecimal256(target_past_due_count, 18) / nullIf(toDecimal256(target_country_open, 18), 0), 18) AS target_country_contribution,\n toDecimal128(toDecimal256(previous_past_due_count, 18) / nullIf(toDecimal256(previous_country_open, 18), 0), 18) AS previous_country_contribution,\n target_country_contribution-previous_country_contribution AS delta_country_contribution,\n toDecimal128(toDecimal256(target_past_due_count, 18) / nullIf(toDecimal256(target_open_count, 18), 0), 18) AS target_vendor_ratio,\n toDecimal128(toDecimal256(previous_past_due_count, 18) / nullIf(toDecimal256(previous_open_count, 18), 0), 18) AS previous_vendor_ratio,\n toDecimal256(target_past_due_count,0)*previous_country_open-toDecimal256(previous_past_due_count,0)*target_country_open AS contribution_numerator\n FROM totals),\n ranked AS (SELECT *,toInt64(dense_rank() OVER (ORDER BY is_control,contribution_numerator DESC,vendor_code)) AS contribution_rank,\n sumIf(greatest(contribution_numerator,toDecimal256(0,0)),dimension='metrics') OVER () AS positive_numerator\n FROM calculated),\n marked AS (SELECT *,NOT is_control AND (\n (:selection_mode='POSITIVE_TOP_N' AND contribution_numerator>0 AND contribution_rank<=:top_n)\n OR (:selection_mode='SINGLE_VENDOR' AND vendor_code=:vendor_code)) AS chosen\n FROM ranked),\n selected_metadata AS (SELECT *,\n toInt64(countIf(chosen AND dimension='metrics') OVER ()) AS selected_vendor_count,\n toDecimal128(toDecimal256(greatest(contribution_numerator,0), 18) / nullIf(toDecimal256(positive_numerator, 18), 0), 18) AS positive_contribution_share,\n toDecimal128(toDecimal256(sumIf(greatest(contribution_numerator,toDecimal256(0,0)),chosen AND dimension='metrics') OVER (), 18) / nullIf(toDecimal256(positive_numerator, 18), 0), 18) AS selected_positive_coverage\n FROM marked),\n scoped AS (SELECT m.*,multiIf(\n :selection_mode NOT IN ('POSITIVE_TOP_N','SINGLE_VENDOR') OR :top_n NOT BETWEEN 1 AND 10\n OR (:selection_mode='POSITIVE_TOP_N' AND :vendor_code!=0)\n OR (:selection_mode='SINGLE_VENDOR' AND (:top_n!=1 OR :vendor_code=0)),'INVALID_SELECTION',\n :calendar_mode NOT IN ('WEEKDAYS','CALENDAR_DAYS') OR toDate(:previous_snapshot_date)>=toDate(:target_snapshot_date)\n OR d.target_exists=0 OR d.previous_exists=0 OR d.nearest_previous!=toDate(:previous_snapshot_date),'INVALID_PAIR',\n invalid_facts>0,'DATA_ERROR',target_country_open<=0 OR previous_country_open<=0,'INVALID_DENOMINATOR',\n :selection_mode='SINGLE_VENDOR' AND selected_vendor_count=0,'VENDOR_NOT_FOUND','OK') AS scope_status\n FROM selected_metadata m CROSS JOIN date_guard d),\n bucket_ranked AS (SELECT *,target_count-previous_count AS bucket_delta,\n toInt64(row_number() OVER (PARTITION BY is_control,vendor_code,dimension ORDER BY is_bucket DESC,abs(bucket_delta) DESC,target_count DESC,eta_value)) AS display_rank\n FROM scoped WHERE is_control OR (chosen AND scope_status='OK')),\n enriched AS (SELECT *,toInt64(countIf(is_bucket) OVER w) AS expected_bucket_count,\n sum(previous_count) OVER w AS previous_total,sum(target_count) OVER w AS target_total,\n sum(greatest(bucket_delta,0)) OVER w AS increase_total,sum(least(bucket_delta,0)) OVER w AS decrease_total,\n sumIf(previous_count,display_rank>5 AND is_bucket) OVER w AS other_previous,\n sumIf(target_count,display_rank>5 AND is_bucket) OVER w AS other_target,\n toInt64(countIf(display_rank>5 AND is_bucket) OVER w) AS other_bucket_count,\n if(dimension='us',previous_us_total,previous_past_due_count) AS previous_expected_total,\n if(dimension='us',target_us_total,target_past_due_count) AS target_expected_total,\n dimension!='us' OR previous_us_total>0 OR target_us_total>0 AS required\n FROM bucket_ranked WINDOW w AS (PARTITION BY is_control,vendor_code,dimension)),\n tagged AS (SELECT *,arrayJoin(if(is_control,['COUNTRY_CONTROL'],if(chosen AND scope_status='OK',arrayConcat(\n if(dimension='metrics',['VENDOR_METRICS'],[]),\n if(NOT is_bucket AND dimension IN ('code','source','us'),['VENDOR_CHECK'],[]),\n if(is_bucket AND display_rank<=6,[multiIf(dimension='code','ETA_CODE_SUMMARY',dimension='source','ETA_SOURCE_SUMMARY','US_SOURCE_SUMMARY')],[])),[]))) AS tag\n FROM enriched)\n , report_rows AS (SELECT toJSONString(tuple(:country_code, :target_snapshot_date, :previous_snapshot_date, :calendar_mode, :selection_mode, :top_n, :vendor_code)) AS scope_key, t.tag AS record_type, :country_code AS country_code, t.vendor_code AS vendor_code, toDate(:target_snapshot_date) AS target_snapshot_date, toDate(:previous_snapshot_date) AS previous_snapshot_date, :calendar_mode AS calendar_mode, t.vendor_name AS vendor_name, if(t.tag IN ('COUNTRY_CONTROL','VENDOR_METRICS'),'',t.dimension) AS dimension, if(t.tag IN ('ETA_CODE_SUMMARY','ETA_SOURCE_SUMMARY','US_SOURCE_SUMMARY') AND t.display_rank<=5,t.eta_value,'') AS eta_value, if(t.tag IN ('ETA_CODE_SUMMARY','ETA_SOURCE_SUMMARY','US_SOURCE_SUMMARY'),if(t.display_rank=6,'OTHER','BUCKET'),'') AS row_kind, t.scope_status AS scope_status, '3.1.0' AS metric_version, :selection_mode AS selection_mode, if(t.tag IN ('ETA_CODE_SUMMARY','ETA_SOURCE_SUMMARY','US_SOURCE_SUMMARY'),if(t.display_rank=6,t.other_target,t.target_count),t.target_past_due_count) AS target_past_due_count, if(t.tag IN ('ETA_CODE_SUMMARY','ETA_SOURCE_SUMMARY','US_SOURCE_SUMMARY'),if(t.display_rank=6,t.other_previous,t.previous_count),t.previous_past_due_count) AS previous_past_due_count, if(t.tag IN ('ETA_CODE_SUMMARY','ETA_SOURCE_SUMMARY','US_SOURCE_SUMMARY'),if(t.display_rank=6,t.other_target,t.target_count)-if(t.display_rank=6,t.other_previous,t.previous_count),t.past_due_count_change) AS past_due_count_change, t.target_open_count AS target_open_count, t.previous_open_count AS previous_open_count, t.target_country_open AS target_country_open, t.previous_country_open AS previous_country_open, if(t.is_control,toInt64(0),t.contribution_rank) AS contribution_rank, t.selected_vendor_count AS selected_vendor_count, t.target_vendor_ratio AS target_vendor_ratio, t.previous_vendor_ratio AS previous_vendor_ratio, t.target_country_contribution AS target_country_contribution, t.previous_country_contribution AS previous_country_contribution, if(t.tag IN ('ETA_CODE_SUMMARY','ETA_SOURCE_SUMMARY','US_SOURCE_SUMMARY'),toDecimal128(toDecimal256(if(t.display_rank=6,t.other_target,t.target_count), 18) / nullIf(toDecimal256(t.target_country_open, 18), 0), 18)-toDecimal128(toDecimal256(if(t.display_rank=6,t.other_previous,t.previous_count), 18) / nullIf(toDecimal256(t.previous_country_open, 18), 0), 18),t.delta_country_contribution) AS delta_country_contribution, t.positive_contribution_share AS positive_contribution_share, t.selected_positive_coverage AS selected_positive_coverage, if(t.tag IN ('ETA_CODE_SUMMARY','ETA_SOURCE_SUMMARY','US_SOURCE_SUMMARY'),t.display_rank,toInt64(0)) AS display_rank, t.expected_bucket_count AS expected_bucket_count, if(t.tag IN ('ETA_CODE_SUMMARY','ETA_SOURCE_SUMMARY','US_SOURCE_SUMMARY') AND t.display_rank=6,t.other_bucket_count,toInt64(0)) AS other_bucket_count, t.increase_total AS increase_total, t.decrease_total AS decrease_total, t.target_total-t.previous_total AS net_change, t.previous_total AS previous_total, t.target_total AS target_total, t.previous_expected_total AS previous_expected_total, t.target_expected_total AS target_expected_total, toInt64(0) AS expected_record_count, toInt64(0) AS row_ordinal, CAST(t.previous_total=t.previous_expected_total AND t.target_total=t.target_expected_total AS Bool) AS counts_match, CAST(t.required AS Bool) AS required, if(t.tag IN ('ETA_CODE_SUMMARY','ETA_SOURCE_SUMMARY','US_SOURCE_SUMMARY'),toDecimal128(toDecimal256(if(t.display_rank=6,t.other_target,t.target_count)-if(t.display_rank=6,t.other_previous,t.previous_count), 18) / nullIf(toDecimal256(if(t.display_rank=6,t.other_previous,t.previous_count), 18), 0), 18),toDecimal128(toDecimal256(t.past_due_count_change, 18) / nullIf(toDecimal256(t.previous_past_due_count, 18), 0), 18)) AS past_due_count_relative_change, 'America/Los_Angeles' AS business_timezone, now('America/Los_Angeles') AS queried_at_local, if(t.is_control,t.target_country_past_due,toInt64(0)) AS target_country_past_due_count, if(t.is_control,t.previous_country_past_due,toInt64(0)) AS previous_country_past_due_count, toDecimal128(toDecimal256(t.target_country_past_due, 18) / nullIf(toDecimal256(t.target_country_open, 18), 0), 18) AS target_country_ratio, toDecimal128(toDecimal256(t.previous_country_past_due, 18) / nullIf(toDecimal256(t.previous_country_open, 18), 0), 18) AS previous_country_ratio FROM tagged t) SELECT * EXCEPT(expected_record_count,row_ordinal),\n toInt64(count() OVER ()) AS expected_record_count,\n toInt64(row_number() OVER (ORDER BY contribution_rank,vendor_code,record_type,dimension,display_rank,eta_value)) AS row_ordinal FROM report_rows) ,\n counted AS (SELECT *,\n countIf(record_type='COUNTRY_CONTROL') OVER () AS control_rows,\n countIf(record_type='VENDOR_METRICS') OVER () AS actual_selected,\n uniqExactIf(vendor_code,record_type='VENDOR_METRICS') OVER () AS unique_selected,\n count() OVER () AS actual_source_records,\n min(expected_record_count) OVER () AS expected_source_min,\n max(expected_record_count) OVER () AS expected_source_max,\n uniqExact(row_ordinal) OVER () AS unique_source_ordinals,\n countIf(record_type='VENDOR_METRICS') OVER (PARTITION BY vendor_code) AS vendor_metric_rows,\n countIf(record_type='VENDOR_CHECK' AND dimension IN ('code','source','us')) OVER (PARTITION BY vendor_code) AS vendor_check_rows,\n countIf(record_type='VENDOR_CHECK') OVER dim AS dimension_check_rows,\n maxIf(toInt64(counts_match),record_type='VENDOR_CHECK') OVER dim AS check_pass,\n maxIf(toInt64(required),record_type='VENDOR_CHECK') OVER dim AS check_required,\n maxIf(expected_bucket_count,record_type='VENDOR_CHECK') OVER dim AS check_bucket_count,\n maxIf(previous_total,record_type='VENDOR_CHECK') OVER dim AS check_previous,\n maxIf(target_total,record_type='VENDOR_CHECK') OVER dim AS check_target,\n maxIf(previous_expected_total,record_type='VENDOR_CHECK') OVER dim AS check_expected_previous,\n maxIf(target_expected_total,record_type='VENDOR_CHECK') OVER dim AS check_expected_target,\n sumIf(increase_total,record_type='VENDOR_CHECK') OVER dim AS check_increase,\n sumIf(decrease_total,record_type='VENDOR_CHECK') OVER dim AS check_decrease,\n sumIf(net_change,record_type='VENDOR_CHECK') OVER dim AS check_net,\n countIf(record_type IN ('ETA_CODE_SUMMARY','ETA_SOURCE_SUMMARY','US_SOURCE_SUMMARY') AND row_kind='BUCKET') OVER dim AS visible_buckets,\n countIf(record_type IN ('ETA_CODE_SUMMARY','ETA_SOURCE_SUMMARY','US_SOURCE_SUMMARY') AND row_kind='OTHER') OVER dim AS other_rows,\n countIf(record_type IN ('ETA_CODE_SUMMARY','ETA_SOURCE_SUMMARY','US_SOURCE_SUMMARY')) OVER dim AS summary_rows,\n uniqExactIf(tuple(row_kind,eta_value),record_type IN ('ETA_CODE_SUMMARY','ETA_SOURCE_SUMMARY','US_SOURCE_SUMMARY')) OVER dim AS unique_summary_rows,\n countIf(record_type IN ('ETA_CODE_SUMMARY','ETA_SOURCE_SUMMARY','US_SOURCE_SUMMARY')\n AND NOT ((row_kind='BUCKET' AND display_rank BETWEEN 1 AND 5) OR (row_kind='OTHER' AND display_rank=6))) OVER dim AS invalid_summary_rows,\n sumIf(other_bucket_count,record_type IN ('ETA_CODE_SUMMARY','ETA_SOURCE_SUMMARY','US_SOURCE_SUMMARY') AND row_kind='OTHER') OVER dim AS represented_other,\n sumIf(previous_past_due_count,record_type IN ('ETA_CODE_SUMMARY','ETA_SOURCE_SUMMARY','US_SOURCE_SUMMARY')) OVER dim AS summary_previous,\n sumIf(target_past_due_count,record_type IN ('ETA_CODE_SUMMARY','ETA_SOURCE_SUMMARY','US_SOURCE_SUMMARY')) OVER dim AS summary_target,\n maxIf(previous_past_due_count,record_type='VENDOR_METRICS') OVER (PARTITION BY vendor_code) AS metric_previous,\n maxIf(target_past_due_count,record_type='VENDOR_METRICS') OVER (PARTITION BY vendor_code) AS metric_target,\n maxIf(selected_vendor_count,record_type='COUNTRY_CONTROL') OVER () AS expected_selected,\n maxIf(selected_positive_coverage,record_type='VENDOR_METRICS') OVER () AS selected_coverage\n FROM raw_facts WINDOW dim AS (PARTITION BY vendor_code,dimension)),\n verified AS (SELECT *,\n dimension_check_rows=1 AND check_pass=1 AND check_previous=check_expected_previous AND check_target=check_expected_target\n AND check_increase+check_decrease=check_net AND check_net=check_target-check_previous\n AND visible_buckets+represented_other=check_bucket_count AND other_rows<=1\n AND summary_rows=unique_summary_rows AND invalid_summary_rows=0\n AND summary_previous=check_previous AND summary_target=check_target\n AND (dimension='us' OR (check_previous=metric_previous AND check_target=metric_target))\n AND (dimension!='us' OR check_required=toInt64(check_expected_previous>0 OR check_expected_target>0)) AS dimension_ok,\n control_rows=1 AND actual_source_records=expected_source_min AND expected_source_min=expected_source_max\n AND unique_source_ordinals=actual_source_records AND actual_selected=expected_selected\n AND unique_selected=expected_selected AS source_shape_ok,\n :language IN ('zh','en') AS language_ok\n FROM counted),\n prepared AS (SELECT *,\n if(record_type IN ('COUNTRY_CONTROL','VENDOR_METRICS'),'COUNTRY_OVERVIEW','VENDOR_DETAILS') AS block_type,\n if(record_type IN ('COUNTRY_CONTROL','VENDOR_METRICS'),toInt64(0),vendor_code) AS block_vendor,\n if(record_type='VENDOR_METRICS',concat('| ',toString(contribution_rank),' | ',toString(vendor_code),' | ',replaceAll(replaceAll(replaceAll(replaceAll(replaceAll(replaceAll(vendor_name,'&','&amp;'),'<','&lt;'),'>','&gt;'),'|','&#124;'),'\\n',' '),'\\r',' '),' | ',concat(toString(previous_past_due_count),'→',toString(target_past_due_count)),' | ',concat(if(past_due_count_change>0,'+',if(past_due_count_change<0,'−','')),toString(abs(past_due_count_change))),' | ',if(isNull(delta_country_contribution),if(:language='zh','不可计算','Not calculable'),concat(if(delta_country_contribution>0,'+',if(delta_country_contribution<0,'−','')),toString(toDecimal256(round(abs(delta_country_contribution)*100,4),4)),' pp')),' | ',if(isNull(positive_contribution_share),if(:language='zh','不可计算','Not calculable'),concat(if(positive_contribution_share<0,'−',''),toString(toDecimal256(round(abs(positive_contribution_share)*100,2),2)),'%')),' |\\n'),'') AS ranking_line,\nif(record_type='COUNTRY_CONTROL',concat(if(:language='zh','### Country 指标\\n','### Country metrics\\n'),if(:language='zh','| Country | 上期日期 | 本期日期 | 逾期 上期→本期 | Open 上期→本期 | 逾期率 上期→本期 | 相对变化 | 百分点变化 |\\n| --- | --- | --- | --- | --- | --- | --- | --- |\\n','| Country | Previous date | Target date | Past due previous→target | Open previous→target | Ratio previous→target | Relative change | Point change |\\n| --- | --- | --- | --- | --- | --- | --- | --- |\\n'),concat('| ',replaceAll(replaceAll(replaceAll(replaceAll(replaceAll(replaceAll(country_code,'&','&amp;'),'<','&lt;'),'>','&gt;'),'|','&#124;'),'\\n',' '),'\\r',' '),' | ',toString(previous_snapshot_date),' | ',toString(target_snapshot_date),' | ',concat(toString(previous_country_past_due_count),'→',toString(target_country_past_due_count)),' | ',concat(toString(previous_country_open),'→',toString(target_country_open)),' | ',concat(if(isNull(previous_country_ratio),if(:language='zh','不可计算','Not calculable'),concat(if(previous_country_ratio<0,'−',''),toString(toDecimal256(round(abs(previous_country_ratio)*100,2),2)),'%')),'→',if(isNull(target_country_ratio),if(:language='zh','不可计算','Not calculable'),concat(if(target_country_ratio<0,'−',''),toString(toDecimal256(round(abs(target_country_ratio)*100,2),2)),'%'))),' | ',if(previous_country_past_due_count=0,if(target_country_past_due_count>0,if(:language='zh','零基线上升','Zero-baseline increase'),if(:language='zh','无变化','No change')),if(isNull((target_country_ratio-previous_country_ratio)/nullIf(previous_country_ratio,0)),if(:language='zh','不可计算','Not calculable'),concat(if((target_country_ratio-previous_country_ratio)/nullIf(previous_country_ratio,0)>0,'+',if((target_country_ratio-previous_country_ratio)/nullIf(previous_country_ratio,0)<0,'−','')),toString(toDecimal256(round(abs((target_country_ratio-previous_country_ratio)/nullIf(previous_country_ratio,0))*100,2),2)),'%'))),' | ',if(isNull(target_country_ratio-previous_country_ratio),if(:language='zh','不可计算','Not calculable'),concat(if(target_country_ratio-previous_country_ratio>0,'+',if(target_country_ratio-previous_country_ratio<0,'−','')),toString(toDecimal256(round(abs(target_country_ratio-previous_country_ratio)*100,4),4)),' pp')),' |\\n')),'') AS country_line,\nif(record_type='VENDOR_METRICS',concat(if(:language='zh','| 逾期 上期→本期 | Open 上期→本期 | Vendor 逾期率 上期→本期 | Country 贡献 上期→本期 | 贡献变化 |\\n| --- | --- | --- | --- | --- |\\n','| Past due previous→target | Open previous→target | Vendor ratio previous→target | Country contribution previous→target | Contribution change |\\n| --- | --- | --- | --- | --- |\\n'),concat('| ',concat(toString(previous_past_due_count),'→',toString(target_past_due_count)),' | ',concat(toString(previous_open_count),'→',toString(target_open_count)),' | ',concat(if(isNull(previous_vendor_ratio),if(:language='zh','不可计算','Not calculable'),concat(if(previous_vendor_ratio<0,'−',''),toString(toDecimal256(round(abs(previous_vendor_ratio)*100,2),2)),'%')),'→',if(isNull(target_vendor_ratio),if(:language='zh','不可计算','Not calculable'),concat(if(target_vendor_ratio<0,'−',''),toString(toDecimal256(round(abs(target_vendor_ratio)*100,2),2)),'%'))),' | ',concat(if(isNull(previous_country_contribution),if(:language='zh','不可计算','Not calculable'),concat(if(previous_country_contribution<0,'−',''),toString(toDecimal256(round(abs(previous_country_contribution)*100,4),4)),' pp')),'→',if(isNull(target_country_contribution),if(:language='zh','不可计算','Not calculable'),concat(if(target_country_contribution<0,'−',''),toString(toDecimal256(round(abs(target_country_contribution)*100,4),4)),' pp'))),' | ',if(isNull(delta_country_contribution),if(:language='zh','不可计算','Not calculable'),concat(if(delta_country_contribution>0,'+',if(delta_country_contribution<0,'−','')),toString(toDecimal256(round(abs(delta_country_contribution)*100,4),4)),' pp')),' |\\n')),'') AS metric_line,\nif(record_type IN ('ETA_CODE_SUMMARY','ETA_SOURCE_SUMMARY'),concat('| ',if(row_kind='OTHER',concat(if(:language='zh','其他','Other'),' (',toString(other_bucket_count),')'),replaceAll(replaceAll(replaceAll(replaceAll(replaceAll(replaceAll(eta_value,'&','&amp;'),'<','&lt;'),'>','&gt;'),'|','&#124;'),'\\n',' '),'\\r',' ')),' | ',toString(previous_past_due_count),' | ',toString(target_past_due_count),' | ',concat(if(past_due_count_change>0,'+',if(past_due_count_change<0,'−','')),toString(abs(past_due_count_change))),' | ',if(previous_past_due_count=0,if(target_past_due_count>0,if(:language='zh','零基线上升','Zero-baseline increase'),if(:language='zh','无变化','No change')),if(isNull(past_due_count_relative_change),if(:language='zh','不可计算','Not calculable'),concat(if(past_due_count_relative_change>0,'+',if(past_due_count_relative_change<0,'−','')),toString(toDecimal256(round(abs(past_due_count_relative_change)*100,2),2)),'%'))),' | ',if(isNull(delta_country_contribution),if(:language='zh','不可计算','Not calculable'),concat(if(delta_country_contribution>0,'+',if(delta_country_contribution<0,'−','')),toString(toDecimal256(round(abs(delta_country_contribution)*100,4),4)),' pp')),' |\\n'),'') AS bucket_line,\nif(record_type='VENDOR_CHECK' AND dimension IN ('code','source'),concat('| ',if(dimension='code','Code','Source'),' | ',concat(if(increase_total>0,'+',if(increase_total<0,'−','')),toString(abs(increase_total))),' | ',concat(if(decrease_total>0,'+',if(decrease_total<0,'−','')),toString(abs(decrease_total))),' | ',concat(if(net_change>0,'+',if(net_change<0,'−','')),toString(abs(net_change))),' | ',if(dimension_ok,if(:language='zh','服务器核对通过','Server reconciled'),if(:language='zh','数量核对失败','Reconciliation failed')),' |\\n'),'') AS totals_line,\nif(record_type IN ('ETA_CODE_SUMMARY','ETA_SOURCE_SUMMARY','US_SOURCE_SUMMARY') AND row_kind='BUCKET' AND dimension_ok AND (dimension='us' OR (dimension='code' AND eta_value!='US')),concat('- ',concat(if(:language='zh','Vendor ','Vendor '),toString(vendor_code),' · ',if(dimension='us',if(:language='zh','ETA Code=US，Source ','ETA Code=US, Source '),if(:language='zh','ETA Code ','ETA Code ')),replaceAll(replaceAll(replaceAll(replaceAll(replaceAll(replaceAll(eta_value,'&','&amp;'),'<','&lt;'),'>','&gt;'),'|','&#124;'),'\\n',' '),'\\r',' '),' ',concat(toString(previous_past_due_count),'→',toString(target_past_due_count)),' (',concat(if(past_due_count_change>0,'+',if(past_due_count_change<0,'−','')),toString(abs(past_due_count_change))),')',if(dimension='us',multiIf(upperUTF8(trim(eta_value)) IN ('AUTOUS','AUTO US'),concat(' [ETA-US-AUTOUS-OVERDUE] ',if(:language='zh','Vendor 提供的 ETA 已 past due','The Vendor-provided ETA is past due'),'；',if(:language='zh','核查原 ETA 有效性与下一次更新','Verify the original ETA and obtain the next update')),NOT (upperUTF8(trim(eta_value)) IN ('AUTOUS','AUTO US')) AND (upperUTF8(trim(eta_value)) IN ('AUTO NR','API ASN','API ORDER','BUYER','BLOCK AUTOETA','CARRIER API','EDI855','EDI856','EDI870','EDI3B2','EDI3A4C','EDI3A6','VENDOR EMAIL','VENDOR REPORT','VENDOR WEB SITE','VENDOR INVOICE','AUTOBUY','PO_REL','AUTO PUSH','NIFI_AUTO_REC')),concat(' [ETA-US-KNOWN-SOURCE-ROUGH-DATE] ',if(:language='zh','Vendor 仅提供粗略时间 rough date','The Vendor has provided only a rough date'),'；',if(:language='zh','核查更明确的交期','Request a more precise delivery date')),NOT (upperUTF8(trim(eta_value)) IN ('AUTOUS','AUTO US')) AND NOT (upperUTF8(trim(eta_value)) IN ('AUTO NR','API ASN','API ORDER','BUYER','BLOCK AUTOETA','CARRIER API','EDI855','EDI856','EDI870','EDI3B2','EDI3A4C','EDI3A6','VENDOR EMAIL','VENDOR REPORT','VENDOR WEB SITE','VENDOR INVOICE','AUTOBUY','PO_REL','AUTO PUSH','NIFI_AUTO_REC')),concat(' [ETA-US-UNKNOWN-SOURCE] ',if(:language='zh','来源未知，无法区分具体业务含义','Source is unknown; the specific US interpretation cannot be determined'),'；',if(:language='zh','先确认来源，不按其他来源解释','Identify the source first; do not treat it as a known non-AutoUS source')),if(:language='zh','：未配置解释规则，仅保留事实',': no configured interpretation rule; retain facts only')),multiIf(eta_value='DD',concat(' [ETA-DD-RECEIPT-DELAY] ',if(:language='zh','Warehouse 收货不及时','Risk of delayed warehouse receipt recording'),'；',if(:language='zh','核查实际到货与收货登记进度','Check physical arrival and receipt-recording progress')),eta_value='SH',concat(' [ETA-SH-DELIVERY-RECEIPT-DELAY] ',if(:language='zh','未及时送达／收货','Risk of delayed delivery or receipt'),'；',if(:language='zh','核查运输送达及收货进度，不单独归咎其中一方','Check delivery and receipt progress without assigning blame to either party')),eta_value='SC',concat(' [ETA-SC-SHIP-DATE-ACCURACY] ',if(:language='zh','Vendor 预计发货时间不准确','Risk of inaccurate Vendor estimated ship dates'),'；',if(:language='zh','核查承诺日期与更新情况','Verify committed dates and subsequent updates')),eta_value='NR',concat(' [ETA-NR-MISSING-SHIP-DATE] ',if(:language='zh','Vendor 已收到订单，但未提供预计发货时间','Vendor has received the order but has not provided an estimated ship date'),'；',if(:language='zh','核查预计发货时间补充进度','Check progress on obtaining an estimated ship date')),eta_value='RQ',concat(' [ETA-RQ-MISSING-ACK] ',if(:language='zh','未收到 Vendor 确认信息 ACK','Vendor order acknowledgement (ACK) has not been received'),'；',if(:language='zh','核查订单接收与 ACK 反馈','Verify order receipt and ACK response')),if(:language='zh','：未配置解释规则，仅保留事实',': no configured interpretation rule; retain facts only')))),'\\n'),'') AS evidence_line\n FROM verified),\n metrics_attached AS (SELECT *,\n arrayStringConcat(groupArrayIf(metric_line,record_type='VENDOR_METRICS') OVER (PARTITION BY vendor_code),'') AS vendor_metric_text\n FROM prepared),\n assembled AS (SELECT country_code,previous_snapshot_date,target_snapshot_date,calendar_mode,selection_mode,\n scope_key,metric_version,business_timezone,block_type,block_vendor AS output_vendor_code,\n min(scope_status) AS original_scope_status,min(toInt64(language_ok)) AS language_ok,\n min(toInt64(source_shape_ok)) AS source_shape_ok,\n minIf(toInt64(dimension_ok),record_type='VENDOR_CHECK') AS dimensions_ok,\n countIf(record_type='VENDOR_CHECK') AS received_checks,\n max(vendor_metric_rows) AS vendor_metric_rows,max(vendor_check_rows) AS vendor_check_rows,\n maxIf(toInt64(dimension_ok),dimension='code') AS code_ok,\n maxIf(toInt64(dimension_ok),dimension='source') AS source_ok,\n max(expected_selected) AS selected_vendor_count,max(actual_source_records) AS source_record_count,\n max(expected_source_max) AS expected_source_record_count,\n min(row_ordinal) AS source_row_start,max(row_ordinal) AS source_row_end,\n min(queried_at_local) AS queried_at_local,\n min(vendor_name) AS block_name,\n minIf(contribution_rank,record_type!='COUNTRY_CONTROL') AS block_rank,\n max(selected_coverage) AS selected_coverage,\n arrayStringConcat(groupArrayIf(country_line,record_type='COUNTRY_CONTROL'),'') AS country_text,\n arrayStringConcat(arrayMap(x -> tupleElement(x,3),arraySort(x -> (tupleElement(x,1),tupleElement(x,2)),groupArrayIf(tuple(toInt64(0),toInt64(contribution_rank),ranking_line),record_type='VENDOR_METRICS'))), '') AS ranking_text,\nany(vendor_metric_text) AS metric_text,\narrayStringConcat(arrayMap(x -> tupleElement(x,3),arraySort(x -> (tupleElement(x,1),tupleElement(x,2)),groupArrayIf(tuple(toInt64(0),toInt64(display_rank),bucket_line),record_type='ETA_CODE_SUMMARY'))), '') AS code_text,\narrayStringConcat(arrayMap(x -> tupleElement(x,3),arraySort(x -> (tupleElement(x,1),tupleElement(x,2)),groupArrayIf(tuple(toInt64(0),toInt64(display_rank),bucket_line),record_type='ETA_SOURCE_SUMMARY'))), '') AS source_text,\narrayStringConcat(arrayMap(x -> tupleElement(x,3),arraySort(x -> (tupleElement(x,1),tupleElement(x,2)),groupArrayIf(tuple(toInt64(if(dimension='code',0,1)),toInt64(0),totals_line),record_type='VENDOR_CHECK' AND dimension IN ('code','source')))), '') AS totals_text,\narrayStringConcat(arrayMap(x -> tupleElement(x,3),arraySort(x -> (tupleElement(x,1),tupleElement(x,2)),groupArrayIf(tuple(toInt64(if(dimension='code',0,1)),toInt64(display_rank),evidence_line),notEmpty(evidence_line)))), '') AS evidence_text,\narrayStringConcat(arrayMap(x -> tupleElement(x,3),arraySort(x -> (tupleElement(x,1),tupleElement(x,2)),groupArrayIf(tuple(toInt64(0),toInt64(display_rank),evidence_line),notEmpty(evidence_line) AND dimension='code'))), '') AS code_signal_text,\ntoJSONString(arraySort(x -> tupleElement(x,1),groupArrayIf(tuple(dimension,required,counts_match,dimension_ok,expected_bucket_count,previous_total,target_total,previous_expected_total,target_expected_total,increase_total,decrease_total,net_change),record_type='VENDOR_CHECK'))) AS source_checks_json,\ntoJSONString(arraySort(x -> tupleElement(x,1),groupArrayIf(tuple(contribution_rank,vendor_code,vendor_name),record_type='VENDOR_METRICS'))) AS selected_vendors_json,\narrayStringConcat(groupArrayIf(toJSONString(tuple(previous_country_past_due_count,target_country_past_due_count,previous_country_open,target_country_open,previous_country_ratio,target_country_ratio)),record_type='COUNTRY_CONTROL'),'') AS country_control_json\n FROM metrics_attached\n GROUP BY country_code,previous_snapshot_date,target_snapshot_date,calendar_mode,selection_mode,\n scope_key,metric_version,business_timezone,block_type,block_vendor),\n rendered AS (SELECT *,output_vendor_code AS vendor_code,block_name AS vendor_name,block_rank AS contribution_rank,\n multiIf(NOT language_ok,'INVALID_LANGUAGE',original_scope_status) AS scope_status,\n if(original_scope_status='OK' AND language_ok AND source_shape_ok AND\n (block_type='COUNTRY_OVERVIEW' OR (dimensions_ok=1 AND received_checks=3 AND vendor_check_rows=3 AND vendor_metric_rows=1)),\n 'SERVER_RECONCILED','UNVERIFIED') AS data_check_status,\n if(block_type='COUNTRY_OVERVIEW',concat(country_text,if(:language='zh','### Vendor 排行\\n','### Vendor ranking\\n'),if(:language='zh','| 排名 | Vendor Code | Vendor 名称 | 逾期 上期→本期 | 净变化 | Country 贡献变化 | 正向贡献占比 |\\n| --- | --- | --- | --- | --- | --- | --- |\\n','| Rank | Vendor Code | Vendor name | Past due previous→target | Net change | Country contribution change | Positive share |\\n| --- | --- | --- | --- | --- | --- | --- |\\n'),if(selected_vendor_count=0,if(:language='zh','无符合选择条件的 Vendor。\\n','No Vendors match the selection.\\n'),ranking_text),if(:language='zh','所选正向贡献覆盖率：','Selected positive coverage: '),if(isNull(selected_coverage),if(:language='zh','不可计算','Not calculable'),concat(if(selected_coverage<0,'−',''),toString(toDecimal256(round(abs(selected_coverage)*100,2),2)),'%')),'\\n'),\nconcat('### ',toString(contribution_rank),'. ',toString(vendor_code),' — ',replaceAll(replaceAll(replaceAll(replaceAll(replaceAll(replaceAll(vendor_name,'&','&amp;'),'<','&lt;'),'>','&gt;'),'|','&#124;'),'\\n',' '),'\\r',' '),'\\n',\nif(:language='zh','#### Vendor 指标\\n','#### Vendor metrics\\n'),metric_text,\nif(:language='zh','#### ETA Code 两期变化\\n','#### ETA Code changes\\n'),if(code_ok=1,concat(if(:language='zh','| ETA 值 | 上期数量 | 本期数量 | 净变化 | 相对变化 | Country 贡献变化 |\\n| --- | --- | --- | --- | --- | --- |\\n','| ETA value | Previous count | Target count | Net change | Relative change | Country contribution change |\\n| --- | --- | --- | --- | --- | --- |\\n'),code_text),if(:language='zh','该维度数量核对失败，保留其他有效事实。\\n','This dimension failed reconciliation; other valid facts retained.\\n')),\nif(:language='zh','#### ETA Source 两期变化\\n','#### ETA Source changes\\n'),if(source_ok=1,concat(if(:language='zh','| ETA 值 | 上期数量 | 本期数量 | 净变化 | 相对变化 | Country 贡献变化 |\\n| --- | --- | --- | --- | --- | --- |\\n','| ETA value | Previous count | Target count | Net change | Relative change | Country contribution change |\\n| --- | --- | --- | --- | --- | --- |\\n'),source_text),if(:language='zh','该维度数量核对失败，保留其他有效事实。\\n','This dimension failed reconciliation; other valid facts retained.\\n')),\nif(:language='zh','#### 全桶变化汇总\\n','#### All-bucket change totals\\n'),if(:language='zh','| 维度 | 增加合计 | 减少合计 | 净变化 | 核对状态 |\\n| --- | --- | --- | --- | --- |\\n','| Dimension | Increase total | Decrease total | Net change | Reconciliation |\\n| --- | --- | --- | --- | --- |\\n'),totals_text,\nif(:language='zh','#### 业务提示\\n','#### Business signals\\n'),code_signal_text,if(:language='zh','- 提示风险与建议核查，不证明因果或人员责任。未识别规则仅保留事实。\\n','- Risk signals and suggested checks, not proof of causation or responsibility. Unmapped rules retain facts only.\\n'))) AS candidate_content\n FROM assembled),\n guarded AS (SELECT *,\n multiIf(NOT language_ok,'INVALID_LANGUAGE',original_scope_status!='OK',original_scope_status,\n NOT source_shape_ok,'SOURCE_RECORD_RECONCILIATION_FAILED',\n block_type='VENDOR_DETAILS' AND (vendor_metric_rows!=1 OR received_checks!=3 OR vendor_check_rows!=3),'MISSING_OR_DUPLICATE_VENDOR_RECORDS',\n block_type='VENDOR_DETAILS' AND dimensions_ok!=1,'DIMENSION_RECONCILIATION_FAILED','OK') AS data_check_reason\n FROM rendered)\n SELECT scope_key, country_code, calendar_mode, selection_mode, :language AS language, concat(scope_key,':',:language,':',block_type,':',toString(vendor_code)) AS block_id, block_type, vendor_name, scope_status, data_check_status, data_check_reason, metric_version, '3.2.0' AS template_version, business_timezone, if(scope_status='OK' AND source_shape_ok AND (block_type='COUNTRY_OVERVIEW' OR vendor_metric_rows=1),concat(candidate_content,if(data_check_reason='OK','',concat('\\n',data_check_reason,'\\n'))),concat(if(:language='zh','### 事实块不可用','### Fact block unavailable'),' — ',country_code,' / ',toString(vendor_code),'\\n',data_check_reason,'\\n')) AS content_markdown, if(scope_status='OK' AND source_shape_ok,evidence_text,'') AS diagnostic_evidence, source_checks_json, selected_vendors_json, country_control_json, 'dimension,required,counts_match,dimension_ok,expected_bucket_count,previous_total,target_total,previous_expected_total,target_expected_total,increase_total,decrease_total,net_change' AS source_checks_schema, lower(hex(SHA256(content_markdown))) AS content_sha256, target_snapshot_date, previous_snapshot_date, queried_at_local, vendor_code, contribution_rank, selected_vendor_count, toInt64(count() OVER ()) AS expected_block_count, source_record_count, expected_source_record_count, toInt64(row_number() OVER (ORDER BY if(block_type='COUNTRY_OVERVIEW',0,1),contribution_rank,vendor_code)) AS row_ordinal, source_row_start, source_row_end FROM guarded"}
+        :binding/input-map {:pastdue.report-block-query/country-code "country_code"
+          :pastdue.report-block-query/target-snapshot-date "target_snapshot_date"
+          :pastdue.report-block-query/previous-snapshot-date "previous_snapshot_date"
+          :pastdue.report-block-query/calendar-mode "calendar_mode"
+          :pastdue.report-block-query/selection-mode "selection_mode"
+          :pastdue.report-block-query/top-n "top_n"
+          :pastdue.report-block-query/vendor-code "vendor_code"
+          :pastdue.report-block-query/language "language"}
+        :binding/output-map {:pastdue.report-block-query/blocks "blocks"
+          :pastdue.report-block/scope-key "scope_key"
+          :pastdue.report-block/country-code "country_code"
+          :pastdue.report-block/calendar-mode "calendar_mode"
+          :pastdue.report-block/selection-mode "selection_mode"
+          :pastdue.report-block/language "language"
+          :pastdue.report-block/block-id "block_id"
+          :pastdue.report-block/block-type "block_type"
+          :pastdue.report-block/vendor-name "vendor_name"
+          :pastdue.report-block/scope-status "scope_status"
+          :pastdue.report-block/data-check-status "data_check_status"
+          :pastdue.report-block/data-check-reason "data_check_reason"
+          :pastdue.report-block/metric-version "metric_version"
+          :pastdue.report-block/template-version "template_version"
+          :pastdue.report-block/business-timezone "business_timezone"
+          :pastdue.report-block/content-markdown "content_markdown"
+          :pastdue.report-block/diagnostic-evidence "diagnostic_evidence"
+          :pastdue.report-block/source-checks-json "source_checks_json"
+          :pastdue.report-block/selected-vendors-json "selected_vendors_json"
+          :pastdue.report-block/country-control-json "country_control_json"
+          :pastdue.report-block/content-sha256 "content_sha256"
+          :pastdue.report-block/source-checks-schema "source_checks_schema"
+          :pastdue.report-block/target-snapshot-date "target_snapshot_date"
+          :pastdue.report-block/previous-snapshot-date "previous_snapshot_date"
+          :pastdue.report-block/queried-at-local "queried_at_local"
+          :pastdue.report-block/vendor-code "vendor_code"
+          :pastdue.report-block/contribution-rank "contribution_rank"
+          :pastdue.report-block/selected-vendor-count "selected_vendor_count"
+          :pastdue.report-block/expected-block-count "expected_block_count"
+          :pastdue.report-block/source-record-count "source_record_count"
+          :pastdue.report-block/expected-source-record-count "expected_source_record_count"
+          :pastdue.report-block/row-ordinal "row_ordinal"
+          :pastdue.report-block/source-row-start "source_row_start"
+          :pastdue.report-block/source-row-end "source_row_end"}}
+      "pastdue_v3_monitor_block_query_countries-sql" {:binding/for [:resolver "pastdue_v3_monitor_block_query_countries"]
+        :binding/source "eta-clickhouse"
+        :binding/effect :read
+        :binding/implementation {:query "WITH monitor_facts AS (WITH daily AS (\n SELECT country_code, snapshot_date, sum(toInt64(past_due_count)) AS past_due,\n sum(toInt64(total_open_count)) AS open_count\n FROM past_due.vendor_past_due_daily\n WHERE (snapshot_date < toDate(now('America/Los_Angeles')) AND (:calendar_mode = 'CALENDAR_DAYS' OR (:calendar_mode = 'WEEKDAYS' AND toDayOfWeek(snapshot_date) <= 5)))  GROUP BY country_code, snapshot_date),\n ordered AS (\n SELECT *, toInt64(row_number() OVER (PARTITION BY country_code ORDER BY snapshot_date DESC)) AS newest_rank,\n lagInFrame(snapshot_date, 1, toDate('1970-01-01')) OVER\n (PARTITION BY country_code ORDER BY snapshot_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS previous_snapshot_date,\n lagInFrame(past_due, 1, toInt64(-1)) OVER\n (PARTITION BY country_code ORDER BY snapshot_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS previous_past_due_count,\n lagInFrame(open_count, 1, toInt64(-1)) OVER\n (PARTITION BY country_code ORDER BY snapshot_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS previous_open_count\n FROM daily),\n metrics AS (\n SELECT country_code, snapshot_date AS target_snapshot_date, previous_snapshot_date,\n past_due AS target_past_due_count, previous_past_due_count,\n open_count AS target_open_count, previous_open_count, newest_rank,\n if(previous_open_count >= 0, true, false) AS has_comparable_snapshots,\n toDecimal128(toDecimal256(past_due, 18) / nullIf(toDecimal256(open_count, 18), 0), 18) AS target_past_due_ratio,\n toDecimal128(toDecimal256(previous_past_due_count, 18) / nullIf(toDecimal256(nullIf(previous_open_count, -1), 18), 0), 18) AS previous_past_due_ratio,\n target_past_due_ratio-previous_past_due_ratio AS percentage_point_change,\n toDecimal128(toDecimal256(toDecimal256(past_due,0)*previous_open_count-toDecimal256(previous_past_due_count,0)*open_count, 18) / nullIf(toDecimal256(toDecimal256(previous_past_due_count,0)*open_count, 18), 0), 18) AS relative_ratio_change,\n if(toDayOfWeek(addDays(toDate(now('America/Los_Angeles')), -1))<=5, addDays(toDate(now('America/Los_Angeles')), -1),\n addDays(toDate(now('America/Los_Angeles')), -if(toDayOfWeek(toDate(now('America/Los_Angeles')))=1,3,2))) AS expected_target_date,\n toInt64(arrayCount(x -> toDayOfWeek(addDays(snapshot_date, x + 1)) <= 5, range(toUInt32(greatest(dateDiff('day', snapshot_date, expected_target_date), 0))))) AS target_lag_workdays,\n if(previous_open_count >= 0, greatest(toInt64(arrayCount(x -> toDayOfWeek(addDays(previous_snapshot_date, x + 1)) <= 5, range(toUInt32(greatest(dateDiff('day', previous_snapshot_date, snapshot_date), 0)))))-1,0), 0) AS missing_workdays_between,\n if(previous_open_count >= 0,dateDiff('day', previous_snapshot_date, snapshot_date),0) AS snapshot_gap_days,\n if(open_count < 0 OR past_due < 0 OR past_due > open_count OR\n (previous_open_count >= 0 AND (previous_past_due_count<0 OR previous_past_due_count>previous_open_count)), 'DATA_ERROR',\n if(previous_open_count < 0, 'INSUFFICIENT', if(target_lag_workdays>2,'STALE',if(target_lag_workdays>0,'DELAYED','OK')))) AS data_status,\n if(previous_open_count <= 0 OR open_count <= 0 OR data_status='DATA_ERROR', 'NOT_EVALUABLE',\n if(previous_past_due_count=0, if(past_due>0,'ZERO_BASELINE_INCREASE','NORMAL'),\n if((toDecimal256(past_due,0)*previous_open_count-toDecimal256(previous_past_due_count,0)*open_count)\n >= toDecimal256(:relative_change_threshold,18)*previous_past_due_count*open_count,'TRIGGERED','NORMAL'))) AS business_status,\n :calendar_mode AS calendar_mode\n FROM ordered) SELECT country_code, target_snapshot_date, if(has_comparable_snapshots,toNullable(previous_snapshot_date),NULL) AS previous_snapshot_date, calendar_mode, expected_target_date, has_comparable_snapshots, business_status, data_status, target_past_due_count, if(has_comparable_snapshots,toNullable(previous_past_due_count),NULL) AS previous_past_due_count, target_open_count, if(has_comparable_snapshots,toNullable(previous_open_count),NULL) AS previous_open_count, if(has_comparable_snapshots,toNullable(snapshot_gap_days),NULL) AS snapshot_gap_days, target_lag_workdays, if(has_comparable_snapshots,toNullable(missing_workdays_between),NULL) AS missing_workdays_between, target_past_due_ratio, previous_past_due_ratio, relative_ratio_change, percentage_point_change FROM metrics WHERE newest_rank=1), formatted AS (SELECT *,\n toJSONString(tuple(:calendar_mode,:relative_change_threshold)) AS scope_key,\n :language AS language,'3.2.0' AS template_version,'America/Los_Angeles' AS business_timezone,\n now('America/Los_Angeles') AS queried_at_local,\n if(:language IN ('zh','en'),concat(if(:language='zh','| Country | 业务状态 | 数据状态 | 上期日期 | 本期日期 | 间隔天数 | 逾期 上期→本期 | Open 上期→本期 | 逾期率 上期→本期 | 相对变化 | 百分点变化 |\\n| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\\n','| Country | Business status | Data status | Previous date | Target date | Gap days | Past due previous→target | Open previous→target | Ratio previous→target | Relative change | Point change |\\n| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\\n'),concat('| ',replaceAll(replaceAll(replaceAll(replaceAll(replaceAll(replaceAll(country_code,'&','&amp;'),'<','&lt;'),'>','&gt;'),'|','&#124;'),'\\n',' '),'\\r',' '),' | ',business_status,' | ',data_status,' | ',if(has_comparable_snapshots,toString(previous_snapshot_date),if(:language='zh','无可比较快照','No comparable snapshots')),' | ',toString(target_snapshot_date),' | ',if(has_comparable_snapshots,toString(snapshot_gap_days),if(:language='zh','无可比较快照','No comparable snapshots')),' | ',if(has_comparable_snapshots,concat(toString(previous_past_due_count),'→',toString(target_past_due_count)),if(:language='zh','无可比较快照','No comparable snapshots')),' | ',if(has_comparable_snapshots,concat(toString(previous_open_count),'→',toString(target_open_count)),if(:language='zh','无可比较快照','No comparable snapshots')),' | ',if(has_comparable_snapshots,concat(if(isNull(previous_past_due_ratio),if(:language='zh','不可计算','Not calculable'),concat(if(previous_past_due_ratio<0,'−',''),toString(toDecimal256(round(abs(previous_past_due_ratio)*100,2),2)),'%')),'→',if(isNull(target_past_due_ratio),if(:language='zh','不可计算','Not calculable'),concat(if(target_past_due_ratio<0,'−',''),toString(toDecimal256(round(abs(target_past_due_ratio)*100,2),2)),'%'))),if(:language='zh','无可比较快照','No comparable snapshots')),' | ',if(has_comparable_snapshots,if(previous_past_due_count=0,if(target_past_due_count>0,if(:language='zh','零基线上升','Zero-baseline increase'),if(:language='zh','无变化','No change')),if(isNull(relative_ratio_change),if(:language='zh','不可计算','Not calculable'),concat(if(relative_ratio_change>0,'+',if(relative_ratio_change<0,'−','')),toString(toDecimal256(round(abs(relative_ratio_change)*100,2),2)),'%'))),if(:language='zh','无可比较快照','No comparable snapshots')),' | ',if(has_comparable_snapshots,if(isNull(percentage_point_change),if(:language='zh','不可计算','Not calculable'),concat(if(percentage_point_change>0,'+',if(percentage_point_change<0,'−','')),toString(toDecimal256(round(abs(percentage_point_change)*100,4),4)),' pp')),if(:language='zh','无可比较快照','No comparable snapshots')),' |\\n')),'INVALID_LANGUAGE') AS content_markdown\n FROM monitor_facts)\n SELECT *,lower(hex(SHA256(content_markdown))) AS content_sha256,\n toInt64(row_number() OVER (ORDER BY country_code)) AS row_ordinal,\n toInt64(count() OVER ()) AS expected_record_count FROM formatted"}
+        :binding/input-map {:pastdue.monitor-block-query/calendar-mode "calendar_mode"
+          :pastdue.monitor-block-query/relative-change-threshold "relative_change_threshold"
+          :pastdue.monitor-block-query/language "language"}
+        :binding/output-map {:pastdue.monitor-block-query/countries "countries"
+          :pastdue.monitor-block/country-code "country_code"
+          :pastdue.monitor-block/target-snapshot-date "target_snapshot_date"
+          :pastdue.monitor-block/previous-snapshot-date "previous_snapshot_date"
+          :pastdue.monitor-block/calendar-mode "calendar_mode"
+          :pastdue.monitor-block/expected-target-date "expected_target_date"
+          :pastdue.monitor-block/has-comparable-snapshots "has_comparable_snapshots"
+          :pastdue.monitor-block/business-status "business_status"
+          :pastdue.monitor-block/data-status "data_status"
+          :pastdue.monitor-block/target-past-due-count "target_past_due_count"
+          :pastdue.monitor-block/previous-past-due-count "previous_past_due_count"
+          :pastdue.monitor-block/target-open-count "target_open_count"
+          :pastdue.monitor-block/previous-open-count "previous_open_count"
+          :pastdue.monitor-block/snapshot-gap-days "snapshot_gap_days"
+          :pastdue.monitor-block/target-lag-workdays "target_lag_workdays"
+          :pastdue.monitor-block/missing-workdays-between "missing_workdays_between"
+          :pastdue.monitor-block/target-past-due-ratio "target_past_due_ratio"
+          :pastdue.monitor-block/previous-past-due-ratio "previous_past_due_ratio"
+          :pastdue.monitor-block/relative-ratio-change "relative_ratio_change"
+          :pastdue.monitor-block/percentage-point-change "percentage_point_change"
+          :pastdue.monitor-block/scope-key "scope_key"
+          :pastdue.monitor-block/language "language"
+          :pastdue.monitor-block/template-version "template_version"
+          :pastdue.monitor-block/business-timezone "business_timezone"
+          :pastdue.monitor-block/queried-at-local "queried_at_local"
+          :pastdue.monitor-block/content-markdown "content_markdown"
+          :pastdue.monitor-block/content-sha256 "content_sha256"
+          :pastdue.monitor-block/row-ordinal "row_ordinal"
+          :pastdue.monitor-block/expected-record-count "expected_record_count"}}}
     :selection {[:resolver "pastdue_country_monitor_all"] "pastdue_country_monitor_all-sql"
       [:resolver "pastdue_historical_vendor_eta_source_drivers"] "pastdue_historical_vendor_eta_source_drivers-sql"
       [:resolver "pastdue_historical_country_trigger_events"] "pastdue_historical_country_trigger_events-sql"
@@ -4325,7 +4758,9 @@
       [:resolver "pastdue_v3_current_analysis_query_rows"] "pastdue_v3_current_analysis_query_rows-sql"
       [:resolver "pastdue_v3_analysis_query_scope_status"] "pastdue_v3_analysis_query_scope_status-sql"
       [:resolver "pastdue_v3_report_query_rows"] "pastdue_v3_report_query_rows-sql"
-      [:resolver "pastdue_v3_explore_query_rows"] "pastdue_v3_explore_query_rows-sql"}}
+      [:resolver "pastdue_v3_explore_query_rows"] "pastdue_v3_explore_query_rows-sql"
+      [:resolver "pastdue_v3_report_block_query_blocks"] "pastdue_v3_report_block_query_blocks-sql"
+      [:resolver "pastdue_v3_monitor_block_query_countries"] "pastdue_v3_monitor_block_query_countries-sql"}}
   :ownership {:entities {"pastdue.country-history-query" "REPLACE-WITH-GRAPH-ID"
       "pastdue.country-monitor" "REPLACE-WITH-GRAPH-ID"
       "pastdue.country-trigger-event" "REPLACE-WITH-GRAPH-ID"
@@ -4363,7 +4798,11 @@
       "pastdue.report-query" "REPLACE-WITH-GRAPH-ID"
       "pastdue.report-fact" "REPLACE-WITH-GRAPH-ID"
       "pastdue.explore-query" "REPLACE-WITH-GRAPH-ID"
-      "pastdue.explore-fact" "REPLACE-WITH-GRAPH-ID"}
+      "pastdue.explore-fact" "REPLACE-WITH-GRAPH-ID"
+      "pastdue.report-block-query" "REPLACE-WITH-GRAPH-ID"
+      "pastdue.report-block" "REPLACE-WITH-GRAPH-ID"
+      "pastdue.monitor-block-query" "REPLACE-WITH-GRAPH-ID"
+      "pastdue.monitor-block" "REPLACE-WITH-GRAPH-ID"}
     :resolvers {"pastdue_country_monitor_all" "REPLACE-WITH-GRAPH-ID"
       "pastdue_country_monitor_by_country" "REPLACE-WITH-GRAPH-ID"
       "pastdue_current_high_risk_lines_by_vendor" "REPLACE-WITH-GRAPH-ID"
@@ -4398,9 +4837,11 @@
       "pastdue_v3_current_analysis_query_rows" "REPLACE-WITH-GRAPH-ID"
       "pastdue_v3_analysis_query_scope_status" "REPLACE-WITH-GRAPH-ID"
       "pastdue_v3_report_query_rows" "REPLACE-WITH-GRAPH-ID"
-      "pastdue_v3_explore_query_rows" "REPLACE-WITH-GRAPH-ID"}
+      "pastdue_v3_explore_query_rows" "REPLACE-WITH-GRAPH-ID"
+      "pastdue_v3_report_block_query_blocks" "REPLACE-WITH-GRAPH-ID"
+      "pastdue_v3_monitor_block_query_countries" "REPLACE-WITH-GRAPH-ID"}
     :operations {}
     :terms {}}
-  :publication {:release/version "3.1.1"
-    :source/revision 2
+  :publication {:release/version "3.2.0"
+    :source/revision 3
     :required-capabilities #{:query/pagination-v1 :connector/sql :query/sort-v1 :graph/single-owner-v1 :artifact/embedded-closure-v1 :deployment/source-slot-v1 :semantic/core-v1}}}

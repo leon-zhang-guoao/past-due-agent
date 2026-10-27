@@ -1,0 +1,33 @@
+; Four INDEPENDENT requests, not one combined POST body.
+; Illustrative dates: replace with real valid complete eligible P/T.
+; Plain joins for Studio; discover actual MCP pagination support separately.
+
+{:entity {:pastdue.monitor-block-query/calendar-mode "WEEKDAYS"
+    :pastdue.monitor-block-query/relative-change-threshold 0.1
+    :pastdue.monitor-block-query/language "en"}
+  :query [{:pastdue.monitor-block-query/countries [:pastdue.monitor-block/country-code :pastdue.monitor-block/target-snapshot-date :pastdue.monitor-block/previous-snapshot-date :pastdue.monitor-block/calendar-mode :pastdue.monitor-block/expected-target-date :pastdue.monitor-block/has-comparable-snapshots :pastdue.monitor-block/business-status :pastdue.monitor-block/data-status :pastdue.monitor-block/target-past-due-count :pastdue.monitor-block/previous-past-due-count :pastdue.monitor-block/target-open-count :pastdue.monitor-block/previous-open-count :pastdue.monitor-block/snapshot-gap-days :pastdue.monitor-block/target-lag-workdays :pastdue.monitor-block/missing-workdays-between :pastdue.monitor-block/target-past-due-ratio :pastdue.monitor-block/previous-past-due-ratio :pastdue.monitor-block/relative-ratio-change :pastdue.monitor-block/percentage-point-change :pastdue.monitor-block/scope-key :pastdue.monitor-block/language :pastdue.monitor-block/template-version :pastdue.monitor-block/business-timezone :pastdue.monitor-block/queried-at-local :pastdue.monitor-block/content-markdown :pastdue.monitor-block/content-sha256 :pastdue.monitor-block/row-ordinal :pastdue.monitor-block/expected-record-count]}]}
+
+{:entity {:pastdue.report-block-query/country-code "CA"
+    :pastdue.report-block-query/target-snapshot-date "2026-10-26"
+    :pastdue.report-block-query/previous-snapshot-date "2026-10-23"
+    :pastdue.report-block-query/calendar-mode "WEEKDAYS"
+    :pastdue.report-block-query/selection-mode "POSITIVE_TOP_N"
+    :pastdue.report-block-query/top-n 10
+    :pastdue.report-block-query/vendor-code 0
+    :pastdue.report-block-query/language "en"}
+  :query [{:pastdue.report-block-query/blocks [:pastdue.report-block/scope-key :pastdue.report-block/country-code :pastdue.report-block/calendar-mode :pastdue.report-block/selection-mode :pastdue.report-block/language :pastdue.report-block/block-id :pastdue.report-block/block-type :pastdue.report-block/vendor-name :pastdue.report-block/scope-status :pastdue.report-block/data-check-status :pastdue.report-block/data-check-reason :pastdue.report-block/metric-version :pastdue.report-block/template-version :pastdue.report-block/business-timezone :pastdue.report-block/content-markdown :pastdue.report-block/diagnostic-evidence :pastdue.report-block/source-checks-json :pastdue.report-block/selected-vendors-json :pastdue.report-block/country-control-json :pastdue.report-block/content-sha256 :pastdue.report-block/source-checks-schema :pastdue.report-block/target-snapshot-date :pastdue.report-block/previous-snapshot-date :pastdue.report-block/queried-at-local :pastdue.report-block/vendor-code :pastdue.report-block/contribution-rank :pastdue.report-block/selected-vendor-count :pastdue.report-block/expected-block-count :pastdue.report-block/source-record-count :pastdue.report-block/expected-source-record-count :pastdue.report-block/row-ordinal :pastdue.report-block/source-row-start :pastdue.report-block/source-row-end]}]}
+
+{:entity {:pastdue.monitor-block-query/calendar-mode "WEEKDAYS"
+    :pastdue.monitor-block-query/relative-change-threshold 0.1
+    :pastdue.monitor-block-query/language "zh"}
+  :query [{:pastdue.monitor-block-query/countries [:pastdue.monitor-block/country-code :pastdue.monitor-block/target-snapshot-date :pastdue.monitor-block/previous-snapshot-date :pastdue.monitor-block/calendar-mode :pastdue.monitor-block/expected-target-date :pastdue.monitor-block/has-comparable-snapshots :pastdue.monitor-block/business-status :pastdue.monitor-block/data-status :pastdue.monitor-block/target-past-due-count :pastdue.monitor-block/previous-past-due-count :pastdue.monitor-block/target-open-count :pastdue.monitor-block/previous-open-count :pastdue.monitor-block/snapshot-gap-days :pastdue.monitor-block/target-lag-workdays :pastdue.monitor-block/missing-workdays-between :pastdue.monitor-block/target-past-due-ratio :pastdue.monitor-block/previous-past-due-ratio :pastdue.monitor-block/relative-ratio-change :pastdue.monitor-block/percentage-point-change :pastdue.monitor-block/scope-key :pastdue.monitor-block/language :pastdue.monitor-block/template-version :pastdue.monitor-block/business-timezone :pastdue.monitor-block/queried-at-local :pastdue.monitor-block/content-markdown :pastdue.monitor-block/content-sha256 :pastdue.monitor-block/row-ordinal :pastdue.monitor-block/expected-record-count]}]}
+
+{:entity {:pastdue.report-block-query/country-code "CA"
+    :pastdue.report-block-query/target-snapshot-date "2026-10-26"
+    :pastdue.report-block-query/previous-snapshot-date "2026-10-23"
+    :pastdue.report-block-query/calendar-mode "WEEKDAYS"
+    :pastdue.report-block-query/selection-mode "POSITIVE_TOP_N"
+    :pastdue.report-block-query/top-n 10
+    :pastdue.report-block-query/vendor-code 0
+    :pastdue.report-block-query/language "zh"}
+  :query [{:pastdue.report-block-query/blocks [:pastdue.report-block/scope-key :pastdue.report-block/country-code :pastdue.report-block/calendar-mode :pastdue.report-block/selection-mode :pastdue.report-block/language :pastdue.report-block/block-id :pastdue.report-block/block-type :pastdue.report-block/vendor-name :pastdue.report-block/scope-status :pastdue.report-block/data-check-status :pastdue.report-block/data-check-reason :pastdue.report-block/metric-version :pastdue.report-block/template-version :pastdue.report-block/business-timezone :pastdue.report-block/content-markdown :pastdue.report-block/diagnostic-evidence :pastdue.report-block/source-checks-json :pastdue.report-block/selected-vendors-json :pastdue.report-block/country-control-json :pastdue.report-block/content-sha256 :pastdue.report-block/source-checks-schema :pastdue.report-block/target-snapshot-date :pastdue.report-block/previous-snapshot-date :pastdue.report-block/queried-at-local :pastdue.report-block/vendor-code :pastdue.report-block/contribution-rank :pastdue.report-block/selected-vendor-count :pastdue.report-block/expected-block-count :pastdue.report-block/source-record-count :pastdue.report-block/expected-source-record-count :pastdue.report-block/row-ordinal :pastdue.report-block/source-row-start :pastdue.report-block/source-row-end]}]}

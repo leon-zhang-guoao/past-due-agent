@@ -1,4 +1,4 @@
-{:version "3.1.3"
+{:version "3.2.0"
   :formats {:date {:pattern "YYYY-MM-DD"}
     :int {:thousands-separator false}
     :signed_int {:positive-prefix "+"
@@ -597,35 +597,73 @@
          :format :text
          :source "report-fact/VENDOR_CHECK/counts-match,required and completion-contract.md"}]
       :display-dimensions ["code" "source"]
-      :internal-only-dimension "us remains queried/reconciled; no extra default row"}}
-  :compositions {:daily_full [:run_info :country_metrics :vendor_summary :country_summary :vendor_metrics :eta_code_changes :eta_source_changes :eta_totals :business_diagnosis :cross_country_summary :completion]
-    :historical_full [:run_info :trigger_events :country_metrics :vendor_summary :country_summary :vendor_metrics :eta_code_changes :eta_source_changes :eta_totals :business_diagnosis :cross_country_summary :completion]
+      :internal-only-dimension "us remains queried/reconciled; no extra default row"}
+    :monitor_fact_blocks {:section-label {:zh "Country 指标"
+        :en "Country metrics"}
+      :presentation "literal returned content; no rewritten fact cells"
+      :source "pastdue.monitor-block/content-markdown"}
+    :country_fact_blocks {:section-label {:zh "Country 分析"
+        :en "Country analysis"}
+      :presentation "literal returned content; no rewritten fact cells"
+      :source "overview + Country Vendor summary + ordered Vendor blocks"}
+    :vendor_fact_block {:section-label {:zh "Vendor 详情"
+        :en "Vendor details"}
+      :presentation "literal returned content; no rewritten fact cells"
+      :source "pastdue.report-block/content-markdown"}
+    :execution_evidence {:section-label {:zh "执行与证据范围"
+        :en "Execution and evidence scope"}
+      :columns [{:id "country"
+         :label {:zh "Country"
+           :en "Country"}
+         :source "request identity"
+         :format :text} {:id "data_reconciliation"
+         :label {:zh "数据核对"
+           :en "Data reconciliation"}
+         :source "returned data-check-status/reason"
+         :format :text} {:id "blocks_read"
+         :label {:zh "事实块读取"
+           :en "Blocks read"}
+         :source "observed unique count / returned expected-block-count"
+         :format :text} {:id "final_output_verification"
+         :label {:zh "最终展示核验"
+           :en "Final-output verification"}
+         :source "NOT_INDEPENDENTLY_VERIFIED absent actual independent evidence"
+         :format :text} {:id "limits"
+         :label {:zh "限制"
+           :en "Limits"}
+         :source "actual missing/failed scope"
+         :format :text}]}}
+  :compositions {:daily_full [:run_info :monitor_fact_blocks :country_fact_blocks :cross_country_summary :execution_evidence]
+    :historical_full [:run_info :trigger_events :country_fact_blocks :cross_country_summary :execution_evidence]
     :historical_events_only [:trigger_events]
-    :test_full [:run_info :country_metrics :vendor_summary :country_summary :vendor_metrics :eta_code_changes :eta_source_changes :eta_totals :business_diagnosis :cross_country_summary :completion :test_checks]
+    :test_full [:run_info :monitor_fact_blocks :country_fact_blocks :cross_country_summary :execution_evidence]
     :interactive [:generic_analysis]}
   :composition-rules {:per-country true
-    :per-selected-vendor [:vendor_metrics :eta_code_changes :eta_source_changes :eta_totals :business_diagnosis]
+    :per-selected-vendor [:vendor_fact_block]
     :vendor-order "report-fact/contribution-rank ASC, vendor-code ASC"
-    :conditional-module {:us_source_changes "optional explicit Code=US Source detail request only; not a standard report table/column"}
+    :conditional-module {:us_source_changes "explicit structured-detail request only, not standard blocks"}
     :optional-only-on-request [:current_owners :notification_recipients :current_po_lines]
     :no-silent-omission true
     :default-country-order ["US" "CA"]
-    :other-country-order "explicit request order"}
-  :completion-display {:require-six-module-status-strings false
-    :source "verified facts and checks"
-    :failure-or-na "one precise statement per affected scope; no redundant status boilerplate"}
+    :other-country-order "explicit request order"
+    :country-block-order ["COUNTRY_OVERVIEW literal content" "Country Vendor summary using diagnostic-evidence" "every VENDOR_DETAILS literal content by rank"]}
+  :completion-display {:source "actual data check + block receipt, separately from final output"
+    :model-issued-overall-pass false
+    :default-final-output "NOT_INDEPENDENTLY_VERIFIED"}
   :report-header {:queried-at-local-source "report-fact/queried-at-local or explore-fact/queried-at-local"
     :business-timezone-source "business-timezone IANA"
     :actual-offset-source "trusted corresponding instant/offset; never guessed from tool delivery time"
     :ambiguous-offset "UNVERIFIED; preserve actual returned local timestamp and IANA"
     :legacy-queried-at-utc "unchanged UTC semantics, not repurposed as queried-at-local"}
-  :rendering {:template "report-format.md#canonical-bilingual-skeleton"
+  :rendering {:template "report-format.md"
+    :fact-contract "fact-block-contract.md"
     :standard-presets ["daily_full" "historical_full" "test_full"]
-    :hierarchy ["run_info" "country_metrics (historical_full also trigger_events)" "repeat Country/event: vendor_summary -> country_summary narrative -> repeat selected Vendor: vendor_metrics, eta_code_changes, eta_source_changes, eta_totals, business_diagnosis" "cross_country_summary" "completion" "test_checks (test_full only)"]
-    :interactive "compose only requested modules; no forced standard-report hierarchy"
-    :custom-output "explicit user requests may change presentation; declare CUSTOM scope, retain evidence rules, do not label reduced output full-report PASS"
-    :no-adaptive-layout ["no merged Code/Source cells in standard summary" "no one-row-per-Vendor substitute for full sections" "no grouped zero buckets" "no changing headings/columns between languages except declared translations"]
-    :joint-source-display "No default US joint-source table, column, totals row or placeholder. Integrate verified business conclusions into country_summary directly after Vendor ranking. Underlying facts/checks still mandatory when applicable. Detail only on explicit request."}
+    :fact-content-source "pastdue.report-block/content-markdown; monitor-block/content-markdown"
+    :no-model-rebuild true
+    :country-summary "generated prose from returned diagnostic-evidence after ranking"
+    :interactive "relevant structured modules only"
+    :final-output-gate-installed false
+    :legacy-column-definitions "remaining raw module columns describe explicit structured review, not a second default report template"}
   :fact-binding {:authority "raw handle-bound Atlas rows; never model intermediate tables"
     :partition-first ["scope-key" "record-type" "country-code" "vendor-code" "previous-snapshot-date" "target-snapshot-date" "dimension" "row-kind"]
     :vendor-total-source "VENDOR_METRICS only; ETA summaries carry bucket counts, not Vendor totals"
