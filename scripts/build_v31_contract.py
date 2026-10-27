@@ -17,64 +17,147 @@ def sparse(fields, values):
     return 'SELECT '+', '.join(values.get(n,defaults[t])+' AS '+n.replace('-','_') for n,t in fields)
 
 
-def add_report(doc):
-    base=pair_ctes()
-    legacy=doc[':execution'][':bindings']['pastdue_v3_analysis_query_vendor_checks-sql'][':binding/implementation'][':query']
-    extra=legacy[len('WITH '+base):legacy.index(',\n dimension_totals AS')]
-    scope=doc[':execution'][':bindings']['pastdue_v3_analysis_query_scope_status-sql'][':binding/implementation'][':query'][len('WITH '+base):]
-    scope=scope.replace(":selection_mode NOT IN ('POSITIVE_TOP_N','SINGLE_VENDOR') OR :top_n NOT BETWEEN 1 AND 10", ":selection_mode NOT IN ('POSITIVE_TOP_N','SINGLE_VENDOR') OR :top_n NOT BETWEEN 1 AND 10 OR (:selection_mode='POSITIVE_TOP_N' AND :vendor_code!=0) OR (:selection_mode='SINGLE_VENDOR' AND (:top_n!=1 OR :vendor_code=0))")
-    # Seed one row per Vendor/dimension so success-empty US still has a check.
-    # Then carry one aggregate/window pipeline into tagged output records rather
-    # than repeatedly joining CTEs (ClickHouse CTEs are not materialized).
-    ctes='WITH '+base+extra+""",
- report_scope AS ("""+scope+"""),
- seeded AS (
- SELECT country_code,vendor_code,dimension,eta_value,previous_count,target_count,false AS is_seed FROM check_buckets
- UNION ALL SELECT country_code,vendor_code,arrayJoin(['code','source','us']) AS dimension,
- '' AS eta_value,toInt64(0) AS previous_count,toInt64(0) AS target_count,true AS is_seed FROM selected),
- attached AS (SELECT b.country_code AS country_code,b.vendor_code AS vendor_code,b.dimension AS dimension,
- b.eta_value AS eta_value,b.previous_count AS previous_count,b.target_count AS target_count,b.is_seed AS is_seed,
- """+', '.join('s.'+n.replace('-','_')+' AS '+n.replace('-','_') for n,_ in VENDOR_FIELDS if n not in ('country-code','vendor-code','calendar-mode'))+"""
- FROM seeded b INNER JOIN selected s ON b.country_code=s.country_code AND b.vendor_code=s.vendor_code),
+def report_ctes():
+    """Linear pipeline: two bounded source reads, no fact-CTE re-expansion.
+
+    Dates are validated from date keys in [P,T], independently of the direct
+    two-date fact scan. Tagged buckets carry metrics/control through windows,
+    so neither selection nor control causes another source scan. No materialized
+    CTE, experimental analyzer, session state, or database schema change needed.
+    """
+    return """WITH
+ date_guard AS (
+ SELECT countIf(snapshot_date=toDate(:target_snapshot_date)) AS target_exists,
+ countIf(snapshot_date=toDate(:previous_snapshot_date)) AS previous_exists,
+ maxIf(snapshot_date,snapshot_date<toDate(:target_snapshot_date)) AS nearest_previous
+ FROM (SELECT DISTINCT snapshot_date FROM past_due.vendor_past_due_daily
+ WHERE country_code=:country_code
+ AND snapshot_date BETWEEN toDate(:previous_snapshot_date) AND toDate(:target_snapshot_date)
+ AND snapshot_date < """+TODAY_PST+"""
+ AND (:calendar_mode='CALENDAR_DAYS' OR (:calendar_mode='WEEKDAYS' AND toDayOfWeek(snapshot_date)<=5)))),
+ period_raw AS (
+ SELECT toInt64(vendor_code) AS vendor_code,vendor_name,snapshot_date,
+ if(empty(trim(ifNull(eta_code,''))),'UNKNOWN',upper(trim(eta_code))) AS raw_code,
+ if(empty(trim(ifNull(source,''))),'UNKNOWN',trim(source)) AS raw_source,
+ toInt64(past_due_count) AS pd,toInt64(total_open_count) AS op,false AS is_control
+ FROM past_due.vendor_past_due_daily
+ WHERE country_code=:country_code
+ AND snapshot_date IN (toDate(:target_snapshot_date),toDate(:previous_snapshot_date))
+ UNION ALL
+ SELECT toInt64(0),'',toDate('1970-01-01'),'','',toInt64(0),toInt64(0),true),
+ expanded AS (SELECT *,arrayJoin(if(is_control,[tuple('control','',false)],
+ [tuple('metrics','',false),tuple('code',raw_code,true),tuple('source',raw_source,true),
+ tuple('code','',false),tuple('source','',false),tuple('us','',false),
+ tuple(if(raw_code='US','us','skip'),raw_source,true)])) AS dim FROM period_raw),
+ grouped AS (SELECT vendor_code,is_control,min(vendor_name) AS bucket_vendor_name,
+ tupleElement(dim,1) AS dimension,tupleElement(dim,2) AS eta_value,tupleElement(dim,3) AS is_bucket,
+ sumIf(pd,snapshot_date=toDate(:previous_snapshot_date) AND (dimension='metrics' OR is_bucket)) AS previous_count,
+ sumIf(pd,snapshot_date=toDate(:target_snapshot_date) AND (dimension='metrics' OR is_bucket)) AS target_count,
+ sumIf(op,snapshot_date=toDate(:previous_snapshot_date) AND dimension='metrics') AS previous_metric_open,
+ sumIf(op,snapshot_date=toDate(:target_snapshot_date) AND dimension='metrics') AS target_metric_open,
+ sumIf(pd,snapshot_date=toDate(:previous_snapshot_date) AND dimension='metrics' AND raw_code='US') AS previous_metric_us,
+ sumIf(pd,snapshot_date=toDate(:target_snapshot_date) AND dimension='metrics' AND raw_code='US') AS target_metric_us,
+ max(pd<0 OR op<0 OR pd>op) AS bad_row
+ FROM expanded WHERE tupleElement(dim,1)!='skip'
+ GROUP BY vendor_code,is_control,dimension,eta_value,is_bucket),
+ totals AS (SELECT *,min(bucket_vendor_name) OVER v AS vendor_name,
+ sumIf(previous_count,dimension='metrics') OVER v AS previous_past_due_count,
+ sumIf(target_count,dimension='metrics') OVER v AS target_past_due_count,
+ sum(previous_metric_open) OVER v AS previous_open_count,sum(target_metric_open) OVER v AS target_open_count,
+ sum(previous_metric_us) OVER v AS previous_us_total,sum(target_metric_us) OVER v AS target_us_total,
+ sumIf(previous_count,dimension='metrics') OVER () AS previous_country_past_due,
+ sumIf(target_count,dimension='metrics') OVER () AS target_country_past_due,
+ sum(previous_metric_open) OVER () AS previous_country_open,sum(target_metric_open) OVER () AS target_country_open,
+ max(bad_row) OVER () AS invalid_facts
+ FROM grouped WINDOW v AS (PARTITION BY is_control,vendor_code)),
+ calculated AS (SELECT *,target_past_due_count-previous_past_due_count AS past_due_count_change,
+ """+ratio('target_past_due_count','target_country_open')+""" AS target_country_contribution,
+ """+ratio('previous_past_due_count','previous_country_open')+""" AS previous_country_contribution,
+ target_country_contribution-previous_country_contribution AS delta_country_contribution,
+ """+ratio('target_past_due_count','target_open_count')+""" AS target_vendor_ratio,
+ """+ratio('previous_past_due_count','previous_open_count')+""" AS previous_vendor_ratio,
+ toDecimal256(target_past_due_count,0)*previous_country_open-toDecimal256(previous_past_due_count,0)*target_country_open AS contribution_numerator
+ FROM totals),
+ ranked AS (SELECT *,toInt64(dense_rank() OVER (ORDER BY is_control,contribution_numerator DESC,vendor_code)) AS contribution_rank,
+ sumIf(greatest(contribution_numerator,toDecimal256(0,0)),dimension='metrics') OVER () AS positive_numerator
+ FROM calculated),
+ marked AS (SELECT *,NOT is_control AND (
+ (:selection_mode='POSITIVE_TOP_N' AND contribution_numerator>0 AND contribution_rank<=:top_n)
+ OR (:selection_mode='SINGLE_VENDOR' AND vendor_code=:vendor_code)) AS chosen
+ FROM ranked),
+ selected_metadata AS (SELECT *,
+ toInt64(countIf(chosen AND dimension='metrics') OVER ()) AS selected_vendor_count,
+ """+ratio('greatest(contribution_numerator,0)','positive_numerator')+""" AS positive_contribution_share,
+ """+ratio("sumIf(greatest(contribution_numerator,toDecimal256(0,0)),chosen AND dimension='metrics') OVER ()",'positive_numerator')+""" AS selected_positive_coverage
+ FROM marked),
+ scoped AS (SELECT m.*,multiIf(
+ :selection_mode NOT IN ('POSITIVE_TOP_N','SINGLE_VENDOR') OR :top_n NOT BETWEEN 1 AND 10
+ OR (:selection_mode='POSITIVE_TOP_N' AND :vendor_code!=0)
+ OR (:selection_mode='SINGLE_VENDOR' AND (:top_n!=1 OR :vendor_code=0)),'INVALID_SELECTION',
+ :calendar_mode NOT IN ('WEEKDAYS','CALENDAR_DAYS') OR toDate(:previous_snapshot_date)>=toDate(:target_snapshot_date)
+ OR d.target_exists=0 OR d.previous_exists=0 OR d.nearest_previous!=toDate(:previous_snapshot_date),'INVALID_PAIR',
+ invalid_facts>0,'DATA_ERROR',target_country_open<=0 OR previous_country_open<=0,'INVALID_DENOMINATOR',
+ :selection_mode='SINGLE_VENDOR' AND selected_vendor_count=0,'VENDOR_NOT_FOUND','OK') AS scope_status
+ FROM selected_metadata m CROSS JOIN date_guard d),
  bucket_ranked AS (SELECT *,target_count-previous_count AS bucket_delta,
- toInt64(row_number() OVER (PARTITION BY country_code,vendor_code,dimension ORDER BY is_seed,abs(bucket_delta) DESC,target_count DESC,eta_value)) AS display_rank,
- sumIf(previous_count,dimension='code' AND eta_value='US' AND NOT is_seed) OVER (PARTITION BY country_code,vendor_code) AS previous_us_total,
- sumIf(target_count,dimension='code' AND eta_value='US' AND NOT is_seed) OVER (PARTITION BY country_code,vendor_code) AS target_us_total
- FROM attached),
- enriched AS (SELECT *,
- toInt64(countIf(NOT is_seed) OVER w) AS expected_bucket_count,
+ toInt64(row_number() OVER (PARTITION BY is_control,vendor_code,dimension ORDER BY is_bucket DESC,abs(bucket_delta) DESC,target_count DESC,eta_value)) AS display_rank
+ FROM scoped WHERE is_control OR (chosen AND scope_status='OK')),
+ enriched AS (SELECT *,toInt64(countIf(is_bucket) OVER w) AS expected_bucket_count,
  sum(previous_count) OVER w AS previous_total,sum(target_count) OVER w AS target_total,
  sum(greatest(bucket_delta,0)) OVER w AS increase_total,sum(least(bucket_delta,0)) OVER w AS decrease_total,
- sumIf(previous_count,display_rank>5 AND NOT is_seed) OVER w AS other_previous,
- sumIf(target_count,display_rank>5 AND NOT is_seed) OVER w AS other_target,
- toInt64(countIf(display_rank>5 AND NOT is_seed) OVER w) AS other_bucket_count,
+ sumIf(previous_count,display_rank>5 AND is_bucket) OVER w AS other_previous,
+ sumIf(target_count,display_rank>5 AND is_bucket) OVER w AS other_target,
+ toInt64(countIf(display_rank>5 AND is_bucket) OVER w) AS other_bucket_count,
  if(dimension='us',previous_us_total,previous_past_due_count) AS previous_expected_total,
  if(dimension='us',target_us_total,target_past_due_count) AS target_expected_total,
  dimension!='us' OR previous_us_total>0 OR target_us_total>0 AS required
- FROM bucket_ranked WINDOW w AS (PARTITION BY country_code,vendor_code,dimension)),
- tagged AS (SELECT *,arrayJoin(arrayConcat(
- if(is_seed AND dimension='code',['VENDOR_METRICS'],[]),
- if(is_seed,['VENDOR_CHECK'],[]),
- if(NOT is_seed AND display_rank<=6,[multiIf(dimension='code','ETA_CODE_SUMMARY',dimension='source','ETA_SOURCE_SUMMARY','US_SOURCE_SUMMARY')],[]))) AS tag
- FROM enriched),
- report_rows AS ("""
-    core={'scope-key':scope_key(QUERY),'country-code':':country_code','target-snapshot-date':'toDate(:target_snapshot_date)','previous-snapshot-date':'toDate(:previous_snapshot_date)','calendar-mode':':calendar_mode','metric-version':"'3.1.0'",'selection-mode':':selection_mode','business-timezone':"'America/Los_Angeles'",'queried-at-local':NOW_PST}
-    raw_bad="(SELECT count() FROM period_rows p INNER JOIN past_due.vendor_past_due_daily d ON p.country_code=d.country_code AND p.snapshot_date=d.snapshot_date WHERE d.past_due_count<0 OR d.total_open_count<0 OR d.past_due_count>d.total_open_count)>0"
-    control=dict(core,**{'record-type':"'COUNTRY_CONTROL'",'scope-status':f"if({raw_bad},'DATA_ERROR',scope_status)",'selected-vendor-count':'selected_vendor_count','target-country-open':'target_country_open','previous-country-open':'previous_country_open','target-country-past-due-count':'ifNull((SELECT max(target_country_past_due) FROM country_pair),toInt64(0))','previous-country-past-due-count':'ifNull((SELECT max(previous_country_past_due) FROM country_pair),toInt64(0))','target-country-ratio':ratio('target_country_past_due_count','target_country_open'),'previous-country-ratio':ratio('previous_country_past_due_count','previous_country_open')})
-    control_sql=sparse(REPORT_FIELDS,control)+' FROM report_scope'
-    vals=dict(core,**{n:n.replace('-','_') for n,_ in VENDOR_FIELDS if n!='calendar-mode'})
-    summary="tag IN ('ETA_CODE_SUMMARY','ETA_SOURCE_SUMMARY','US_SOURCE_SUMMARY')"
-    bp="if(display_rank=6,other_previous,previous_count)";bt="if(display_rank=6,other_target,target_count)"
-    vals.update({'record-type':'tag','dimension':"if(tag='VENDOR_METRICS','',dimension)",'eta-value':f"if({summary} AND display_rank<=5,eta_value,'')",'row-kind':f"if({summary},if(display_rank=6,'OTHER','BUCKET'),'')",'scope-status':"'OK'",'display-rank':f"if({summary},display_rank,toInt64(0))",'expected-bucket-count':'expected_bucket_count','other-bucket-count':f"if({summary} AND display_rank=6,other_bucket_count,toInt64(0))",'previous-past-due-count':f"if({summary},{bp},previous_past_due_count)",'target-past-due-count':f"if({summary},{bt},target_past_due_count)",'past-due-count-change':f"if({summary},{bt}-{bp},past_due_count_change)",'past-due-count-relative-change':ratio(bt+'-'+bp,bp),'delta-country-contribution':f"if({summary},"+ratio(bt,'target_country_open')+'-'+ratio(bp,'previous_country_open')+",delta_country_contribution)",'increase-total':'increase_total','decrease-total':'decrease_total','net-change':'target_total-previous_total','previous-total':'previous_total','target-total':'target_total','previous-expected-total':'previous_expected_total','target-expected-total':'target_expected_total','counts-match':'previous_total=previous_expected_total AND target_total=target_expected_total','required':'required'})
-    # Semantic aliases in a SELECT may be expanded by ClickHouse. Qualify source
-    # columns so substituting a summary count never changes its Vendor metrics.
-    source_fields={n.replace('-','_') for n,_ in REPORT_FIELDS} | {'tag','is_seed','other_previous','other_target','previous_count','target_count'}
-    import re
-    for key,value in vals.items():
-        if key in core:continue
-        vals[key]=re.sub(r"'[^']*'|\b([a-z_][a-z_0-9]*)\b",lambda m:m.group(0) if not m.group(1) or m.group(1) not in source_fields else 't.'+m.group(1),value)
-    facts=sparse(REPORT_FIELDS,vals)+f" FROM tagged t WHERE (SELECT scope_status FROM report_scope)='OK' AND ({raw_bad})=false"
-    sql=ctes+control_sql+' UNION ALL '+facts+""") SELECT * EXCEPT(expected_record_count,row_ordinal),
+ FROM bucket_ranked WINDOW w AS (PARTITION BY is_control,vendor_code,dimension)),
+ tagged AS (SELECT *,arrayJoin(if(is_control,['COUNTRY_CONTROL'],if(chosen AND scope_status='OK',arrayConcat(
+ if(dimension='metrics',['VENDOR_METRICS'],[]),
+ if(NOT is_bucket AND dimension IN ('code','source','us'),['VENDOR_CHECK'],[]),
+ if(is_bucket AND display_rank<=6,[multiIf(dimension='code','ETA_CODE_SUMMARY',dimension='source','ETA_SOURCE_SUMMARY','US_SOURCE_SUMMARY')],[])),[]))) AS tag
+ FROM enriched)
+ """
+
+
+def add_report(doc):
+    core={'scope-key':scope_key(QUERY),'country-code':':country_code',
+          'target-snapshot-date':'toDate(:target_snapshot_date)',
+          'previous-snapshot-date':'toDate(:previous_snapshot_date)',
+          'calendar-mode':':calendar_mode','metric-version':"'3.1.0'",
+          'selection-mode':':selection_mode','business-timezone':"'America/Los_Angeles'",
+          'queried-at-local':NOW_PST}
+    vals=dict(core,**{n:'t.'+n.replace('-','_') for n,_ in VENDOR_FIELDS if n not in core})
+    summary="t.tag IN ('ETA_CODE_SUMMARY','ETA_SOURCE_SUMMARY','US_SOURCE_SUMMARY')"
+    bp="if(t.display_rank=6,t.other_previous,t.previous_count)"
+    bt="if(t.display_rank=6,t.other_target,t.target_count)"
+    vals.update({
+        'record-type':'t.tag','vendor-code':'t.vendor_code','vendor-name':'t.vendor_name',
+        'dimension':"if(t.tag IN ('COUNTRY_CONTROL','VENDOR_METRICS'),'',t.dimension)",
+        'eta-value':f"if({summary} AND t.display_rank<=5,t.eta_value,'')",
+        'row-kind':f"if({summary},if(t.display_rank=6,'OTHER','BUCKET'),'')",
+        'scope-status':'t.scope_status','contribution-rank':'if(t.is_control,toInt64(0),t.contribution_rank)',
+        'display-rank':f"if({summary},t.display_rank,toInt64(0))",
+        'expected-bucket-count':'t.expected_bucket_count',
+        'other-bucket-count':f"if({summary} AND t.display_rank=6,t.other_bucket_count,toInt64(0))",
+        'previous-past-due-count':f"if({summary},{bp},t.previous_past_due_count)",
+        'target-past-due-count':f"if({summary},{bt},t.target_past_due_count)",
+        'past-due-count-change':f"if({summary},{bt}-{bp},t.past_due_count_change)",
+        'past-due-count-relative-change':f"if({summary},"+ratio(bt+'-'+bp,bp)+','+ratio('t.past_due_count_change','t.previous_past_due_count')+')',
+        'delta-country-contribution':f"if({summary},"+ratio(bt,'t.target_country_open')+'-'+ratio(bp,'t.previous_country_open')+",t.delta_country_contribution)",
+        'increase-total':'t.increase_total','decrease-total':'t.decrease_total',
+        'net-change':'t.target_total-t.previous_total','previous-total':'t.previous_total','target-total':'t.target_total',
+        'previous-expected-total':'t.previous_expected_total','target-expected-total':'t.target_expected_total',
+        'counts-match':'CAST(t.previous_total=t.previous_expected_total AND t.target_total=t.target_expected_total AS Bool)',
+        'required':'CAST(t.required AS Bool)',
+        'target-country-past-due-count':"if(t.is_control,t.target_country_past_due,toInt64(0))",
+        'previous-country-past-due-count':"if(t.is_control,t.previous_country_past_due,toInt64(0))",
+        'target-country-ratio':ratio('t.target_country_past_due','t.target_country_open'),
+        'previous-country-ratio':ratio('t.previous_country_past_due','t.previous_country_open')})
+    # Sparse fields only carry meaning for their declared record type. Control
+    # always survives (even nonexistent dates/Country, empty selection or errors).
+    output=sparse(REPORT_FIELDS,vals)+' FROM tagged t'
+    sql=report_ctes()+', report_rows AS ('+output+""") SELECT * EXCEPT(expected_record_count,row_ordinal),
  toInt64(count() OVER ()) AS expected_record_count,
  toInt64(row_number() OVER (ORDER BY contribution_rank,vendor_code,record_type,dimension,display_rank,eta_value)) AS row_ordinal FROM report_rows"""
     fields=[(x,'date' if x.endswith('date') else 'integer' if x in ('vendor-code','top-n') else 'string') for x in QUERY]

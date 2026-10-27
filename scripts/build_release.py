@@ -16,19 +16,19 @@ from edn_io import read, loads, dumps, K
 from run_golden_eval import run_checks
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = '3.1.0'
+VERSION = '3.1.1'
 SKILL = 'skill/pastdue-analysis/'
 MANIFEST_PATH = SKILL + 'references/release-manifest.edn'
 MANIFEST = ROOT / MANIFEST_PATH
-ARCHIVE = ROOT / 'releases/pastdue-agent-v3.1.0.zip'
-SKILL_ARCHIVE = ROOT / 'releases/pastdue-analysis-skill-v3.1.0.zip'
+ARCHIVE = ROOT / 'releases/pastdue-agent-v3.1.1.zip'
+SKILL_ARCHIVE = ROOT / 'releases/pastdue-analysis-skill-v3.1.1.zip'
 ROLLBACK = ROOT / 'releases/pre-v3.1-rollback.zip'
 BASELINE = ROOT / 'tests/fixtures/baseline-v3.1.json'
 ROOT_FILES = {'agent/SYSTEM_PROMPT.md', 'agent/INVOCATION_EXAMPLES.md',
               'atlas/charts/pastdue.edn', 'atlas/sources.edn', 'README.md',
               'ACCEPTANCE_TESTS.md', 'DESIGN.md', 'AGENT_SKILL_EDN_DESIGN.md',
               'IMPLEMENTATION_NOTES.md', 'docs/PASTDUE_AGENT_REDESIGN.md', 'docs/API_V3.md',
-              'docs/DEPLOYMENT_V3.md', 'docs/VALIDATION_V3.md', 'docs/BASELINE_V3_1.md'}
+              'docs/DEPLOYMENT_V3.md', 'docs/VALIDATION_V3.md', 'docs/BASELINE_V3_1.md', 'docs/REPORT_SQL_FIX_3_1_1.md'}
 REF_NAMES = {'atlas-query-playbook.md', 'completion-contract.md', 'current-context.md',
              'data-contract.md', 'eta-diagnostic-rules.edn', 'metric-definitions.md',
              'policy.edn', 'report-format.md', 'table-display-contract.edn',
@@ -232,8 +232,8 @@ def check_release(root=ROOT):
     for key in (':platform-config-check', ':deployed-jdbc-sql', ':real-agent-eval'):
         if m[key] != 'NOT_RUN':
             raise ValueError('Unsupported live acceptance claim')
-    check_archive(root / 'releases/pastdue-agent-v3.1.0.zip', m[':sha256'], mpath.read_bytes())
-    check_archive(root / 'releases/pastdue-analysis-skill-v3.1.0.zip', m[':skill-sha256'], mpath.read_bytes())
+    check_archive(root / 'releases/pastdue-agent-v3.1.1.zip', m[':sha256'], mpath.read_bytes())
+    check_archive(root / 'releases/pastdue-analysis-skill-v3.1.1.zip', m[':skill-sha256'], mpath.read_bytes())
     return m
 
 
@@ -262,8 +262,8 @@ def build(root=ROOT, sql_receipt=None):
     if SECRET.search(manifest_bytes.decode()):
         raise ValueError('Potential secret in validation receipt; sanitize logs before packaging')
     (root / MANIFEST_PATH).write_bytes(manifest_bytes)
-    for name, data in [('pastdue-agent-v3.1.0.zip', payload),
-                       ('pastdue-analysis-skill-v3.1.0.zip', skill)]:
+    for name, data in [('pastdue-agent-v3.1.1.zip', payload),
+                       ('pastdue-analysis-skill-v3.1.1.zip', skill)]:
         zip_write(root / 'releases' / name, dict(data, **{MANIFEST_PATH: manifest_bytes}))
     check_release(root)
     return manifest

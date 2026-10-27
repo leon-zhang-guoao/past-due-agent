@@ -45,7 +45,17 @@ class QueryContracts(unittest.TestCase):
             self.assertEqual({a.rsplit('/',1)[1] for a in b.flatten_output(r[':output']) if not a.endswith('/rows')},{n for n,_ in fields})
             entity=self.doc[':vocabulary'][':entities']['pastdue.'+prefix+'-fact']
             self.assertIn(':pastdue.'+prefix+'-fact/scope-key',entity[':entity/identity'])
-        self.assertEqual(self.doc[':publication'][':release/version'],'3.1.0')
+        self.assertEqual(self.doc[':publication'][':release/version'],'3.1.1')
+
+    def test_report_query_has_bounded_linear_sources(self):
+        sql=self.doc[':execution'][':bindings']['pastdue_v3_report_query_rows-sql'][':binding/implementation'][':query']
+        self.assertEqual(sql.count('FROM past_due.vendor_past_due_daily'),2)
+        self.assertNotIn('SELECT max(target_country_open)',sql)
+        self.assertNotIn('FROM country_pair',sql)
+        self.assertIn('snapshot_date BETWEEN toDate(:previous_snapshot_date) AND toDate(:target_snapshot_date)',sql)
+        self.assertIn('snapshot_date IN (toDate(:target_snapshot_date),toDate(:previous_snapshot_date))',sql)
+        self.assertIn('FROM scoped WHERE is_control OR (chosen',sql)
+        self.assertNotIn('SELECT count() FROM',sql)
 
     def test_generator_idempotent(self):
         from build_analysis_contract import build,GRAPH

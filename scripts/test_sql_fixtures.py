@@ -40,11 +40,12 @@ class SQLFixtures(unittest.TestCase):
                         values.append(f"('{cc}','{dt}',{v},'Vendor {v}','{code}','{src}',{count},100)")
         cls.db.query('INSERT INTO past_due.vendor_past_due_daily VALUES '+','.join(values))
         extra=[]
-        for cc in ['ZERO','EMPTY','LAG','BAD','ONE']:
+        for cc in ['ZERO','EMPTY','LAG','BAD','ONE','NOOPEN']:
             dates=['2026-10-26'] if cc=='ONE' else ['2026-10-19','2026-10-20'] if cc=='LAG' else ['2026-10-23','2026-10-26']
             for dt in dates:
-                count=0 if cc=='ZERO' else 20 if cc=='EMPTY' else 110 if cc=='BAD' else 10
-                extra.append(f"('{cc}','{dt}',1,'Fixture','NR','EDI',{count},100)")
+                count=0 if cc in ['ZERO','NOOPEN'] else 20 if cc=='EMPTY' else 110 if cc=='BAD' else 10
+                op=0 if cc=='NOOPEN' else 100
+                extra.append(f"('{cc}','{dt}',1,'Fixture','NR','EDI',{count},{op})")
         cls.db.query('INSERT INTO past_due.vendor_past_due_daily VALUES '+','.join(extra))
         # Vendor 1 disappears at T, but Country retains a valid complete T.
         cls.db.query("INSERT INTO past_due.vendor_past_due_daily VALUES ('GONE','2026-10-23',1,'Gone','NR','EDI',10,100),('GONE','2026-10-26',2,'Other','SH','EDI',5,100)")
@@ -92,6 +93,97 @@ class SQLFixtures(unittest.TestCase):
                 if grain!='COUNTRY':
                     self.assertEqual(int(row['target_ratio_denominator']),0)
                     self.assertIsNone(row['target_past_due_ratio'])
+
+    def test_report_linear_pipeline_parity(self):
+        # Independent legacy collections use the same business definitions but
+        # a different SQL execution plan; compare every selected Vendor/bucket.
+        rows=self.sql('pastdue_v3_report_query_rows')
+        legacy=self.sql('pastdue_v3_analysis_query_vendor_comparisons')
+        metrics={int(r['vendor_code']):r for r in rows if r['record_type']=='VENDOR_METRICS'}
+        for v in legacy:
+            current=metrics[int(v['vendor_code'])]
+            for field in v:
+                if field in current:self.assertEqual(current[field],v[field],field)
+        for dim,rid,record in [
+            ('code','eta_code_changes','ETA_CODE_SUMMARY'),
+            ('source','eta_source_changes','ETA_SOURCE_SUMMARY'),
+            ('us','us_source_changes','US_SOURCE_SUMMARY')]:
+            buckets=self.sql('pastdue_v3_analysis_query_'+rid)
+            for vendor in metrics:
+                raw=[r for r in buckets if int(r['vendor_code'])==vendor]
+                raw.sort(key=lambda r:(-abs(int(r['past_due_count_change'])),-int(r['target_past_due_count']),r['eta_value']))
+                summaries=[r for r in rows if r['record_type']==record and int(r['vendor_code'])==vendor]
+                summaries.sort(key=lambda r:int(r['display_rank']))
+                for actual,expected in zip(summaries[:5],raw[:5]):
+                    for field in ['eta_value','previous_past_due_count','target_past_due_count','past_due_count_change','delta_country_contribution']:
+                        self.assertEqual(actual[field],expected[field],(vendor,dim,field))
+                if len(raw)>5:
+                    other=summaries[-1];self.assertEqual(other['row_kind'],'OTHER')
+                    for period in ['previous','target']:
+                        self.assertEqual(int(other[period+'_past_due_count']),sum(int(r[period+'_past_due_count']) for r in raw[5:]))
+                check=next(r for r in rows if r['record_type']=='VENDOR_CHECK' and int(r['vendor_code'])==vendor and r['dimension']==dim)
+                deltas=[int(r['past_due_count_change']) for r in raw]
+                self.assertEqual(int(check['increase_total']),sum(max(d,0) for d in deltas))
+                self.assertEqual(int(check['decrease_total']),sum(min(d,0) for d in deltas))
+
+    def test_report_linear_control_paths(self):
+        rid='pastdue_v3_report_query_rows'
+        for args,status in [
+            ({'country_code':'MISSING'},'INVALID_PAIR'),
+            ({'target_snapshot_date':'2026-10-28'},'INVALID_PAIR'),
+            ({'previous_snapshot_date':'2026-10-22'},'INVALID_PAIR'),
+            ({'calendar_mode':'INVALID'},'INVALID_PAIR'),
+            ({'top_n':0},'INVALID_SELECTION'),
+            ({'vendor_code':1},'INVALID_SELECTION'),
+            ({'selection_mode':'SINGLE_VENDOR','vendor_code':999,'top_n':1},'VENDOR_NOT_FOUND'),
+            ({'selection_mode':'SINGLE_VENDOR','vendor_code':0,'top_n':1},'INVALID_SELECTION'),
+            ({'country_code':'BAD'},'DATA_ERROR'),
+            ({'country_code':'NOOPEN'},'INVALID_DENOMINATOR')]:
+            rows=self.sql(rid,**args)
+            self.assertEqual(len(rows),1,args);self.assertEqual(rows[0]['scope_status'],status,args)
+        for cc in ['ZERO','EMPTY']:
+            rows=self.sql(rid,country_code=cc)
+            self.assertEqual(len(rows),1);self.assertEqual(rows[0]['scope_status'],'OK')
+            self.assertEqual(int(rows[0]['selected_vendor_count']),0)
+        # A prior-only Vendor must also survive the report's signed single mode.
+        rows=self.sql(rid,country_code='GONE',selection_mode='SINGLE_VENDOR',vendor_code=1,top_n=1)
+        vendor=next(r for r in rows if r['record_type']=='VENDOR_METRICS')
+        self.assertEqual((int(vendor['previous_past_due_count']),int(vendor['target_past_due_count'])),(10,0))
+        self.assertEqual(float(vendor['past_due_count_relative_change']),-1)
+        self.assertTrue(all(r['counts_match'] for r in rows if r['record_type']=='VENDOR_CHECK'))
+        self.assertIsNone(vendor['target_vendor_ratio'])
+
+    def test_report_classic_analyzer_parity(self):
+        # 24.8 classic analyzer is useful compatibility evidence, NOT a 22.8
+        # engine test. Preserve this limitation in the release record.
+        baseline=self.sql('pastdue_v3_report_query_rows')
+        original=self.db
+        class Classic:
+            def query(self,q,*args):
+                if q.endswith(' FORMAT JSON'):
+                    q=q[:-12]+' SETTINGS allow_experimental_analyzer=0 FORMAT JSON'
+                return original.query(q,*args)
+        self.db=Classic()
+        try:classic=self.sql('pastdue_v3_report_query_rows')
+        finally:self.db=original
+        for row in baseline+classic:row.pop('queried_at_local',None)
+        self.assertEqual(classic,baseline)
+
+    def test_report_plan_reads_fact_table_twice(self):
+        # EXPLAIN uses exactly the query SQL and input binding substitution from
+        # sql(); query timing is intentionally not asserted on tiny fixtures.
+        original=self.db
+        class Capture:
+            def __init__(self):self.query_text=''
+            def query(self,q,*args):
+                self.query_text=q
+                return original.query(q,*args)
+        capture=Capture();self.db=capture
+        try:self.sql('pastdue_v3_report_query_rows')
+        finally:self.db=original
+        q=capture.query_text.removesuffix(' FORMAT JSON')
+        plan=str(original.query('EXPLAIN '+q,'CSV'))
+        self.assertEqual(plan.count('ReadFromMergeTree'),2,plan)
 
     def test_v31_report(self):
         rows=self.sql('pastdue_v3_report_query_rows')

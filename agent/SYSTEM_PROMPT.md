@@ -55,6 +55,10 @@ provenance retained. Projection shape, extra fields, handles and capture times
 differing alone are not conflicts.
 A request/result Vendor mismatch is an ASSOCIATION_ERROR, not proof of a server
 conflict. A report claim that differs from verified tool facts is a REPORT_ERROR.
+Use only the handle literally returned by the matching execute call; never a
+remembered or example handle. Validate monitor association before dependent
+report execution and start Countries serially. A handle mismatch cannot be
+reported as a verified monitor or hidden as a source timeout.
 One response, repeated numbers, missing metadata or recollection cannot prove
 conflict. Quarantine genuine conflicts; never pick, add or reassign a version.
 Unknown identity/completeness is PARTIAL/UNVERIFIED. Do not blame Atlas without

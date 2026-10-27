@@ -1,4 +1,4 @@
-# Validation record — v3.1 development
+# Validation record — v3.1.1 SQL patch
 
 **PENDING_LIVE_ACCEPTANCE.** These tools validate local contracts, synthetic
 fixtures, sanitized export regressions and release closure. They are not runtime
@@ -16,8 +16,8 @@ python3 -B -m unittest discover -s tests -p 'test_release_tooling.py'
 The golden runner executes the actual bundle validator, query contracts,
 arithmetic/identity fixtures, report/evidence fixtures, and adversarial release
 tests; it continues after failures, records actual exit codes/logs/script hashes,
-and exits nonzero on failure. Current focused run: query **12**, arithmetic
-**17**, report **38**, release **10** tests passed; authoritative bundle: **35
+and exits nonzero on failure. Current focused run: query **13**, arithmetic
+**17**, report **38**, release **11** tests passed; authoritative bundle: **35
 resolvers / 595 attributes**. Counts may increase as coordinated work settles;
 the final manifest receipt, not this narrative, is authoritative.
 
@@ -66,10 +66,10 @@ to deployment. The CLI executes the real SQL tests and captures graph/script/log
 hashes and actual test count. A skipped suite does not PASS:
 
 ```sh
-python3 -B scripts/build_release.py --record-sql-test /tmp/pastdue-v31-sql.json \
+python3 -B scripts/build_release.py --record-sql-test /tmp/pastdue-v311-sql.json \
   --sql-python /tmp/pastdue-validation-env/bin/python
 # After all code/docs edits settle:
-python3 -B scripts/build_release.py --sql-receipt /tmp/pastdue-v31-sql.json
+python3 -B scripts/build_release.py --sql-receipt /tmp/pastdue-v311-sql.json
 python3 -B scripts/build_release.py --check
 ```
 
@@ -79,8 +79,8 @@ Optional integration against the SQL owner's actual synthetic fixture helper:
 /tmp/pastdue-validation-env/bin/python -B -m unittest discover -s tests -p test_report_sql_adapter.py
 ```
 
-This exercises the 13 SQL fixtures plus two adapter checks (compressed summary
-and SINGLE_VENDOR global ranks); Actual temporary chdb run passed **15/15** locally;
+This exercises the 17 SQL fixtures plus four adapter checks (compressed summary
+and SINGLE_VENDOR global ranks); Actual temporary chdb run passed **21/21** locally;
 an environment without chdb skips and does not
 constitute SQL verification.
 
@@ -92,8 +92,8 @@ quick_validate. Optional quick_validate/PyYAML can run in a disposable environme
 separately; no implicit online validation is asserted.
 
 Build writes the authorized Skill release manifest, full
-`releases/pastdue-agent-v3.1.0.zip`, Skill-only
-`releases/pastdue-analysis-skill-v3.1.0.zip`, and sanitized pre-v3.1 rollback. Both
+`releases/pastdue-agent-v3.1.1.zip`, Skill-only
+`releases/pastdue-analysis-skill-v3.1.1.zip`, and sanitized pre-v3.1 rollback. Both
 release archives contain the same hash/receipt manifest. `--check` independently
 verifies both archive file sets, duplicate/path rejection, payload hashes,
 manifest bytes, source/validation-input drift and secret allowlist. The manifest
@@ -101,7 +101,23 @@ excludes its own hash to avoid recursion. Archives exclude CSV, chat, HTML,
 runtime/development scripts, secrets and unrelated files; existing 3.0 artifacts
 are retained. Build fails if inputs change during validation.
 
-## Report SQL scan-shape review
+## 3.1.1 patch evidence
+
+The new report plan has **2** ReadFromMergeTree nodes in local ClickHouse 24.8,
+with date-key validation bounded to [P,T] and direct Country + two-date fact
+filtering. There are no scalar subqueries over Country/Vendor fact CTEs.
+Classic-analyzer execution on local 24.8 matches the default output (this is
+not a target-22.8 execution). Actual tests compare selected ranks/metrics and every Top5/Other dimension to
+independent legacy collection SQL, including signed totals, empty and invalid
+controls, prior-only single Vendor and nonrequired US. API and metric version
+remain compatible 3.1.0; publication is 3.1.1/source revision 2.
+
+The user's actual database is **22.8.21.38** and returned Code 394 cancellation.
+This machine has no 22.8 engine/container runtime; no target-version, JDBC or
+Atlas PASS is claimed. Cancellation initiator is still UNCONFIRMED. Required
+manual smoke/rollout gates are in REPORT_SQL_FIX_3_1_1.md.
+
+## Historical v3.1.0 report SQL scan-shape review
 
 The compact report uses one seeded bucket/window pipeline and tagged output
 records, rather than repeating Code/Source/check branches over nonmaterialized
@@ -115,6 +131,7 @@ ratios/shares when its denominator is zero.
 
 ## Still NOT_RUN / release blockers
 
+- Target ClickHouse 22.8.21.38 SQL compatibility, plan and execution.
 - Real Atlas config-check, source-slot binding and deployed graph revision.
 - Deployed ClickHouse/JDBC Decimal, null serialization and SQL behavior.
 - Actual Atlas pagination/wrapping/RLS/timeout/performance.

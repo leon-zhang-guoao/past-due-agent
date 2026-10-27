@@ -36,6 +36,19 @@ class ReportSQLAdapter(unittest.TestCase):
         result = validate_atlas_report_rows(rows)
         self.assertEqual(result['status'], 'PASS', result)
 
+    def test_prior_only_vendor_and_empty_us_dimension(self):
+        rows=self.fixture.sql('pastdue_v3_report_query_rows',country_code='GONE',
+                              selection_mode='SINGLE_VENDOR',vendor_code=1,top_n=1)
+        self.assertEqual(validate_atlas_report_rows(rows)['status'],'PASS')
+        us=next(r for r in rows if r['record_type']=='VENDOR_CHECK' and r['dimension']=='us')
+        self.assertIs(us['required'],False)
+        self.assertEqual(int(us['expected_bucket_count']),0)
+
+    def test_empty_controls_are_not_missing_facts(self):
+        for cc in ['ZERO','EMPTY']:
+            rows=self.fixture.sql('pastdue_v3_report_query_rows',country_code=cc)
+            self.assertEqual(validate_atlas_report_rows(rows)['status'],'PASS')
+
 
 def load_tests(loader, tests, pattern):
     suite = unittest.TestSuite()

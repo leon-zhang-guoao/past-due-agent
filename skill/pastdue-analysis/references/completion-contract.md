@@ -9,6 +9,14 @@ in the same logical slot. Different substantive fact scopes count separately.
 Daily/history/test REPORT PRESETS have no six-request cap: attempt all mandatory
 work. Broad history/optional scope may be bounded explicitly, never silently skipped.
 
+## Exact association before dependent execution (3.1.1 correction)
+Use only the handle literally returned by the matching execute call. No handle
+from memory or another turn, even if the values look plausible. Exposed env/version
+and captured-at must correspond; analysis/version is separate from env/version.
+Handle mismatch is ASSOCIATION_ERROR and a test hard violation, not merely an
+external timeout/PARTIAL. Missing export linkage remains UNVERIFIED; don't claim
+Country monitor verified or use it to pin dependent dates until recovered.
+
 ## Before COMPLETE
 Always project scope-key in explore/report rows: JSON tuple of ALL required
 inputs in declaration order. Keep original inputs and verify key consistency;

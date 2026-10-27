@@ -24,6 +24,24 @@ Cache valid discovery, batch where supported, and do not invent metadata batchin
 Explicitly bound broad historical or optional user scope if necessary and disclose
 what was not executed; never silently skip mandatory preset work.
 
+## Transport boundaries (3.1.1 correction)
+These parameterized examples are MCP execute_eql examples, NOT automatically
+valid Studio POST /api/pathom examples. In the tested Studio, use plain joins
+`:query [{:collection [:fields]}]`; parameterized `({…} {:limit …})` was rejected
+with semantic.studio/query-shape. Plain joins use resolver defaults and may be
+truncated; never assert full coverage without expected counts. Discover actual
+paging support in each host instead of guessing a Studio parameter schema.
+
+Start monitor → materialize its EXACT returned handle → validate association →
+report US → validate → report CA serially. Only consider independent concurrency
+after reliable per-request handle association is established. If execute returned
+handle A, analyze_result MUST NOT use B from memory/examples/another capture;
+stop that scope and disclose ASSOCIATION_ERROR. Missing linkage is UNVERIFIED,
+not a verified monitor. Keep full required field projection on a correction.
+Code 394 QUERY_WAS_CANCELLED proves cancellation, not its initiator. Reducing
+limit/projection does not fix source aggregation; do not spend a retry on it
+without evidence. Do not drop delta-country-contribution to attempt a repair.
+
 ## Monitor: one request supplies both Countries
 ```clojure
 {:entity {:pastdue.monitor-query/calendar-mode "WEEKDAYS"

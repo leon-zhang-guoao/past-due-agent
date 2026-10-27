@@ -1,3 +1,8 @@
+> 3.1.1 SQL cancellation patch: deploy `atlas/charts/pastdue.edn` from the
+> matching 3.1.1 ZIP (publication 3.1.1, source revision 2; metric version stays
+> 3.1.0), then Prompt/Skill. See REPORT_SQL_FIX_3_1_1.md for exact Studio smoke
+> query, preserved 3.1.0 rollback, and pending ClickHouse 22.8 acceptance.
+
 # Deployment and rollback — v3.1
 
 Status: contracts implemented locally; release packaging and live acceptance are

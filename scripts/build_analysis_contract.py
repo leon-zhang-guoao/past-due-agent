@@ -9,7 +9,7 @@ from edn_io import K, read, write, EdnSet
 
 ROOT = Path(__file__).resolve().parents[1]
 GRAPH = ROOT / 'atlas/charts/pastdue.edn'
-VERSION = '3.1.0'
+VERSION = '3.1.1'
 BUSINESS_TZ = 'America/Los_Angeles'
 NOW_PST = f"now('{BUSINESS_TZ}')"
 TODAY_PST = f"toDate({NOW_PST})"
@@ -346,7 +346,7 @@ def build(graph_path=None):
     guide=doc[':graph'][':graph/usage-guide']
     guide[K(':guide/limitations')]=['Legacy v2 entries retain calendar-day behavior; v3 uses explicit calendar mode.','v3 SQL selects Vendor Top N and computes ETA Top-5/Other summaries before paging.','Read and reconcile every facts/check page; returned-result completeness alone is insufficient.','Permissions/RLS must be enforced by the actual deployment; Skill allowlists are not access control.','No cross-query transaction or production usability claim without live validation.']
     doc[':publication'][K(':release/version')]=VERSION
-    doc[':publication'][K(':source/revision')]=1
+    doc[':publication'][K(':source/revision')]=2
     examples=doc[':graph'][':graph/query-examples']
     examples[:]=[ex for ex in examples if not ex.get(':example/id','').startswith('v3-')]
     for rid,title in [('pastdue_v3_monitor_query_countries','Weekday monitor'),('pastdue_v3_analysis_query_scope_status','Fixed-pair scope validation')]:
