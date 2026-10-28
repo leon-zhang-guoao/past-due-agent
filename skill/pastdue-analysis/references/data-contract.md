@@ -1,17 +1,9 @@
-# Default standard-report route
-
-Agent 3.2.0 uses `pastdue.report-block-query/blocks` and
-`pastdue.monitor-block-query/countries`; exact fields/identity/assembly are in
-fact-block-contract.md. Existing raw report and monitor semantics below are retained
-for structured review/history/interactive use, not an alternative standard layout.
-Metric 3.1.0 remains unchanged; block template/publication is 3.2.0.
-
-# Atlas data contract — 3.2.0
+# Atlas data contract — structured default 3.3.0
 
 Confirm the live MCP schema before execution; these contracts do not prove a
 particular environment is deployed. The development source is
 `scripts/build_v31_contract.py` (REPORT_FIELDS, EXPLORE_INPUTS, EXPLORE_FIELDS).
-It is not an Agent runtime dependency. New display-only block collections are additive. Inventory counts are not online acceptance.
+It is not an Agent runtime dependency. Long-text block collections are retained compatibility-only. Inventory counts are not online acceptance.
 Required new interfaces missing → deployment gap, never silent v3/v2 fallback.
 
 ## Flexible analysis: pastdue.explore-query/rows
@@ -81,7 +73,7 @@ changed by denominator-scope. `*-open-count` is grouped row Open, not necessaril
 `*-ratio-denominator`. Org filters use deduplicated CURRENT_MAPPING even for
 historical data; disclose that it is not historical ownership.
 
-## Retained raw report audit: pastdue.report-query/rows
+## Standard structured report: pastdue.report-query/rows
 
 Same seven inputs as `pastdue.analysis-query`:
 country-code, target-snapshot-date, previous-snapshot-date, calendar-mode,
@@ -123,7 +115,9 @@ increase-total, decrease-total, net-change. Code/Source expected totals are Vend
 PD; US expected totals are Code=US PD. Required=false is explicit nonapplicability,
 not a missing check. Do not read sparse defaults on unrelated record types as facts.
 
-Every report row has expected-record-count (INCLUDING COUNTRY_CONTROL) and a
+Report3.3 pagination default/max=1000 (other collection defaults unchanged), so the
+compact Top10 bound221 fits one source page if actual Atlas honors config. This
+does not guarantee complete retained-result preview reads. Every report row has expected-record-count (INCLUDING COUNTRY_CONTROL) and a
 unique row-ordinal. expected-bucket-count is RAW normalized bucket count, not
 number of compact summary records. Validate BUCKET count + sum(OTHER
 other-bucket-count) against it. The server computes all full-population metrics,
@@ -169,16 +163,14 @@ compares COMMON semantic fact fields in paired raw same-scope responses, not who
 payload shape: projection-only fields, handles or timestamps differing aren't a
 conflict, and an unprojected field is unknown, not contradictory.
 
-## Governed result-handle materialization exception
-“No arbitrary SQL” prohibits unconstrained/source/database SQL, not reading an
-Atlas-retained result. execute_eql may return only a handle. Discover tool schema,
-inspect actual analyze_result columns, then use a read-only SELECT of explicit
-discovered columns FROM data ORDER BY discovered row-ordinal, bound to that exact
-request/environment/capture handle. Include all required identity/metric/check
-columns, preserve values and consume every page. No presumed structured-read tool,
-SELECT *, other tables, joins, writes, dropped facts, or recomputing metric,
-denominator, selection or rank. Materialization doesn't add a logical fact slot.
-See atlas-query-playbook.md for the narrow allowed shape and discovery procedure.
+## Governed retained-result reading
+
+See atlas-query-playbook.md for the single authoritative reading procedure.
+Source pagination and retained-result pagination are distinct. Explicit-column
+reads, supported bounded paging and lossless record-type partitions of the exact
+retained `data` result are allowed. No source SQL, joins, recomputed metrics or
+silently discarded rows. Check cell truncation as well as rows. Materialization
+is not another logical fact request. Long Markdown/JSON fields are not required.
 
 ## Report row binding
 
@@ -228,7 +220,7 @@ raw rows and request references; numeric disagreement inside a single response
 is a reconciliation failure, not proof of two-response DATA_CONFLICT.
 
 
-Agent display contract 3.1.3 hides the dedicated conditional-source table in
+Agent display contract 3.3.0 hides the dedicated conditional-source table in
 standard reports; the facts/checks above remain unchanged. Material business
 interpretation is integrated into Country Vendor analysis immediately after Vendor
 ranking, with exact Vendor identity retained. This is not a new Country-wide

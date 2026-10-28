@@ -1,9 +1,9 @@
-# Requests — Agent contract 3.2.0
+# Requests — Agent contract 3.3.0
 
 | Request | Route / resolved intent |
 |---|---|
-| start daily monitor | Monitor, then fixed fact-block report for real US/CA triggers only; English |
-| start test | Force applicable fixed fact-block report; real trigger unchanged; fully English |
+| start daily monitor | Monitor, then structured full-Vendor report for real US/CA triggers only; English |
+| start test | Force applicable structured full-Vendor report; real trigger unchanged; fully English |
 | 开始测试 | Same test preset, fully Chinese |
 | 开始测试，只测试 CA | One Country, all selected Vendors, Chinese |
 | start test for snapshot 2026-10-26 | Explicit completed target; previous available weekday; English |
@@ -38,8 +38,6 @@ Conditional-source conclusions are integrated there, not a default joint-source
 column/table. Explicit requests for ETA Code=US Source detail remain supported.
 
 
-3.2.0 standard tests use language-bound fixed blocks and disclose data reconciliation,
-blocks read and NOT_INDEPENDENTLY_VERIFIED final-output status separately. They do
-not award overall report PASS. Start with `start test, CA only, snapshot 2026-10-26`
-and the same target in Chinese after Atlas config/source checks; illustrative dates
-must be actual available eligible pairs. No live execution is claimed by this file.
+3.3 uses structured report facts, not long text. Source/result pages and cells need
+separate coverage checks. Start a real single-Country test; actual dates and schema
+must be verified. No self-awarded report PASS, no platform execution claimed here.

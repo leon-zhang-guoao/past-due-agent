@@ -1,23 +1,13 @@
-> Current 3.2.0 update: docs/FACT_BLOCKS_3_2_0.md supersedes older default
-> report rendering/completion descriptions below. Atlas fixed fact blocks + Agent
-> Country interpretation; explore/raw APIs retained. New Atlas deployment required.
-> No model-issued overall report PASS; final output NOT_INDEPENDENTLY_VERIFIED
-> absent independent evidence. All new source/platform/Agent checks NOT_RUN.
+# Responsibilities —3.3.0
 
-# Agent / Skill / EDN responsibilities — v3.1
+| Artifact | Responsibility | Not responsible for |
+|---|---|---|
+| System Prompt | Role, routing intent, language, trust boundaries | Repeated formulas, giant templates |
+| Skill | Resolve scope, call/read/bind, checks, diagnose, report modules | Runtime Python, mail, source SQL |
+| Atlas EDN | Governed structured metrics, denominators, rank, compact ETA summaries, checks | Whole-report Markdown, final-output certification |
+| Model output | Relevant business interpretation and module formatting | Guaranteed deterministic rendering or independent evaluation |
 
-| Asset | Responsibility |
-|---|---|
-| System Prompt | Role, language precedence, governed source, factual boundaries |
-| Skill | Analysis specification, presets or question composition, evidence and interpretation |
-| Policy | LA local weekdays, alert threshold, preset selection vs interactive limits |
-| Atlas EDN | Bound controlled parameters, complete aggregates, denominators, ranks, scope identity |
-| Report API | Batched preset facts; independent Code/Source/Code=US×Source summaries |
-| Explore API | CURRENT/SNAPSHOT/PAIR/RANGE, controlled grains/filters/ranking without preset restrictions |
-| Diagnostic rules | Bilingual risk meanings and suggestions, explicit Source aliases, not causality |
-| Display contract | Stable bilingual modules and mandatory per-Vendor report content |
-| Offline validators | Evidence-to-report regressions, not an installed production executor |
-| Release manifest | Exact input/artifact hashes and separate offline/platform/live status |
-
-Current Owner, contacts and PO are optional context, not historical evidence.
-Contacts are displayed only. No runtime CSV, Python, arbitrary SQL or mail sender.
+One layout: Skill references/report-format.md. One metric source: metric-definitions.md.
+One diagnostic dictionary: eta-diagnostic-rules.edn. Runtime can upload only Prompt,
+complete Skill and EDN; no notification/scripts folder required. Details and real
+validation plan: docs/STRUCTURED_REPORTS_3_3.md / DEPLOYMENT_V3.md / VALIDATION_V3.md.

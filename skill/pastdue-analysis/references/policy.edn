@@ -1,4 +1,4 @@
-{:policy-version "3.2.0"
+{:policy-version "3.3.0"
   :business-timezone "America/Los_Angeles"
   :business-timezone-iana "America/Los_Angeles"
   :display-timezone {:daylight-saving true
@@ -15,11 +15,12 @@
     :minimum-percentage-point-change nil
     :use-unrounded-counts true}
   :interfaces {:flexible :pastdue.explore-query/rows
-    :report :pastdue.report-block-query/blocks
+    :report :pastdue.report-query/rows
+    :monitor :pastdue.monitor-query/countries
+    :history :pastdue.history-query/trigger-events
     :missing-required :deployment-gap
     :silent-legacy-fallback false
-    :monitor :pastdue.monitor-block-query/countries
-    :raw-report-audit :pastdue.report-query/rows}
+    :compatibility-only [:pastdue.report-block-query/blocks :pastdue.monitor-block-query/countries]}
   :explore {:time-bases ["CURRENT" "SNAPSHOT" "PAIR" "RANGE"]
     :pair-policies ["PREVIOUS_AVAILABLE" "EXPLICIT"]
     :grains ["COUNTRY" "VENDOR" "VENDOR_CODE" "VENDOR_SOURCE" "VENDOR_CODE_SOURCE"]
@@ -70,8 +71,11 @@
       :tool "analyze_result"
       :schema-first true
       :scope "exact retained result handle only"
-      :sql-shape "read-only SELECT explicit discovered columns FROM data ORDER BY discovered row-ordinal"
-      :prohibited ["source/database SQL" "SELECT *" "other tables" "joins" "writes" "fact-dropping filters" "metric/denominator/rank/selection recomputation"]}}
+      :sql-shape "read-only explicit columns FROM data; stable ordinal; supported result paging and lossless record-type partitions only"
+      :source-pages-and-result-pages-distinct true
+      :row-and-cell-truncation-separate true
+      :partition-union-must-cover-source true
+      :prohibited ["source/database SQL" "SELECT *" "other tables" "joins" "writes" "metric/denominator/rank/selection recomputation" "silent fact-dropping filters"]}}
   :evidence {:data-conflict-requires :two-raw-same-scope-contradictory-responses
     :separate-errors ["DATA_CONFLICT" "ASSOCIATION_ERROR" "REPORT_ERROR"]
     :conflict-comparison "contradictory COMMON semantic fields only, not whole response shape or capture metadata"}
@@ -93,14 +97,14 @@
   :metric-version "3.1.0"
   :selection-version "3.1.0"
   :calendar-version "weekdays-v1-no-holidays"
-  :report-rendering {:contract-version "3.2.0"
-    :standard-layout "report-format.md fixed fact-block assembly"
-    :fact-blocks-preserve-literal-content true
-    :country-summary-position "after Vendor ranking, before individual Vendor blocks"
+  :report-rendering {:contract-version "3.3.0"
+    :standard-layout "report-format.md"
+    :fact-source "structured report-query/rows"
+    :country-summary-position "after Vendor ranking, before individual Vendor details"
     :interactive-composable true
     :custom-output-explicit true
     :joint-source-default-table false
     :joint-source-analysis-retained true
-    :final-output-verification "NOT_INDEPENDENTLY_VERIFIED unless actual independent evaluation"
     :self-awarded-report-pass false
-    :native-renderer-installed false}}
+    :native-renderer-installed false
+    :independent-output-review "not performed unless actually evidenced"}}

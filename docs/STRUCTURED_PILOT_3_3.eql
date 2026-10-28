@@ -1,0 +1,35 @@
+; Four INDEPENDENT plain-join requests, not one combined POST body.
+; Dates are illustrative. Replace with actual complete eligible snapshot scope.
+; Not executed against platform in this change; no acceptance claim.
+; Report3.3 source default1000/max1000, compact Top10 bound221; verify actual server behavior.
+; Other collections retain their defaults; discover real source paging as needed.
+; A complete retained handle can STILL have row/cell preview truncation.
+; Then read the exact handle using the Skill playbook; never reuse example handles.
+
+{:entity {:pastdue.monitor-query/calendar-mode "WEEKDAYS"
+    :pastdue.monitor-query/relative-change-threshold 0.1}
+  :query [{:pastdue.monitor-query/countries [:pastdue.monitor-fact/country-code :pastdue.monitor-fact/target-snapshot-date :pastdue.monitor-fact/previous-snapshot-date :pastdue.monitor-fact/calendar-mode :pastdue.monitor-fact/expected-target-date :pastdue.monitor-fact/has-comparable-snapshots :pastdue.monitor-fact/business-status :pastdue.monitor-fact/data-status :pastdue.monitor-fact/target-past-due-count :pastdue.monitor-fact/previous-past-due-count :pastdue.monitor-fact/target-open-count :pastdue.monitor-fact/previous-open-count :pastdue.monitor-fact/snapshot-gap-days :pastdue.monitor-fact/target-lag-workdays :pastdue.monitor-fact/missing-workdays-between :pastdue.monitor-fact/target-past-due-ratio :pastdue.monitor-fact/previous-past-due-ratio :pastdue.monitor-fact/relative-ratio-change :pastdue.monitor-fact/percentage-point-change]}]}
+
+{:entity {:pastdue.report-query/country-code "CA"
+    :pastdue.report-query/target-snapshot-date "2026-10-26"
+    :pastdue.report-query/previous-snapshot-date "2026-10-23"
+    :pastdue.report-query/calendar-mode "WEEKDAYS"
+    :pastdue.report-query/selection-mode "POSITIVE_TOP_N"
+    :pastdue.report-query/top-n 10
+    :pastdue.report-query/vendor-code 0}
+  :query [{:pastdue.report-query/rows [:pastdue.report-fact/scope-key :pastdue.report-fact/record-type :pastdue.report-fact/country-code :pastdue.report-fact/vendor-code :pastdue.report-fact/target-snapshot-date :pastdue.report-fact/previous-snapshot-date :pastdue.report-fact/calendar-mode :pastdue.report-fact/vendor-name :pastdue.report-fact/dimension :pastdue.report-fact/eta-value :pastdue.report-fact/row-kind :pastdue.report-fact/scope-status :pastdue.report-fact/metric-version :pastdue.report-fact/selection-mode :pastdue.report-fact/target-past-due-count :pastdue.report-fact/previous-past-due-count :pastdue.report-fact/past-due-count-change :pastdue.report-fact/target-open-count :pastdue.report-fact/previous-open-count :pastdue.report-fact/target-country-open :pastdue.report-fact/previous-country-open :pastdue.report-fact/contribution-rank :pastdue.report-fact/selected-vendor-count :pastdue.report-fact/target-vendor-ratio :pastdue.report-fact/previous-vendor-ratio :pastdue.report-fact/target-country-contribution :pastdue.report-fact/previous-country-contribution :pastdue.report-fact/delta-country-contribution :pastdue.report-fact/positive-contribution-share :pastdue.report-fact/selected-positive-coverage :pastdue.report-fact/display-rank :pastdue.report-fact/expected-bucket-count :pastdue.report-fact/other-bucket-count :pastdue.report-fact/increase-total :pastdue.report-fact/decrease-total :pastdue.report-fact/net-change :pastdue.report-fact/previous-total :pastdue.report-fact/target-total :pastdue.report-fact/previous-expected-total :pastdue.report-fact/target-expected-total :pastdue.report-fact/expected-record-count :pastdue.report-fact/row-ordinal :pastdue.report-fact/counts-match :pastdue.report-fact/required :pastdue.report-fact/past-due-count-relative-change :pastdue.report-fact/business-timezone :pastdue.report-fact/queried-at-local :pastdue.report-fact/target-country-past-due-count :pastdue.report-fact/previous-country-past-due-count :pastdue.report-fact/target-country-ratio :pastdue.report-fact/previous-country-ratio]}]}
+
+{:entity {:pastdue.history-query/country-code "CA"
+    :pastdue.history-query/calendar-mode "WEEKDAYS"
+    :pastdue.history-query/range-start-date "2026-10-01"
+    :pastdue.history-query/range-end-date "2026-10-26"
+    :pastdue.history-query/relative-change-threshold 0.1}
+  :query [{:pastdue.history-query/trigger-events [:pastdue.history-fact/country-code :pastdue.history-fact/target-snapshot-date :pastdue.history-fact/previous-snapshot-date :pastdue.history-fact/calendar-mode :pastdue.history-fact/expected-target-date :pastdue.history-fact/has-comparable-snapshots :pastdue.history-fact/business-status :pastdue.history-fact/data-status :pastdue.history-fact/target-past-due-count :pastdue.history-fact/previous-past-due-count :pastdue.history-fact/target-open-count :pastdue.history-fact/previous-open-count :pastdue.history-fact/snapshot-gap-days :pastdue.history-fact/target-lag-workdays :pastdue.history-fact/missing-workdays-between :pastdue.history-fact/target-past-due-ratio :pastdue.history-fact/previous-past-due-ratio :pastdue.history-fact/relative-ratio-change :pastdue.history-fact/percentage-point-change]}]}
+
+; Explicit-target TEST: returns nontrigger comparisons too; dates are examples.
+{:entity {:pastdue.history-query/country-code "CA"
+    :pastdue.history-query/calendar-mode "WEEKDAYS"
+    :pastdue.history-query/range-start-date "2026-10-26"
+    :pastdue.history-query/range-end-date "2026-10-26"
+    :pastdue.history-query/relative-change-threshold 0.1}
+  :query [{:pastdue.history-query/comparisons [:pastdue.history-fact/country-code :pastdue.history-fact/target-snapshot-date :pastdue.history-fact/previous-snapshot-date :pastdue.history-fact/calendar-mode :pastdue.history-fact/expected-target-date :pastdue.history-fact/has-comparable-snapshots :pastdue.history-fact/business-status :pastdue.history-fact/data-status :pastdue.history-fact/target-past-due-count :pastdue.history-fact/previous-past-due-count :pastdue.history-fact/target-open-count :pastdue.history-fact/previous-open-count :pastdue.history-fact/snapshot-gap-days :pastdue.history-fact/target-lag-workdays :pastdue.history-fact/missing-workdays-between :pastdue.history-fact/target-past-due-ratio :pastdue.history-fact/previous-past-due-ratio :pastdue.history-fact/relative-ratio-change :pastdue.history-fact/percentage-point-change]}]}

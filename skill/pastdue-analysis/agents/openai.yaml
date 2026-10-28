@@ -1,6 +1,6 @@
 interface:
   display_name: "PastDue Analysis"
-  short_description: "Flexible PastDue analysis and fixed fact-block reports"
+  short_description: "PastDue analysis and structured Vendor ETA reports"
   brand_color: "#B45309"
   default_prompt: "Use $pastdue-analysis for flexible current/snapshot/pair/range analysis or a US/CA weekday report; start test / 开始测试 forces applicable diagnostics in the request language."
 

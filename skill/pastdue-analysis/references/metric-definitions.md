@@ -119,10 +119,9 @@ Source identity/filtering or add semantics from a Source name. No new table or
 assumed catalog endpoint is required. Mixed OTHER can't establish membership.
 
 
-## 3.2.0 execution versus presentation
+## Execution versus presentation — Agent 3.3.0
 
-Metric formulas, time/selection and denominator semantics above are unchanged.
-Standard report facts are server-formatted blocks; analysis_status COMPLETE denotes
-fact execution/reconciliation scope only, never the accuracy of model-delivered
-text. Final-output verification is separately NOT_INDEPENDENTLY_VERIFIED without
-actual independent evidence. No Agent-issued overall report/test PASS.
+Metric semantics remain 3.1.0. Server structured summaries/checks, client complete
+retrieval, and delivered Vendor analysis are separate scopes. None certifies an
+independent final-output review. The sole layout is report-format.md; diagnostic
+applicability is in eta-diagnostic-rules.edn. No Agent-issued overall report PASS.

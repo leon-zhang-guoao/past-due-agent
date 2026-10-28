@@ -1,98 +1,31 @@
-# Atlas query playbook — 3.2.0
+# Atlas query playbook — 3.3.0
 
+## Choose the fact capability
 
-## Default report route — 3.2.0
+Standard: monitor/history → pinned report-query/rows. Interactive: explore-query/rows.
+The retained 3.2 long-text endpoints are compatibility-only. Read the active
+section, not all examples. Use live list_entities/list_attributes/tool schemas and
+reuse discovery within the same environment. Dates/Vendors below are examples,
+not run defaults. EQL wrapper is `{:entity ... :query ...}`, never Datalog.
 
-Read fact-block-contract.md and report-format.md first for standard report work.
-Use the new language-bound block endpoints below; old raw examples later in this
-file remain for explicit structured audits/interactive evidence, NOT an alternate
-default template. Missing block endpoint is a deployment gap. Do not answer by
-rebuilding a full standard report from old raw rows. Only retry a specific
-recoverable issue once. No per-Vendor fanout.
+The examples use plain joins accepted by the observed Studio. They are NOT a
+verified paging API. Report3.3 source default/max is1000; compact Top10 bound is221. Other
+collections retain default200/max1000. Older report deployments may default200
+and cut off a221-row report unless supported source paging/limit is supplied.
+MCP source paging/sorting must use its actually supported schema. Do not paste
+parameterized joins into Studio after semantic.studio/query-shape rejection.
+Incomplete source results cannot be repaired by paging their truncated handle.
 
-### Monitor blocks (MCP execute_eql)
+Complete plain-join projections for monitor/report/history are in
+[structured-queries.eql](structured-queries.eql); below are readable examples.
+Read the complete example for HISTORICAL_FULL/explicit-target TEST: the short
+event-list projection below alone cannot support Country count/ratio cross-checks.
 
-```clojure
-{:entity {:pastdue.monitor-block-query/calendar-mode "WEEKDAYS"
-          :pastdue.monitor-block-query/relative-change-threshold 0.10
-          :pastdue.monitor-block-query/language "en"}
- :query [{:pastdue.monitor-block-query/countries
-          [:pastdue.monitor-block/country-code
-           :pastdue.monitor-block/scope-key
-           :pastdue.monitor-block/language
-           :pastdue.monitor-block/template-version
-           :pastdue.monitor-block/content-markdown]}]}
-```
-
-The complete runnable query in fact-block-queries.eql
-uses actual fields (business/data status, dates/counts/ratios, language/template,
-expected counts, provenance and content). This short shape illustrates routing
-only, not a sufficient projection.
-
-### Report blocks (eight required inputs)
-
-Inputs are same pinned Country/P/T/calendar/selection/top-n/Vendor values as raw
-report-query plus language zh/en. Discover actual columns; project all fields in
-fact-block-contract.md and complete examples in fact-block-queries.eql. Plain
-Studio joins avoid the observed semantic.studio/query-shape rejection; MCP paging
-may use the actual supported parameterized join shape, default200/max1000. Normal
-positive Top10 returns <=11 blocks, but long string previews/spill can still truncate.
-Read full content values, not just record counts or schema. Stable sort row-ordinal.
-
-Project content-markdown, diagnostic-evidence, identity, block/count/check and
-source provenance fields together. Do not query old raw rows again merely to
-recreate numbers already in blocks. One server block query internally reuses the
-same report source SQL; changing output limit doesn't reduce fact aggregation.
-Maintain serial exact-handle association before independent concurrency.
-
-
-## Discovery and interaction budget
-Discover live entities, inputs, attributes and collection paging with Atlas MCP
-list_entities/list_attributes. Copy exact namespaces from the schema; reuse that
-knowledge in the same environment/version. EQL is `{:entity ... :query ...}`, not
-Datalog. Missing required explore/block capability → deployment gap; never silent legacy fallback.
-These examples were manually rewritten against EXPLORE_INPUTS, EXPLORE_FIELDS and
-REPORT_FIELDS; they are NOT release-generated templates or observed live results.
-All dates/Vendors below are examples, never runtime defaults.
-
-For each **INTERACTIVE question only**, at most **6 DIFFERENT LOGICAL FACT
-REQUESTS**. Discovery, materialization and pagination are not logical facts;
-retries/corrections of the same request stay in its existing slot. A different
-substantive fact scope is a separate slot. Read schema and materialize all needed
-results without treating those transport steps as extra facts. For example, one
-explore scope plus a distinct scoped composition query is two fact requests,
-regardless of discovery/read/page calls.
-
-Daily/history/test REPORT PRESETS have **no six-request cap**. Attempt monitor/
-history and every applicable Country report with all selected Vendors and checks.
-Use one block query per Country/event, never separate calls per Vendor/dimension.
-Cache valid discovery, batch where supported, and do not invent metadata batching.
-Explicitly bound broad historical or optional user scope if necessary and disclose
-what was not executed; never silently skip mandatory preset work.
-
-## Transport boundaries (3.1.1 correction)
-These parameterized examples are MCP execute_eql examples, NOT automatically
-valid Studio POST /api/pathom examples. In the tested Studio, use plain joins
-`:query [{:collection [:fields]}]`; parameterized `({…} {:limit …})` was rejected
-with semantic.studio/query-shape. Plain joins use resolver defaults and may be
-truncated; never assert full coverage without expected counts. Discover actual
-paging support in each host instead of guessing a Studio parameter schema.
-
-Start monitor → materialize its EXACT returned handle → validate association →
-block report US → validate → block report CA serially. Only consider independent concurrency
-after reliable per-request handle association is established. If execute returned
-handle A, analyze_result MUST NOT use B from memory/examples/another capture;
-stop that scope and disclose ASSOCIATION_ERROR. Missing linkage is UNVERIFIED,
-not a verified monitor. Keep full required field projection on a correction.
-Code 394 QUERY_WAS_CANCELLED proves cancellation, not its initiator. Reducing
-limit/projection does not fix source aggregation; do not spend a retry on it
-without evidence. Do not drop delta-country-contribution to attempt a repair.
-
-## Legacy structured monitor: retained raw audit / history context
+## Monitor (standard route)
 ```clojure
 {:entity {:pastdue.monitor-query/calendar-mode "WEEKDAYS"
           :pastdue.monitor-query/relative-change-threshold 0.10}
- :query [({:pastdue.monitor-query/countries
+ :query [{:pastdue.monitor-query/countries
            [:pastdue.monitor-fact/country-code
             :pastdue.monitor-fact/target-snapshot-date
             :pastdue.monitor-fact/previous-snapshot-date
@@ -112,14 +45,19 @@ without evidence. Do not drop delta-country-contribution to attempt a repair.
             :pastdue.monitor-fact/missing-workdays-between
             :pastdue.monitor-fact/has-comparable-snapshots
             :pastdue.monitor-fact/snapshot-gap-days]}
-          {:limit 200 :offset 0})]}
+ ]}
 ```
 Consume complete Country facts before locally selecting authorized US/CA. Use
 trusted runtime America/Los_Angeles today, not latest snapshot as a clock.
 Normal daily only drills TRIGGERED/ZERO_BASELINE_INCREASE with valid comparable
 positive Open and data OK/DELAYED. Test forces applicable valid pairs, warns stale.
+An explicitly requested test/report target uses history-query/comparisons with
+range-start-date=range-end-date=target and the same full Country projection.
+This returns its actual prior eligible snapshot even if the target didn't trigger.
+Do not use trigger-events to find nontrigger test pairs or silently substitute
+the latest monitor dates. An arbitrary explicit P/T uses explore PAIR/EXPLICIT.
 
-## Raw report audit: retained seven-input structured facts (not default report)
+## Report (standard route, seven inputs)
 ```clojure
 {:entity {:pastdue.report-query/country-code "CA"
           :pastdue.report-query/target-snapshot-date "2026-10-26"
@@ -128,7 +66,7 @@ positive Open and data OK/DELAYED. Test forces applicable valid pairs, warns sta
           :pastdue.report-query/selection-mode "POSITIVE_TOP_N"
           :pastdue.report-query/top-n 10
           :pastdue.report-query/vendor-code 0}
- :query [({:pastdue.report-query/rows
+ :query [{:pastdue.report-query/rows
            [:pastdue.report-fact/scope-key
             :pastdue.report-fact/record-type
             :pastdue.report-fact/country-code
@@ -180,7 +118,7 @@ positive Open and data OK/DELAYED. Test forces applicable valid pairs, warns sta
             :pastdue.report-fact/past-due-count-relative-change
             :pastdue.report-fact/expected-record-count
             :pastdue.report-fact/row-ordinal]}
-          {:limit 200 :offset 0})]}
+ ]}
 ```
 Read one COUNTRY_CONTROL before consuming metrics; it need not be physically
 first. Then group VENDOR_METRICS and summaries by Country+Vendor+pair, and
@@ -219,7 +157,7 @@ This example asks for all current Vendor×Code shares within each Vendor.
           :pastdue.explore-query/sort-direction "ASC"
           :pastdue.explore-query/change-selection "ALL"
           :pastdue.explore-query/top-n 0}
- :query [({:pastdue.explore-query/rows
+ :query [{:pastdue.explore-query/rows
            [:pastdue.explore-fact/scope-key
             :pastdue.explore-fact/record-type
             :pastdue.explore-fact/scope-status
@@ -259,7 +197,7 @@ This example asks for all current Vendor×Code shares within each Vendor.
             :pastdue.explore-fact/selection-rank
             :pastdue.explore-fact/expected-record-count
             :pastdue.explore-fact/row-ordinal]}
-          {:limit 200 :offset 0})]}
+ ]}
 ```
 One CONTROL plus FACT rows, with expected-record-count including CONTROL.
 Non-PAIR previous date=1970-01-01 and previous counts are placeholders, not a
@@ -293,7 +231,7 @@ CURRENT/SNAPSHOT/RANGE. WITHIN_VENDOR+COUNTRY is invalid, not silently reinterpr
           :pastdue.history-query/range-start-date "2026-10-01"
           :pastdue.history-query/range-end-date "2026-10-26"
           :pastdue.history-query/relative-change-threshold 0.10}
- :query [({:pastdue.history-query/trigger-events
+ :query [{:pastdue.history-query/trigger-events
            [:pastdue.history-fact/country-code
             :pastdue.history-fact/target-snapshot-date
             :pastdue.history-fact/previous-snapshot-date
@@ -301,55 +239,146 @@ CURRENT/SNAPSHOT/RANGE. WITHIN_VENDOR+COUNTRY is invalid, not silently reinterpr
             :pastdue.history-fact/business-status
             :pastdue.history-fact/data-status
             :pastdue.history-fact/relative-ratio-change]}
-          {:limit 200 :offset 0})]}
+ ]}
 ```
 For full historical reports project the discovered Country counts/Open/ratio and
 quality fields just as in monitor, in the same history request. Choose latest
 actual event per Country after all pages, not first row. Events-only stops here.
 
-## Pages, handles, errors and evidence
-- Use discovered resolver ordering row-ordinal ASC, page default 200/max 1000.
-  Increase offset by returned rows, retain exact request/projection/order. Never
-  apply Top-5 as retrieval limit. Require exact expected-record-count and unique
-  identities, not just a short last page.
-- execute_eql may return ONLY a retained result handle, not rows. Discover actual
-  tool schemas; do not assume a separate structured-read tool exists. Bind the
-  handle to this exact request/environment/capture. analyze_result without sql may
-  expose only schema: inspect actual flattened columns FIRST, then materialize via
-  analyze_result(sql=...) with a narrow read-only SELECT of explicit discovered
-  columns FROM data ORDER BY the discovered row-ordinal column. It reads the
-  retained result only, not a database source, and is not another logical fact slot.
-- Allowed materialization shape (SQL identifiers must match discovered columns):
-  SELECT "scope_key", "record_type", "country_code", "vendor_code", "row_ordinal"
-  FROM data ORDER BY "row_ordinal" ASC
-  This is an illustrative shape, NOT a sufficient report projection: explicitly
-  select ALL discovered identity/metric/check columns required by the EQL projection.
-  Never assume underscore aliases exist; use the actual quoted column identifiers.
-  If a collection lacks row-ordinal, preserve its discovered deterministic order.
-  Read every materialized page; materialization doesn't redefine resolver coverage.
-- Prohibit direct/source/database SQL, other tables, joins, aggregate/window or
-  computed metric expressions, denominator/rank/selection changes, extra WHERE
-  filtering that drops facts, DDL/DML/data writes and cross-handle mixing. No
-  SELECT * or local Python reconstruction. Keep original values and units; avoid
-  flattening cross-products. Unknown columns → inspect schema, never guess names.
-- Retain raw response and handle provenance. Avoid flattened nested cross-products;
-  never infer identities from a row number. Expired/foreign handles are invalid.
-- Inspect nested errors. One corrected retry in the same logical slot; no guessed roots,
-  permissions bypass, per-Vendor calls or legacy substitutions. Pagination drift
-  is PARTIAL; a same-request restart consumes the retry allowance, not another
-  logical fact slot. A new substantive fact scope is a different request.
-- DATA_CONFLICT requires paired raw contradictory same-scope facts. Wrong result
-  attachment is ASSOCIATION_ERROR; false rendering is REPORT_ERROR. Preserve both
-  raw versions before alleging server conflict; missing provenance is UNVERIFIED.
-  See completion-contract.md for quarantine, independent dimensions and outcomes.
 
-### Capture and semantic-comparison safeguard
-Show available queried-at-local and business-timezone; derive actual PST/PDT offset
-only from its trusted corresponding instant/offset, never a guessed tool-capture or
-delivery time. Without that evidence retain the returned local timestamp/IANA and
-label offset UNVERIFIED. Legacy queried-at-utc keeps UTC semantics unchanged; the
-new queried-at-local field never repurposes an old UTC attribute. DATA_CONFLICT
-compares COMMON semantic fact fields in paired raw same-scope responses, not whole
-payload shape: projection-only fields, handles or timestamps differing aren't a
-conflict, and an unprojected field is unknown, not contradictory.
+## Read layer 1: source collection coverage
 
+Project expected-record-count, row-ordinal, scope-key and full identity for report/
+explore. Use resolver stable ordinal ascending; report3.3 default/max1000, explore default200/max1000. Discover actual
+source paging syntax before use; don't guess an EQL/Studio parameter shape. Keep
+request scope/projection/order unchanged across pages. Expected counts must agree;
+unique identities/ordinals across pages must cover the expected count. A retained
+handle can be a single source page, not the full source population.
+
+If the host has no supported way to fetch remaining source records, state the
+specific source gap; don't mark a short final preview as complete or requery each
+Vendor. The report3.3 default1000 (or supported explicit source limit1000) can contain a compact Top10 report, but does
+not remove result-reader row/cell limits or guarantee cheap source execution.
+Monitor/history lack expected-record-count/row-ordinal in their actual schema;
+use actual source pagination/coverage metadata and discovered stable identity/order,
+not invented fields. An incomplete history list cannot establish the latest event.
+
+## Read layer 2: retained-result materialization
+
+1. Bind the exact handle from the actual execute response. Inspect actual flattened
+   columns. Schema-only responses aren't fact retrieval. If linkage is missing or
+   wrong, stop dependent use; don't obtain a plausible handle from memory.
+2. Prefer explicit typed columns, no Markdown, diagnostic prose or embedded arrays.
+   Read control/metrics, then checks, then Code, Source and conditional US summaries
+   in type-specific projections from the SAME retained result. Each contains the
+   actual scope, Country, Vendor, P/T, record type, dimension, ordinal and total;
+   keep scope-status and metric-version in every partition as well.
+   Control/metrics additionally need dates/calendar/version/status, selected count,
+   Country totals, Vendor PD/Open/ratios/contributions/rank/share/coverage. Checks
+   need required, counts-match, bucket counts, actual/expected P/T totals and signed
+   totals. Summary groups need eta-value,row-kind,display-rank,represented Other
+   count, bucket count, P/T PD,delta,relative-change,delta-country-contribution.
+3. Lossless type partitions and bounded page windows are permitted over `data`
+   ONLY. This is retained-result reading, not source SQL or a new fact request.
+   The disjoint partitions must collectively cover all returned record types/rows.
+   Any unexpected type must be read and reported, not discarded. Keep a coverage
+   ledger of raw identities/ordinals; per-group expected source count remains the
+   whole source count, not that group's count. Never compare one partition's length
+   to the whole result and call it incomplete without considering the union.
+4. Inspect BOTH row and cell truncation metadata on every read. `truncated?=false`
+   or result-complete=true alone is insufficient. Start bounded (e.g. ≤40 rows),
+   use actual supported paging to continue; don't assume a fixed preview cap.
+   Fewer columns won't fix a long string cell. Affected names remain display-limited;
+   affected identities/metrics remain unverified. Do not turn cut-off text into facts.
+5. Stored full values may still exist when a preview is truncated. Use only a
+   discovered supported full-value read/export if available. No invented substring,
+   length override, raw export or local script. If unavailable, report the precise
+   affected field/scope. No retries of giant Markdown blocks.
+
+Illustrative retained-only SQL, ONLY after discovering these actual column names
+and confirming reader support for WHERE/LIMIT/OFFSET. These are NOT ClickHouse
+queries, NOT proven host syntax, and NOT a full report projection:
+
+Control+metrics partition (use the exact same handle for the following partitions):
+
+```sql
+SELECT "scope_key", "scope_status", "metric_version", "record_type", "country_code",
+       "vendor_code", "vendor_name", "previous_snapshot_date", "target_snapshot_date",
+       "calendar_mode", "selection_mode", "business_timezone", "queried_at_local",
+       "selected_vendor_count", "contribution_rank", "previous_past_due_count",
+       "target_past_due_count", "past_due_count_change", "previous_open_count",
+       "target_open_count", "previous_vendor_ratio", "target_vendor_ratio",
+       "previous_country_open", "target_country_open",
+       "previous_country_past_due_count", "target_country_past_due_count",
+       "previous_country_ratio", "target_country_ratio", "previous_country_contribution",
+       "target_country_contribution", "delta_country_contribution",
+       "positive_contribution_share", "selected_positive_coverage",
+       "row_ordinal", "expected_record_count"
+FROM data
+WHERE "record_type" IN ('COUNTRY_CONTROL', 'VENDOR_METRICS')
+ORDER BY "row_ordinal" ASC
+LIMIT 40 OFFSET 0
+```
+
+Check partition (don't replace required=false with a failed result):
+
+```sql
+SELECT "scope_key", "scope_status", "metric_version", "record_type", "country_code",
+       "vendor_code", "previous_snapshot_date", "target_snapshot_date", "dimension",
+       "required", "counts_match", "expected_bucket_count", "previous_total",
+       "target_total", "previous_expected_total", "target_expected_total",
+       "increase_total", "decrease_total", "net_change", "row_ordinal", "expected_record_count"
+FROM data
+WHERE "record_type" = 'VENDOR_CHECK'
+ORDER BY "row_ordinal" ASC
+LIMIT 40 OFFSET 0
+```
+
+Code partition (repeat with ETA_SOURCE_SUMMARY and US_SOURCE_SUMMARY as separate
+disjoint partitions; preserve columns/handle, read further supported pages as needed):
+
+```sql
+SELECT "scope_key", "scope_status", "metric_version", "record_type", "country_code", "vendor_code",
+       "previous_snapshot_date", "target_snapshot_date", "dimension",
+       "eta_value", "row_kind", "display_rank", "other_bucket_count",
+       "expected_bucket_count", "previous_past_due_count", "target_past_due_count",
+       "past_due_count_change", "past_due_count_relative_change",
+       "delta_country_contribution", "row_ordinal", "expected_record_count"
+FROM data
+WHERE "record_type" = 'ETA_CODE_SUMMARY'
+ORDER BY "row_ordinal" ASC
+LIMIT 40 OFFSET 0
+```
+
+Source/ETA/rank predicates are NOT allowed here. WHERE may partition only declared
+record types or bounded stable row-ordinal windows, always with accounted union.
+No metric expressions, aggregation, window functions, joins, other tables, writes,
+SELECT *, substring recovery guesses or source/denominator/rank recomputation.
+Values must retain original units. Quote actual discovered identifiers; don't
+assume underscores. Use native supported reader paging instead where available.
+If partition/paging syntax isn't supported, retain the same data projection and
+use discovered native paging; if no complete route exists, stop that scope as a
+transport limitation rather than substituting a different analysis interface.
+The five partitions above cover exactly the six declared report record types.
+These SQL examples are reading shapes, not executed evidence. If a source response
+contains another type, account for and inspect it before claiming complete coverage.
+
+## Binding, budgets and failures
+
+Interpret record-type before fields: VENDOR_METRICS holds Vendor totals; summary
+rows hold bucket counts. See data-contract.md binding table. Check dimension=us
+for ANY Country, not only Country US; joint summaries never come from stitching
+marginal Code/Source rows. Other stays a mixed remainder. A required=false zero
+joint check is not failed. Read all applicable checks before Country diagnosis.
+
+One justified correction retry per logical request; pagination isn't a retry.
+Changing source limit/projection does not fix cancelled aggregation. Preserve
+independent valid facts; nested errors count even if outer isError=false.
+INTERACTIVE: ≤6 different logical fact requests; discovery/result reads/paging
+excluded. Presets have no six-request cap, but optional/history breadth is explicit.
+No per-Vendor fallback storms. Complete rows/checks do not certify final text.
+
+Capture labels use returned America/Los_Angeles; actual PST/PDT+offset only with
+trusted instant evidence. Date pinning is not a transaction. Compare only common
+same-scope semantic fields, not projection shape or capture timestamps. Error
+classification and delivery checks live in completion-contract.md.

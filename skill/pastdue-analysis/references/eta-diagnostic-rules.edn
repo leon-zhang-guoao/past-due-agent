@@ -1,4 +1,4 @@
-{:version "3.1.0"
+{:version "3.3.0"
   :code-normalization :trim-uppercase
   :source-match :trim-case-insensitive-exact
   :autous-canonical "AutoUS"
@@ -78,4 +78,15 @@
     :catalog-expansion "only explicit governed Source dictionary approval; no invented lookup interface or table"
     :dictionary-membership-not-evidence-of-presence true
     :source-name-does-not-add-business-semantics true
-    :other-summary-action "mixed aggregate; no source-specific rule without constituent joint facts"}}
+    :other-summary-action "mixed aggregate; no source-specific rule without constituent joint facts"}
+  :application {:verified-identity-and-dimension-required true
+    :zero-zero "NO_SIGNAL"
+    :previous-zero-target-positive "ZERO_BASELINE_INCREASE"
+    :positive-target-decreasing "IMPROVING_WITH_RESIDUAL_RISK"
+    :positive-to-zero "CATEGORY_CLEARED_NOT_PO_CAUSE_PROOF"
+    :positive-unchanged "PERSISTING_NOT_WORSENING"
+    :increasing "WORSENING"
+    :quantity-down-contribution-up "explain Country denominator effect, not count worsening"
+    :other "mixed aggregate; no inferred constituents/rule classification"
+    :unknown "retain raw value; no invented business meaning"
+    :summary-scope "selected Vendors only, never whole Country causality"}}

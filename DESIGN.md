@@ -1,17 +1,16 @@
-> Current 3.2.0 update: docs/FACT_BLOCKS_3_2_0.md supersedes older default
-> report rendering/completion descriptions below. Atlas fixed fact blocks + Agent
-> Country interpretation; explore/raw APIs retained. New Atlas deployment required.
-> No model-issued overall report PASS; final output NOT_INDEPENDENTLY_VERIFIED
-> absent independent evidence. All new source/platform/Agent checks NOT_RUN.
+# Architecture — Agent3.3.0
 
-# Active design — v3.1
+User intent → analysis spec → governed Atlas facts → complete reading/binding →
+rule application → standard or composed modules. No added runtime service.
 
-The analysis bottom layer serves both flexible user questions and standard daily,
-history and test presets. Report queries are an optimization, not the only API.
-See `docs/API_V3.md` for the current wire contract and `docs/DEPLOYMENT_V3.md`
-for deployment/rollback gates. `docs/PASTDUE_AGENT_REDESIGN.md` records the design.
+Shared business definitions: Skill references/metric-definitions.md and policy.edn.
+Facts/schema: Atlas combined graph and Skill data-contract.md.
+Reading: atlas-query-playbook.md. Presentation: report-format.md only.
+Diagnostics: eta-diagnostic-rules.edn. Completion: completion-contract.md.
+Full design/tradeoffs: docs/STRUCTURED_REPORTS_3_3.md.
 
-Deploy Prompt + complete Skill + Atlas EDN. Development scripts are not a runtime
-service; no host hard gate, SQL console, email sender or external Kernel is presumed.
-Business dates use America/Los_Angeles with actual PST/PDT offset. SQL determines
-counts, denominators, ranks and summaries; the model interprets verified facts.
+SQL retains deterministic computation, not bilingual Markdown narration. Existing
+structured report preset and explore share calculations; presets don't limit free QA.
+Result reader may still truncate short-text fields; row/cell/source checks are separate.
+Checks are procedures/evidence, not a host-enforced gate. Final layout is model-
+generated; deterministic byte equality is not promised. Live pilot is pending.

@@ -15,7 +15,7 @@ from pathlib import Path, PurePosixPath
 from edn_io import read, loads, dumps, K
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = '3.2.0'
+VERSION = '3.3.0'
 SKILL = 'skill/pastdue-analysis/'
 MANIFEST_PATH = SKILL + 'references/release-manifest.edn'
 MANIFEST = ROOT / MANIFEST_PATH
@@ -26,13 +26,20 @@ BASELINE = ROOT / 'tests/fixtures/baseline-v3.1.json'
 ROOT_FILES = {'agent/SYSTEM_PROMPT.md', 'agent/INVOCATION_EXAMPLES.md',
               'atlas/charts/pastdue.edn', 'atlas/sources.edn', 'README.md',
               'ACCEPTANCE_TESTS.md', 'DESIGN.md', 'AGENT_SKILL_EDN_DESIGN.md',
-              'IMPLEMENTATION_NOTES.md', 'docs/PASTDUE_AGENT_REDESIGN.md', 'docs/API_V3.md',
-              'docs/DEPLOYMENT_V3.md', 'docs/VALIDATION_V3.md', 'docs/VALIDATION_V3_1_1.md',
-              'docs/REPORT_RENDERING_3_1_2.md', 'docs/COUNTRY_VENDOR_SUMMARY_3_1_3.md', 'docs/FACT_BLOCKS_3_2_0.md', 'docs/FACT_BLOCKS_PILOT.eql', 'docs/BASELINE_V3_1.md', 'docs/REPORT_SQL_FIX_3_1_1.md'}
+              'IMPLEMENTATION_NOTES.md', 'docs/API_V3.md',
+              'docs/DEPLOYMENT_V3.md', 'docs/VALIDATION_V3.md',
+              'docs/STRUCTURED_REPORTS_3_3.md', 'docs/STRUCTURED_PILOT_3_3.eql'}
 REF_NAMES = {'atlas-query-playbook.md', 'completion-contract.md', 'current-context.md',
              'data-contract.md', 'eta-diagnostic-rules.edn', 'metric-definitions.md',
              'policy.edn', 'report-format.md', 'table-display-contract.edn',
-             'table-display-contract.md', 'fact-block-contract.md', 'fact-block-queries.eql'}
+             'table-display-contract.md', 'structured-queries.eql'}
+REQUIRED_RESOLVERS = {
+    'pastdue_v3_monitor_query_countries',
+    'pastdue_v3_history_query_comparisons',
+    'pastdue_v3_history_query_trigger_events',
+    'pastdue_v3_report_query_rows',
+    'pastdue_v3_explore_query_rows',
+}
 SECRET = re.compile(r'oat_v1\.|Authorization\s*:\s*Bearer\s+\S+|'
                     r'jdbc:clickhouse://(?!\$)|-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY|'
                     r'\b(?:sk-(?:proj-)?[A-Za-z0-9_-]{20,}|gh[pousr]_[A-Za-z0-9]{20,})|'
@@ -181,7 +188,9 @@ def _manifest(full, skill, offline, sql, inputs, doc, baseline):
     manifest = {
         ':release-version': VERSION, ':status': 'PENDING_LIVE_PILOT',
         ':atlas-semantic-format': '2.0.0',
-        ':required-resolvers': {rid: r[':input'] for rid,r in doc[':execution'][':resolvers'].items() if rid.startswith('pastdue_v3_')},
+        ':required-resolvers': {rid: doc[':execution'][':resolvers'][rid][':input']
+                                for rid in sorted(REQUIRED_RESOLVERS)},
+        ':optional-current-context': 'Discover existing Owner/contact/PO APIs only when requested',
         ':offline-contracts': offline['status'], ':skill-structure': next((c['status'] for c in offline['checks'] if c['name'] == 'validate_bundle.py'), 'NOT_RUN'),
         ':local-clickhouse-sql': sql['status'] if sql else 'NOT_RUN',
         ':platform-config-check': 'NOT_RUN', ':deployed-jdbc-sql': 'NOT_RUN', ':real-agent-eval': 'NOT_RUN',
@@ -190,7 +199,9 @@ def _manifest(full, skill, offline, sql, inputs, doc, baseline):
         ':validation-input-sha256': {} if offline['status'] == 'NOT_RUN' else inputs,
         ':artifact-input-sha256': inputs,
         ':agent-contract-version': VERSION,
-        ':required-atlas-publication': '3.2.0',
+        ':recommended-atlas-publication': VERSION,
+        ':atlas-compatibility': 'Existing structured APIs retain metric3.1.0; older report default200 needs verified complete source pagination/limit',
+        ':source-report-page-default': 1000,
         ':compatible-metric-version': '3.1.0',
         ':manifest-self-hash': 'excluded-to-avoid-recursion',
         ':sha256': {k: sha(v) for k,v in full.items()},

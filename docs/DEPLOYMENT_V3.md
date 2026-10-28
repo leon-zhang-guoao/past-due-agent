@@ -1,87 +1,50 @@
-> Current 3.2.0 is a PENDING_LIVE_PILOT, not a production acceptance.
-> Deploy the NEW Atlas EDN (publication 3.2.0/revision 3) before new Prompt/Skill.
-> FACT_BLOCKS_3_2_0.md is the current rollout/rollback authority; use independent
-> plain queries from FACT_BLOCKS_PILOT.eql for single-Country real pilot first.
-> --package-only ran; offline/platform/source/real-Agent checks NOT_RUN.
-> The historical general checklist below is not execution evidence for this release.
+# Deploy / rollback — 3.3.0
 
-# Deployment and rollback — v3.1
+**PENDING_LIVE_PILOT**. No offline suites or real platform/Agent acceptance performed
+for this change. Historical3.2 notes are not the current deployment instructions.
 
-Status: contracts implemented locally; release packaging and live acceptance are
-separate gates. Do not treat a retained v3.0 manifest/archive or historical PASS
-as certification of these changed v3.1 contracts.
+## Update these artifacts
 
-## Before deployment
-1. Preserve approved deployed graph/source binding and matching Prompt/Skill.
-   Inspect baseline/rollback artifacts, but don't assume they prove live state.
-2. Supply fresh authorized environment configuration through secret management;
-   never reuse historical chat tokens. Policy allowlists aren't RLS.
-3. Read API_V3.md and the version-specific update/validation notes. Offline
-   regressions are optional owner-selected development work, not evidence of live
-   Agent correctness; none were run for 3.1.2/3.1.3/3.2.0 per user request. There is no Agent
-   runtime Python. Old evidence applies only to its recorded artifact/version.
-4. Release owner verifies combined Atlas v3.1 graph, source-slot binding and actual
-   formal platform config-check. Static inventory: 35 resolvers / 595 attributes;
-   inventory count alone is not a platform validation or SQL pass.
-5. Release owner updates manifest/version/hashes and produces a matching release
-   with actual validation state explicitly recorded; package-only is not acceptance. Do not regenerate artifacts as an incidental
-   docs edit or package mismatched Prompt/Skill/graph/manifest. NOT RUN isn't PASS.
+1. `atlas/charts/pastdue.edn`: publication3.3.0/revision4, compatible existing APIs.
+   Preserve your approved graph/workspace IDs, source binding and external secrets;
+   don't overwrite environment configuration with repository placeholders.
+   Report rows default source page1000/max1000; SQL bindings unchanged.
+2. `agent/SYSTEM_PROMPT.md`: replace the complete deployed System Prompt.
+3. Entire `skill/pastdue-analysis/` (or matching Skill ZIP), not SKILL.md alone.
+   Retire old installed copies/instructions; report-format.md is the sole layout.
 
-## Rollout and live gates
-1. Deploy expanded compatible Atlas graph first, retaining legacy APIs and source
-   binding eta-clickhouse to the approved source. No database migrations.
-2. Discover actual MCP explore-query/rows and report-query/rows, all 20 mandatory
-   explore inputs, seven report inputs and exact explore-fact/report-fact fields.
-   Always project scope-key (all required inputs encoded), full identity, metric
-   version, business-timezone, queried-at-local and expected counts/ordinals.
-3. Run live monitor, pinned report per Country and flexible CURRENT/SNAPSHOT/PAIR/
-   RANGE examples from the manual playbook. Verify control errors and success-empty,
-   explicit pair semantics, org dedupe, denominator fields, sign/rank/top-n behavior,
-   nullable Decimal JDBC serialization, page 200/1000 and stable ordinals.
-4. Verify report expected-record-count includes COUNTRY_CONTROL; reconcile its
-   Country PD/Open/ratios to monitor/history. Drift isn't a transaction guarantee:
-   separate conflicting captures, preserve raw evidence and mark unavailable scope.
-   Check BUCKET ranks≤5, OTHER rank6 and represented raw counts; all Vendor×code/
-   source/us checks including required=false. US joint applies in CA too.
-5. Deploy complete Prompt/Skill from the SAME release. No local graph-file reads,
-   unconstrained/source SQL, Python service, CSV or Kernel is needed at runtime.
-   execute_eql can return only a retained handle. Discover analyze_result schema,
-   inspect columns, then allow handle-bound read-only SELECT of explicit discovered
-   columns FROM data ORDER BY discovered row-ordinal. Do not assume a separate
-   structured-read tool. No source SQL, joins, writes or metric/denominator/rank/
-   selection changes. Handle materialization isn't a new logical fact request.
-6. After single-Country pilot, run `start test` (fully English), `开始测试` (fully Chinese), normal daily
-   no-trigger and real triggered fixtures, historical events/full and interactive
-   cases. Test forces applicable drilldown without inventing triggers. Every selected
-   Vendor gets fixed compact full sections and bilingual rule diagnosis. AUTO US
-   explicitly aliases AutoUS; UNKNOWN is never known other.
-7. Instrument ≤6 DIFFERENT LOGICAL FACT REQUESTS per INTERACTIVE question only;
-   discovery/materialization/pagination excluded, retries same slot. Report presets
-   have no six-request cap and attempt all mandatory work. Bound broad history/
-   optional scope explicitly, never silently skip. No per-Vendor request storms.
-   Exercise partial failures/interactive limits, paired raw DATA_CONFLICT,
-   ASSOCIATION_ERROR and REPORT_ERROR; retain independent valid dimensions.
-8. Verify actual PST/PDT + UTC offset from trusted runtime in both DST seasons
-   (October 2026 is PDT, November after transition PST), current/snapshot distinction
-   and omission of non-PAIR previous sentinels. Rerun a fixed question three times:
-   stable metric/denominator, dates, selected set, module/field order.
-9. Save release/environment, original inputs/scope-key, all raw results/handles,
-   captures, reconciliation, request count and final report in approved restricted
-   evidence storage. Production-ready only after real Atlas/JDBC/Agent acceptance; never model-issued PASS.
+Atlas first, then Prompt+Skill. New3.3 source default reduces report source paging;
+older structured APIs remain semantically compatible ONLY if actual full source
+pagination/limit is verified. Don't require block endpoints or silently use them.
+No notification folder, CSV, scripts or Runtime upload required for the Agent.
+No new table/source service. Contacts/Owner/PO remain on demand and display-only.
+
+## Required live gate, one Country first
+
+Use independent plain requests in STRUCTURED_PILOT_3_3.eql; replace example dates
+with real complete eligible snapshots. Platform owner performs real config-check,
+then actual report query. Confirm typed Decimal/null transport, source limit behavior,
+retained handle linkage, reader paging/partition support and row/cell flags.
+Default1000 does not prove full reads or fix cancelled queries.
+
+Run `开始测试，只测试 CA` / `start test, CA only` against the SAME actual pair.
+Compare selected Vendors/rank and all Code/Source/Other values and checks to real
+returns. Confirm 0→0 no risk, required=false no failed label, correct language and
+exact Vendor units. Current raw-bucket audit is not performed by compact checks.
+Then US+CA, historical and free questions; actual output limits need explicit
+continuous parts, never omitted Vendors. Don't use model-issued PASS as evidence.
+
+Record environment, actual input/execute handles, all source/result pages and flags,
+original counts/checks, final output, missing scope and human review findings.
+If reader supports no complete path, stop rollout and report that gap, don't
+modify SQL blindly or fan out to Vendors. Root cause of previous handle anomaly
+is UNCONFIRMED until actual call/handle evidence isolates it.
 
 ## Rollback
-Restore saved graph/source binding and matching Prompt/Skill/release metadata as
-one set. pre-redesign rollback archives preserve local history, not proof of the
-previous deployment. Never leave a v3.1 Skill on a graph lacking explore/report.
-Missing v3.1 is explicit deployment gap, not silent fallback to v3/v2 semantics.
-Rotate previously exposed credentials separately; don't embed them in artifacts.
 
-## Upload scope
-- agent/SYSTEM_PROMPT.md and complete skill/pastdue-analysis/ references/UI metadata,
-  with release-owner-approved matching manifest.
-- Combined atlas/charts/pastdue.edn and approved atlas/sources.edn configuration.
-- Sanitized matching release documentation.
-No local CSV/chat exports/research runtime/notification service or development
-Python scripts are required by Agent operation. Retained skill scripts are legacy
-local development helpers, excluded from runtime packaging and never invoked by
-the deployed Agent. Prompt instructions are not an installed host hard gate.
+Retain the currently deployed Prompt+complete Skill+Atlas as one environment-specific
+backup BEFORE deployment. Roll back that set, not individual files. Repository
+3.2 ZIPs are historical code artifacts, NOT a verified working fallback: supplied
+run showed truncation. Existing compatible APIs are not deleted by3.3. If a rollback
+requires returning to an older page default, use the saved environment graph.
+Secrets/IDs stay external. No database rollback or mailing side effect exists.

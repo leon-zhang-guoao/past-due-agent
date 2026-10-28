@@ -1,13 +1,13 @@
-# 3.2.0 additive block API — current standard report route
+# Current routing — Agent3.3.0
 
-Standard reports use pastdue.report-block-query/blocks (seven report inputs +
-language zh/en) and pastdue.monitor-block-query/countries (calendar, threshold,
-language). See FACT_BLOCKS_3_2_0.md and the shipped Skill fact-block-contract.md.
-Old report/monitor and flexible explore definitions below keep their metrics and
-remain available; they are not a silent alternate default report renderer.
-Underlying metrics remain 3.1.0; publication/template 3.2.0, source revision 3.
-Actual platform config/JDBC/source compatibility is NOT_RUN pending one-Country
-pilot; additional SQL formatter cost is unmeasured. No new runtime/service/table.
+Standard: monitor-query/countries, history-query/comparisons or trigger-events,
+report-query/rows. Flexible: explore-query/rows. Existing typed inputs/outputs and
+metric semantics3.1.0 unchanged. Atlas publication3.3.0/revision4 changes report
+source default page200→1000/max1000; calculation SQL unchanged. Long-text3.2
+block interfaces remain compatibility-only, not required or fixed by this release.
+Source pagination differs from retained-result reads; check both rows and cells.
+Skill atlas-query-playbook.md is the single reader procedure; report-format.md
+is the sole layout. These documents are not evidence of platform acceptance.
 
 # API v3.1 — unified flexible analysis + report preset
 
@@ -117,7 +117,7 @@ capture timestamp, business-timezone is IANA, actual PST/PDT + UTC offset comes
 from trusted runtime instant. Never infer an ambiguous fall-back instant or
 hardcode PST. Date pinning/capture timestamps do not imply cross-query transaction.
 
-Page default 200/max 1000, row-ordinal ascending. Consume every page and expected
+Report3.3 source default/max1000; other collections default200/max1000, row-ordinal ascending. Consume every page and expected
 record counts; compact summaries aren't incomplete raw-bucket retrieval. Standard
 INTERACTIVE question allows ≤6 DIFFERENT LOGICAL FACT REQUESTS; discovery,
 materialization and pagination are excluded, retries/corrections stay in the same
@@ -127,8 +127,8 @@ No per-Vendor fanout, unconstrained/source SQL, runtime Python/local CSV, mail
 or external Kernel. Handle-only execute_eql results can be materialized through
 analyze_result using read-only SELECT of explicit discovered columns FROM data
 ORDER BY discovered row-ordinal, bound to that exact retained request handle.
-Schema inspection first; no presumed structured-read tool. No other tables, joins,
-metric/denominator/rank/selection recomputation, fact-dropping filters or writes.
+Schema inspection first; no presumed structured-read tool. Lossless declared-record-type/ordinal partitions and supported paging are allowed. No other tables, joins,
+metric/denominator/rank/selection recomputation, silent fact-dropping filters or writes.
 This governed result-handle SELECT is allowed and isn't a new logical fact request.
 
 DATA_CONFLICT requires paired contradictory RAW same-scope responses with

@@ -1,65 +1,39 @@
-# PastDue Analysis Agent — 3.2.0 pilot
+# PastDue Analysis Agent — 3.3.0
 
-**Atlas publication/template 3.2.0, source revision 3; metric semantics 3.1.0 unchanged.**
-**PENDING_LIVE_PILOT — no offline tests, target SQL or real Agent acceptance run.**
+**PENDING_LIVE_PILOT** — local implementation/package, not platform/production acceptance.
 
-Fixed fact blocks separate report facts from Agent interpretation. Standard reports
-use `pastdue.report-block-query/blocks` and `pastdue.monitor-block-query/countries`;
-flexible questions retain explore structured facts. Old report/monitor interfaces
-are retained for explicit review, not silent fallback. The model relays fixed
-Country/Vendor tables and writes Country Vendor analysis after each ranking.
-No standalone US conditional-source table, no self-awarded overall report PASS.
+Default reports now use compact **structured facts**, not3.2 long Markdown cells.
+Atlas computes metrics/rank/Top5+Other/checks; Skill binds and checks reads; Agent
+explains and formats with one layout. Flexible current/snapshot/pair/range questions
+use composable explore capabilities without daily positiveTop10 restrictions.
 
-**This release DOES require Atlas EDN deployment first**, followed by matching
-Prompt + complete Skill. New SQL/string formatting must be tried on the actual
-ClickHouse 22.8 / JDBC / Atlas, one Country first. No native renderer is installed;
-source hashes do not prove final model text correctness. See
-[design and rollout](docs/FACT_BLOCKS_3_2_0.md),
-[plain Studio pilot queries](docs/FACT_BLOCKS_PILOT.eql) and
-[actual validation state](docs/VALIDATION_V3.md).
+## Update
 
-Full ZIP: releases/pastdue-agent-v3.2.0.zip. Skill ZIP:
-releases/pastdue-analysis-skill-v3.2.0.zip. Prior 3.1.3 packages preserved for rollback.
+- `atlas/charts/pastdue.edn`: compatible APIs, publication3.3.0/revision4;
+  report-query/rows source default200→1000, max1000, all SQL unchanged.
+- `agent/SYSTEM_PROMPT.md`.
+- Complete `skill/pastdue-analysis/`, or `releases/pastdue-analysis-skill-v3.3.0.zip`.
 
-A unified governed analysis capability with a compact full-Vendor report preset.
-Business facts come only from Atlas MCP; no arbitrary SQL, runtime Python, local
-CSV, mail or external execution service. Governed handle-bound analyze_result
-SELECT of explicit discovered columns FROM data is allowed for materialization,
-not source SQL, joins, writes or metric/denominator/rank recomputation.
+Full delivery: `releases/pastdue-agent-v3.3.0.zip`. No scripts, CSV, notification
+folder or Runtime required in Agent environment. Preserve environment IDs/bindings.
+See [deployment/rollback](docs/DEPLOYMENT_V3.md), [design](docs/STRUCTURED_REPORTS_3_3.md),
+[actual evidence](docs/VALIDATION_V3.md) and [live request examples](docs/STRUCTURED_PILOT_3_3.eql).
 
-## Capabilities
-- `pastdue.explore-query/rows`: controlled CURRENT/SNAPSHOT/PAIR/RANGE analysis,
-  Country/Vendor/Code/Source/joint grains, Vendor/ETA/org filters, explicit ratio
-  and share denominators, rank/sign/direction and top-n=0 all or 1..100.
-- `pastdue.report-query/rows`: seven-input compatible analysis preset, tagged
-  Country control, Vendor metrics, server Top-5+Other Code/Source/US joint summaries
-  and all Vendor checks from shared facts; no per-Vendor request fanout.
-- Independent US/CA completed-weekday monitoring, relative Country ratio trigger
-  ≥10%; historical events and fixed-pair review. No holiday exclusion calendar.
-- `start test` / `开始测试`: force applicable diagnostics, preserve real trigger;
-  English/Chinese fixed compact FULL sections for every selected Vendor.
-- America/Los_Angeles DST-aware clock, actual PST/PDT and UTC offset. Completed
-  snapshots aren't current state; Monday snapshot vs Friday isn't Monday's run.
-- Explicit AutoUS/AUTO US rule alias; US joint evidence applies to every Country.
-- scope-key/full identity and counts evidence; paired raw DATA_CONFLICT separated
-  from ASSOCIATION_ERROR and REPORT_ERROR, independent dimensions preserved.
-- INTERACTIVE only: ≤6 different logical fact requests; discovery/materialization/
-  paging excluded, retries same slot. Report presets have no six-request cap and
-  attempt all mandatory work; broad optional scope is bounded explicitly.
-  Missing v3.1 never silently falls
-  back. Owner/contacts/PO are current, display-only and only on request.
+## Business semantics retained
 
-## Contracts and delivery
-See docs/API_V3.md, docs/DEPLOYMENT_V3.md, ACCEPTANCE_TESTS.md and the Skill's
-manual atlas-query-playbook.md. Deploy matching System Prompt, complete Skill
-references/metadata and combined Atlas graph with approved source binding.
-The expanded graph inventory is additive compatible resolvers/attributes; only live platform
-checks prove deployed capabilities. scope-key/capture time is not a transaction.
+America/Los_Angeles with DST; complete snapshot dates earlier than local today;
+Mon–Fri no holidays. US/CA independent, relative Country ratio increase≥10%; fixed
+positive contributionTop10, coverage reference only, Code/Source abs-count-delta
+Top5+Other. Every selected Vendor has analysis or exact local failure. Joint
+Code=US Source applies to all Countries and informs Country summary after ranking.
+Owner/contacts/PO optional/current/display-only; no mail drafts/sending.
 
-Release metadata/archive generation is a separate owner-controlled step. A retained
-old manifest/hash/PASS cannot certify changed v3.1 contracts; do not ship a mixed
-bundle. Development scripts, tests and release assets are not Agent runtime
-requirements. `docs/VALIDATION_V3.md` is a versioned evidence record, not blanket
-validation of new changes. Offline checks, real Atlas/JDBC and real Agent reports
-are distinct gates. A skipped SQL suite isn't SQL PASS; instructions aren't a
-host-enforced submission gate. Configure secrets externally; policy isn't RLS.
+## Important boundary
+
+Source paging, retained-result paging, cell completeness and final delivery differ.
+The larger report source page is not a full-read guarantee. Real host reader support
+must be confirmed with oneCountry pilot first. Same modules/columns/facts are required,
+not byte-identical model prose. No installed deterministic renderer or output gate.
+Historical docs/packages are retained in the repo, superseded by this release;
+3.2 long-text APIs remain compatibility-only and their defects aren't certified fixed.
+No offline tests executed; no automatic git commit/push or production access.

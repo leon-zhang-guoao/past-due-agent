@@ -9,7 +9,7 @@ from edn_io import K, read, write, EdnSet
 
 ROOT = Path(__file__).resolve().parents[1]
 GRAPH = ROOT / 'atlas/charts/pastdue.edn'
-VERSION = '3.2.0'
+VERSION = '3.3.0'
 BUSINESS_TZ = 'America/Los_Angeles'
 NOW_PST = f"now('{BUSINESS_TZ}')"
 TODAY_PST = f"toDate({NOW_PST})"
@@ -233,6 +233,57 @@ def add_collection(doc, parent, collection, child, fields, inputs, sql, sort='ro
     doc[':ownership'][':resolvers'][rid] = doc[':graph'][':graph/id']
 
 
+def apply_structured_defaults(doc):
+    """3.3 routing/page metadata only; preserve all existing SQL and API meanings.
+
+    Top10 compact report is at most 1+10*(1+3*6+3)=221 rows. A source
+    page1000 covers that bound; retained-result readers must still page/check.
+    Explore/general collections keep their existing defaults.
+    """
+    rid = 'pastdue_v3_report_query_rows'
+    doc[':execution'][':resolvers'][rid][K(':pagination')][K(':default')] = 1000
+    doc[':execution'][':resolvers'][rid][K(':description')] = (
+        'Standard structured report facts: Country control, Vendor metrics, '
+        'Top5+Other summaries and checks. Default source page1000 covers compact '
+        'Top10 bound221; separately verify retained-result row and cell coverage.')
+    for ns, rid in [('pastdue.report-block-query', 'pastdue_v3_report_block_query_blocks'),
+                    ('pastdue.monitor-block-query', 'pastdue_v3_monitor_block_query_countries')]:
+        doc[':vocabulary'][':entities'][ns][K(':entity/description')] = (
+            'COMPATIBILITY ONLY: 3.2 long-text interface. Agent3.3 defaults to '
+            'structured report/monitor facts. Full text transport and formatting '
+            'are not repaired or certified by this metadata change.')
+        doc[':execution'][':resolvers'][rid][K(':description')] = (
+            'COMPATIBILITY ONLY: original 3.2 long-text SQL retained; not the '
+            'Agent3.3 default, no complete-text transport guarantee.')
+    guide = doc[':graph'][':graph/usage-guide']
+    guide[K(':guide/purpose')] = (
+        'Governed PastDue monitoring and flexible analysis through structured '
+        'Country/Vendor/ETA facts; Agent3.3 uses America/Los_Angeles with DST.')
+    guide[K(':guide/applicability')] = (
+        'Atlas serves all authorized actual Countries; Agent monitoring defaults '
+        'US/CA independently. Complete dates strictly precede Los Angeles today. '
+        'Default Mon-Fri, no holidays. Legacy calendar/UTC APIs retain their '
+        'documented meanings. Relative increase threshold10%, zero baseline explicit.')
+    notes = [x for x in guide[':guide/limitations']
+             if not x.startswith('Fixed fact blocks require')
+             and not x.startswith('Agent3.3 uses')]
+    notes.append('Agent3.3 uses structured report/monitor/explore facts; source page '
+                 'coverage, retained-result rows/cells and final delivery are distinct. '
+                 'Long-text 3.2 endpoints are compatibility-only; no live acceptance claimed.')
+    guide[K(':guide/limitations')] = notes
+    examples = doc[':graph'][':graph/query-examples']
+    for ex in examples:
+        if ex.get(':example/id') == 'v3-fixed-report-blocks':
+            ex[K(':example/title')] = 'Compatibility-only 3.2 fixed fact blocks'
+            ex[K(':example/description')] = (
+                'Historical long-text API, not Agent3.3 default. Preview cells '
+                'were truncated in a supplied run; no full-text transport guarantee.')
+    guide[K(':guide/examples')] = [x for x in guide[':guide/examples']
+                                   if x != 'v3-fixed-report-blocks']
+    doc[':publication'][K(':release/version')] = VERSION
+    doc[':publication'][K(':source/revision')] = 4
+
+
 def build(graph_path=None):
     graph_path = Path(graph_path) if graph_path is not None else GRAPH
     doc=read(graph_path)
@@ -346,7 +397,7 @@ def build(graph_path=None):
     guide=doc[':graph'][':graph/usage-guide']
     guide[K(':guide/limitations')]=['Legacy v2 entries retain calendar-day behavior; v3 uses explicit calendar mode.','v3 SQL selects Vendor Top N and computes ETA Top-5/Other summaries before paging.','Read and reconcile every facts/check page; returned-result completeness alone is insufficient.','Permissions/RLS must be enforced by the actual deployment; Skill allowlists are not access control.','No cross-query transaction or production usability claim without live validation.']
     doc[':publication'][K(':release/version')]=VERSION
-    doc[':publication'][K(':source/revision')]=3
+    doc[':publication'][K(':source/revision')]=4
     examples=doc[':graph'][':graph/query-examples']
     examples[:]=[ex for ex in examples if not ex.get(':example/id','').startswith('v3-')]
     for rid,title in [('pastdue_v3_monitor_query_countries','Weekday monitor'),('pastdue_v3_analysis_query_scope_status','Fixed-pair scope validation')]:
@@ -362,6 +413,7 @@ def build(graph_path=None):
     from build_report_blocks import add_report_blocks, add_monitor_blocks
     add_report_blocks(doc)
     add_monitor_blocks(doc)
+    apply_structured_defaults(doc)
     write(graph_path,doc)
     return doc
 
