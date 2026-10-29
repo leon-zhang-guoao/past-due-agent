@@ -1,10 +1,12 @@
-# Atlas query playbook — 3.3.1
+# Atlas query playbook — 3.3.2
 
 Before any analyze_result call, read [result-reader.md](result-reader.md) in full.
-Existing-handle calls include result_handle and OMIT query/result_handles, not
-empty placeholders. Initial schema call omits sql; subsequent reads add actual
-nonempty sql only as supported. One genuinely corrected retry, never an identical
-repeat. This prerequisite is separate from EQL's `{:entity ... :query ...}` body.
+Use its concrete monitor recipe: handle-only discovery, then same handle+SQL for
+row values on the same MCP connection. OMIT query/result_handles, not empty
+placeholders. Supplied manual discovery succeeded in its connection; it didn't
+validate the rows/report stages or another host's tool schema. One meaningful
+correction max; changing analysis_version is not a selector fix. This prerequisite
+is separate from EQL's `{:entity ... :query ...}` body.
 
 ## Choose the fact capability
 

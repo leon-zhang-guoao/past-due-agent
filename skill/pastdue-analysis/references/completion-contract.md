@@ -1,4 +1,4 @@
-# Evidence and completion — 3.3.1
+# Evidence and completion — 3.3.2
 
 This is an Agent procedure, not an installed runtime gate. Query execution,
 retrieval and delivery are separate; none proves independent final-output accuracy.
@@ -85,5 +85,9 @@ not identify its initiator; reducing projection/limit doesn't fix source aggrega
 No permissions bypass, per-Vendor retry storm or fabricated platform root cause.
 For result-reader selector validation, follow result-reader.md: initial call plus
 ONE corrected call that removes conflicting keys, never an identical third attempt.
-Required/injected incompatible tool fields cannot be fixed by EQL or source SQL;
-stop that read and report the actual invocation/schema limitation.
+The correction must also preserve the actual execute handle and connection;
+changing analysis_version isn't a correction. Discovery success is not rows success.
+Mixed-selector errors alone don't prove host incompatibility. Actual required or
+transformed conflicting keys need separate evidence before blaming an adapter.
+Don't fix tool arguments by changing EQL/source SQL. The supplied manual discovery
+test does not certify this Agent release or its report output.

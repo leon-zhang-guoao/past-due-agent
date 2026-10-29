@@ -1,4 +1,4 @@
-{:policy-version "3.3.1"
+{:policy-version "3.3.2"
   :business-timezone "America/Los_Angeles"
   :business-timezone-iana "America/Los_Angeles"
   :display-timezone {:daylight-saving true
@@ -80,8 +80,11 @@
       :input-selector "result_handle only for retained reads"
       :omit-unused-selectors ["query" "result_handles"]
       :empty-placeholders-allowed false
-      :schema-read-sql "omit unless actual tool schema requires it"
-      :selector-error-recovery "one corrected call removing conflicting keys; never identical retry or source reexecution"}}
+      :schema-read-sql "omit; discovery returns columns/count only, not business rows"
+      :selector-error-recovery "one correction reconstructing minimal args with actual execute handle; no analysis_version-only retry or mode switching"
+      :read-sequence ["same-connection execute" "exact returned handle only: discovery" "same handle plus actual SQL: rows"]
+      :bind-connection-and-handle true
+      :adapter-fault-requires "actual schema/argument transformation evidence; mixed selectors alone insufficient"}}
   :evidence {:data-conflict-requires :two-raw-same-scope-contradictory-responses
     :separate-errors ["DATA_CONFLICT" "ASSOCIATION_ERROR" "REPORT_ERROR"]
     :conflict-comparison "contradictory COMMON semantic fields only, not whole response shape or capture metadata"}

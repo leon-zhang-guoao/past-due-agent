@@ -1,12 +1,16 @@
-# Deploy / rollback — Agent3.3.1, Atlas3.3.0
+# Deploy / rollback — Agent3.3.2, Atlas3.3.0
 
-## Patch from3.3.0
+## Patch from3.3.0/3.3.1
 
-Replace System Prompt and the ENTIRE Skill using3.3.1; do not change already deployed
+Replace System Prompt and the ENTIRE Skill using3.3.2; do not change already deployed
 Atlas3.3.0/revision4 for this patch. No SQL/metric/layout changes. See
-RESULT_READER_FIX_3_3_1.md: first verify the single-selector handle read. The fix
-cannot override an incompatible host tool schema or prove that the adapter omits
-unused keys. Then continue single-Country pilot below; it is not already passed.
+RESULT_READER_FIX_3_3_2.md: same-connection execute→discovery→actual row reading.
+The supplied user-open_atlas manual discovery accepted handle-only arguments;
+it does not verify ETA-PastDue-Graph configuration or the Agent's SQL row reads.
+Don't blame adapters without actual evidence. Then continue single-Country pilot
+below; it is not already passed. Use a fresh chat after replacing complete Prompt/
+Skill to reduce carry-over of prior failed calls/old handles; this isn't a fix for
+an unconfirmed platform association defect. Never reuse the supplied test handle.
 
 **PENDING_LIVE_PILOT**. No offline suites or real platform/Agent acceptance performed
 for this change. Historical3.2 notes are not the current deployment instructions.

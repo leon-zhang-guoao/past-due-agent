@@ -1,4 +1,4 @@
-# PastDue Analysis Agent — 3.3.1
+# PastDue Analysis Agent — 3.3.2
 
 **PENDING_LIVE_PILOT** — local implementation/package, not platform/production acceptance.
 
@@ -9,17 +9,19 @@ use composable explore capabilities without daily positiveTop10 restrictions.
 
 ## Update
 
-- **From3.3.0: update System Prompt + complete Skill only. Atlas EDN is unchanged.**
+- **From3.3.0/3.3.1: update System Prompt + complete Skill only. Atlas EDN is unchanged.**
 - From older versions also deploy `atlas/charts/pastdue.edn`: publication3.3.0/revision4;
   report-query/rows source default1000, max1000.
 - `agent/SYSTEM_PROMPT.md`.
-- Complete `skill/pastdue-analysis/`, or `releases/pastdue-analysis-skill-v3.3.1.zip`.
+- Complete `skill/pastdue-analysis/`, or `releases/pastdue-analysis-skill-v3.3.2.zip`.
 
-Full delivery: `releases/pastdue-agent-v3.3.1.zip`. No scripts, CSV, notification
+Full delivery: `releases/pastdue-agent-v3.3.2.zip`. No scripts, CSV, notification
 folder or Runtime required in Agent environment. Preserve environment IDs/bindings.
 See [deployment/rollback](docs/DEPLOYMENT_V3.md), [design](docs/STRUCTURED_REPORTS_3_3.md),
 [actual evidence](docs/VALIDATION_V3.md) and [live request examples](docs/STRUCTURED_PILOT_3_3.eql).
-Result-reader fix: [3.3.1 scope and real verification steps](docs/RESULT_READER_FIX_3_3_1.md).
+Result-reader fix: [3.3.2 evidence, scope and real verification steps](docs/RESULT_READER_FIX_3_3_2.md).
+The supplied manual handle-only discovery succeeded in its connection; SQL row
+reading and the updated Agent's end-to-end behavior remain pending live verification.
 
 ## Business semantics retained
 
