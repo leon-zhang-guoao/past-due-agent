@@ -1,7 +1,11 @@
-# MCP arguments — 3.3.6
+# MCP arguments — 3.3.7
 
-Follow [result-reader.md](result-reader.md).
+[result-reader.md](result-reader.md#1-call-boundary) is the single maintained
+argument procedure. It describes calls, not an executable interceptor. There is
+no MCP client/serialization middleware installed by this Skill or Atlas EDN.
 
-`execute_eql` is the query string plus `retain_result` true.
-
-`analyze_result` is the object in result-reader.md: `result_handle`, the SQL for that result, and `analysis_version` 2. Monitor and report SQL are in that file. On that call only, a blank string or an empty list is removed before send. `sql` with the statement, `analysis_version`, false, and 0 stay.
+For platform investigation, record the schema exposed to the model, model-produced
+arguments, outbound MCP arguments and original response under the same tool-call
+ID, to the extent the host exposes them. Do not invent unavailable stages or blame
+one component from the final visible request alone. Deployment steps are outside
+this Skill in the project's docs/DEPLOYMENT_V3.md.

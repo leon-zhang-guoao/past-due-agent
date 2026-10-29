@@ -1,4 +1,4 @@
-{:version "3.3.0"
+{:version "3.3.7"
   :layout-authority "report-format.md"
   :formats {:date {:pattern "YYYY-MM-DD"}
     :int {:thousands-separator false}
@@ -33,10 +33,15 @@
       :timezone "UTC"
       :legacy-semantics-unchanged true}}
   :fact-binding {:authority "raw handle-bound Atlas rows; never model intermediate tables"
+    :country-total-source "COUNTRY_CONTROL dedicated previous/target-country-past-due-count, -country-open, -country-ratio only; Vendor placeholders are not Country facts"
     :partition-first ["scope-key" "record-type" "country-code" "vendor-code" "previous-snapshot-date" "target-snapshot-date" "dimension" "row-kind"]
     :vendor-total-source "VENDOR_METRICS only; ETA summaries carry bucket counts, not Vendor totals"
     :delta-source "delta-country-contribution only, never target-country-contribution; pp formatting multiplies by 100 exactly once"
     :no-fallback "missing selected record -> explicit field/scope failure; no first/last row, matching totals or another Vendor as substitute"
     :provenance "retain actual execute handle and row-ordinal for each mapped metric/dimension; no invented row IDs"
     :coverage-unknown "warning only if full transport, identity, expected rows, representation and server checks all verified; otherwise affected scope PARTIAL"}
+  :delivery-accounting {:selected-vendors "actual VENDOR_METRICS set/rank"
+    :retrieved "unique source/retained ordinals and cell checks"
+    :presented "complete units, units with local failures, and not-yet-delivered identities separately"
+    :source-success-implies-delivery false}
   :native-renderer-installed false}

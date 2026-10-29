@@ -1,4 +1,4 @@
-# Report modules — 3.3.0 (single layout authority)
+# Report modules — 3.3.7 (single layout authority)
 
 Use structured facts, not 3.2 long Markdown blocks. Same modules and column order
 in Chinese and English; choose ONE language. Code/Vendor names remain literal data.
@@ -107,8 +107,40 @@ Both ETA tables use exactly these columns in this order:
 
 Choose localized headers, not bilingual duplication. BUCKET order=display-rank;
 OTHER is 其他（N项）/Other (N items), server-computed counts and relative change.
-Do not add a zero Other or re-rank summary rows. A failed/unread dimension retains
+Do not invent Other when no OTHER record exists. If the server returned OTHER
+with zero counts but positive other-bucket-count, display it: real zero-valued
+remainder buckets still belong to the complete compact representation. Do not
+re-rank summary rows. A failed/unread dimension retains
 its heading and concrete failure/empty status, never a fabricated table.
+
+### Vendor unit skeleton (instantiate for every selected Vendor)
+
+Choose ONE language and retain the fields/order defined above. This is a model
+output contract, not generated Markdown or a deterministic renderer.
+
+```text
+### #{rank} {vendor_code} — {vendor_name}
+指标变化 / Metric changes: PD P→T; Open P→T; Vendor ratio P→T;
+Country contribution P→T; contribution change pp.
+
+ETA Code 变化 / ETA Code changes
+[the six-column table above: ALL returned Top5 BUCKET rows + returned OTHER]
+
+ETA Source 变化 / ETA Source changes
+[the same six-column table, independent Source facts]
+
+变化摘要与诊断 / Change summary and diagnosis
+Code: increases +I; decreases −D; net N.
+Source: increases +I; decreases −D; net N.
+[Evidence-based worsening, improvement offsets, remaining risk, suggested check.]
+```
+
+The slash labels indicate language alternatives, not bilingual duplication.
+Substitute actual verified facts; no fabricated empty rows. A dimension failure
+keeps its heading and exact status/reason instead of a table. A wide Country-level
+"Vendor | main Code deltas | main Source deltas | diagnosis" table may be an
+explicit brief/custom view, but cannot replace these units in a standard full
+report. Full two-period tables are required even when all deltas fit in one line.
 
 ## Coverage, context and length
 
@@ -126,3 +158,18 @@ matrices/raw JSON, not mandatory ETA facts. If evidenced output limits require
 parts, number them by Country/Vendor range and state delivered/remaining scope;
 full report is not delivered until all parts are actually present. Do not promise
 unsupported automatic continuation. No model-issued overall report/test PASS.
+
+
+## Delivery accounting
+
+The final scope section distinguishes:
+- source execution and compact-record retrieval (actual unique rows vs expected);
+- reconciliation (actual identity, Country and dimension checks or affected gaps);
+- presentation (selected Vendor codes/ranks; complete units; units with explicit
+  local failures; units not delivered yet).
+
+All selected Vendor positions must exist, but a displayed error placeholder is
+not successful ETA analysis. A fully read 177-row result says nothing by itself
+about how many Vendor units were delivered. List remaining Country/rank ranges
+and missing modules when partial. Do not claim a completed full test path merely
+because requests succeeded. Preserve actual business trigger/freshness separately.

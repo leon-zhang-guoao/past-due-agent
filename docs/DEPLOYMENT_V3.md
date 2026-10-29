@@ -1,62 +1,70 @@
-# Deploy / rollback — Agent3.3.2, Atlas3.3.0
+# Deploy / rollback — Agent3.3.7, Atlas3.3.0/revision4
 
-## Patch from3.3.0/3.3.1
+Status: **PENDING_LIVE_PILOT**. No offline tests, platform config-check or real
+Agent acceptance executed for this correction. See RESULT_READER_FIX_3_3_7.md.
 
-Replace System Prompt and the ENTIRE Skill using3.3.2; do not change already deployed
-Atlas3.3.0/revision4 for this patch. No SQL/metric/layout changes. See
-RESULT_READER_FIX_3_3_2.md: same-connection execute→discovery→actual row reading.
-The supplied user-open_atlas manual discovery accepted handle-only arguments;
-it does not verify ETA-PastDue-Graph configuration or the Agent's SQL row reads.
-Don't blame adapters without actual evidence. Then continue single-Country pilot
-below; it is not already passed. Use a fresh chat after replacing complete Prompt/
-Skill to reduce carry-over of prior failed calls/old handles; this isn't a fix for
-an unconfirmed platform association defect. Never reuse the supplied test handle.
+## Update
 
-**PENDING_LIVE_PILOT**. No offline suites or real platform/Agent acceptance performed
-for this change. Historical3.2 notes are not the current deployment instructions.
+From an existing structured3.3 deployment:
+1. Save the deployed System Prompt, complete installed Skill, graph/source bindings
+   and actual environment version as an environment-specific rollback set.
+2. Replace agent/SYSTEM_PROMPT.md and the ENTIRE skill/pastdue-analysis/ (or matching
+   releases/pastdue-analysis-skill-v3.3.7.zip). Do not mix old readers/policy/templates.
+3. Use a fresh conversation so old instructions/handles are not carried forward.
+   This is operational hygiene, not a fix for an unconfirmed host association bug.
+4. **Do not redeploy Atlas for this patch**: atlas/charts/pastdue.edn is unchanged
+   publication3.3.0/revision4, metric3.1.0. No new tables, schema or SQL required.
 
-## Update these artifacts
+For an older deployment without compatible structured monitor/history/report/explore,
+first deploy the compatible combined graph, preserving approved IDs, source bindings
+and external credentials; have its owner perform actual config-check. Report source
+page default/max1000 still needs real verification; a larger page does not certify
+complete retained reads. Source paging remains separate from retained paging.
 
-1. `atlas/charts/pastdue.edn`: publication3.3.0/revision4, compatible existing APIs.
-   Preserve your approved graph/workspace IDs, source binding and external secrets;
-   don't overwrite environment configuration with repository placeholders.
-   Report rows default source page1000/max1000; SQL bindings unchanged.
-2. `agent/SYSTEM_PROMPT.md`: replace the complete deployed System Prompt.
-3. Entire `skill/pastdue-analysis/` (or matching Skill ZIP), not SKILL.md alone.
-   Retire old installed copies/instructions; report-format.md is the sole layout.
+Full delivery: releases/pastdue-agent-v3.3.7.zip. No notification/CSV/chat/scripts/
+Runtime upload required. Contacts/Owner/PO remain optional/current/display-only;
+no mail drafts/sending. Development packaging Python is not an Agent dependency.
 
-Atlas first, then Prompt+Skill. New3.3 source default reduces report source paging;
-older structured APIs remain semantically compatible ONLY if actual full source
-pagination/limit is verified. Don't require block endpoints or silently use them.
-No notification folder, CSV, scripts or Runtime upload required for the Agent.
-No new table/source service. Contacts/Owner/PO remain on demand and display-only.
+## Staged live gate
 
-## Required live gate, one Country first
+1. Same host and connection: execute small monitor → actual fresh handle → SQL read
+   with only result_handle, nonempty sql, analysis_version2. Inspect actual outbound
+   arguments and corresponding original response. Optional supported discovery is
+   allowed when columns are unknown; success there is not business row retrieval.
+2. On exactly-one error, at most one changed justified correction; never repeat the
+   same invalid object. If host cannot preserve the valid shape, stop dependent reads.
+   Prompt/Skill/EDN contains no executable sanitizer. Component root cause remains
+   UNCONFIRMED until actual schema/model/outbound/response evidence isolates it.
+3. Pin one Country/P/T using actual monitor/history. Run its full report EQL from
+   STRUCTURED_PILOT_3_3.eql with real dates. Use result-reader.md's three typed reads;
+   first compare dedicated Country fields, not Vendor placeholder zeros.
+4. Manually compare one Vendor's metrics, both full ETA tables/Other and signed
+   totals to original rows, then all selected Vendors for that Country. Capture
+   ordinal union, truncation flags, check results and actual delivered unit count.
+5. Expand to US/CA, Chinese/English start test, normal daily, events-only/history
+   and interactive questions. Real fixed-scope repetitions assess variability;
+   do not substitute an LLM-issued PASS for external review.
 
-Use independent plain requests in STRUCTURED_PILOT_3_3.eql; replace example dates
-with real complete eligible snapshots. Platform owner performs real config-check,
-then actual report query. Confirm typed Decimal/null transport, source limit behavior,
-retained handle linkage, reader paging/partition support and row/cell flags.
-Default1000 does not prove full reads or fix cancelled queries.
+No provenance: no dependent use based on plausible totals. A response naming the
+wrong handle is association error; unknown UI/export cause stays unconfirmed.
+If only final visible calls are accessible, record that limit, don't invent traces.
+If every possible retained call is malformed, escalate the call-boundary issue
+instead of changing source SQL, disabling identity checks or selecting old blocks.
+A direct-execute alternative is allowed only after its live schema, pagination,
+complete row/cell return path and provenance are separately established; not an
+implemented or assumed fallback in this release.
 
-Run `开始测试，只测试 CA` / `start test, CA only` against the SAME actual pair.
-Compare selected Vendors/rank and all Code/Source/Other values and checks to real
-returns. Confirm 0→0 no risk, required=false no failed label, correct language and
-exact Vendor units. Current raw-bucket audit is not performed by compact checks.
-Then US+CA, historical and free questions; actual output limits need explicit
-continuous parts, never omitted Vendors. Don't use model-issued PASS as evidence.
-
-Record environment, actual input/execute handles, all source/result pages and flags,
-original counts/checks, final output, missing scope and human review findings.
-If reader supports no complete path, stop rollout and report that gap, don't
-modify SQL blindly or fan out to Vendors. Root cause of previous handle anomaly
-is UNCONFIRMED until actual call/handle evidence isolates it.
+Record each gate's actual outcome, environment/connection, available call IDs,
+inputs, handles/captures, rows/checks, final text and human findings. Only those
+records can justify live acceptance. A full result with an abbreviated report is
+incomplete delivery, not proof that the source failed or the full test completed.
 
 ## Rollback
 
-Retain the currently deployed Prompt+complete Skill+Atlas as one environment-specific
-backup BEFORE deployment. Roll back that set, not individual files. Repository
-3.2 ZIPs are historical code artifacts, NOT a verified working fallback: supplied
-run showed truncation. Existing compatible APIs are not deleted by3.3. If a rollback
-requires returning to an older page default, use the saved environment graph.
-Secrets/IDs stay external. No database rollback or mailing side effect exists.
+Use the saved deployed Prompt+complete Skill+compatible graph as one set. Do not
+mix individual patch files. Keep environment IDs/secrets external. Unchanged Atlas
+normally requires no redeployment on rollback. Repository older ZIPs are historical
+artifacts, not certified working fallbacks; some contain known read/report defects.
+Git's pre-change commit preserves local source, not proof of a working deployment.
+No database or mail side effect needs rollback. Preserve the failed real evidence
+before retrying another version; avoid untraceable prompt-only release loops.

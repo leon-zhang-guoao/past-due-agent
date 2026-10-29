@@ -1,3 +1,7 @@
+> 当前 Prompt/Skill 为3.3.7，修正说明与线上门槛见
+> RESULT_READER_FIX_3_3_7.md；本页保留3.3结构化能力架构。
+> 保留结果读取以 Skill result-reader.md 为唯一维护入口，不能把旧调用片段当当前配方。
+
 # PastDue 3.3.0：结构化读取与报告收敛
 
 状态：**PENDING_LIVE_PILOT**。本地实现与打包，不代表部署或线上通过。

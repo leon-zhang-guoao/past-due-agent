@@ -165,7 +165,8 @@ conflict, and an unprojected field is unknown, not contradictory.
 
 ## Governed retained-result reading
 
-See atlas-query-playbook.md for the single authoritative reading procedure.
+See result-reader.md for the single authoritative retained-read procedure;
+atlas-query-playbook.md covers source collection queries/pagination.
 Source pagination and retained-result pagination are distinct. Explicit-column
 reads, supported bounded paging and lossless record-type partitions of the exact
 retained `data` result are allowed. No source SQL, joins, recomputed metrics or
@@ -182,7 +183,7 @@ service, required tool or claim of machine enforcement.
 
 | Consumer | Required selector | Bound fields / meaning |
 |---|---|---|
-| Country cross-check | COUNTRY_CONTROL | Country PD/Open/ratio, selected-vendor-count, expected-record-count |
+| Country cross-check | COUNTRY_CONTROL | previous/target-country-past-due-count, previous/target-country-open, previous/target-country-ratio; selected-vendor-count, expected-record-count. NOT previous/target-past-due-count or -open-count placeholders |
 | Vendor overview AND detailed metrics | VENDOR_METRICS + exact Country/Vendor/scope | previous/target-past-due-count, previous/target-open-count, previous/target-vendor-ratio, contribution-rank, previous/target-country-contribution, delta-country-contribution, positive-contribution-share |
 | Code table | ETA_CODE_SUMMARY + dimension=code + same Vendor/scope | bucket counts, count change, relative change, delta-country-contribution, row-kind, display-rank |
 | Source table | ETA_SOURCE_SUMMARY + dimension=source + same Vendor/scope | independent marginal Source bucket fields |

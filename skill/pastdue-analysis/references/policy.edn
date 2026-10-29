@@ -1,4 +1,4 @@
-{:policy-version "3.3.6"
+{:policy-version "3.3.7"
   :business-timezone "America/Los_Angeles"
   :business-timezone-iana "America/Los_Angeles"
   :display-timezone {:daylight-saving true
@@ -69,9 +69,9 @@
     :broad-scope-bounds-must-be-explicit true
     :result-handle-materialization {:allowed true
       :tool "analyze_result"
-      :schema-first false
+      :schema-first :when-column-mapping-unverified
       :scope "retained result for this turn"
-      :sql-shape "monitor: SELECT * FROM data ORDER BY country_code; report: two record_type projections in result-reader.md"
+      :sql-shape "monitor: small Country rows; report: three typed projections in result-reader.md"
       :source-pages-and-result-pages-distinct true
       :row-and-cell-truncation-separate true
       :partition-union-must-cover-source true
@@ -80,12 +80,18 @@
       :argument-contract "result-reader.md"
       :analyze-arguments ["result_handle" "sql" "analysis_version"]
       :analysis-version 2
-      :analyze-drop-before-send ["blank string" "empty list"]
-      :analyze-keep ["sql when it contains the statement" "analysis_version" "boolean false" "numeric 0"]
+      :unused-selectors :omit-not-empty-or-null
+      :serialization-hook-installed false
+      :unchanged-rejected-retry false
+      :selector-error-component-cause "UNCONFIRMED until actual call evidence isolates it"
       :execute-arguments ["query" "retain_result"]
-      :handle-only-discovery false
-      :read-sequence ["execute_eql with query and retain_result" "analyze_result with result_handle, nonempty sql, analysis_version 2"]
-      :country-control-zero-vs-monitor "keep vendor rows; cross-check unverified"}}
+      :handle-only-discovery :optional-when-supported
+      :read-sequence ["execute_eql and bind actual handle" "read monitor/history and pin scope" "report Control then Vendor Metrics then ETA/Check on one captured result"]
+      :country-control-fields ["previous_country_past_due_count" "target_country_past_due_count" "previous_country_open" "target_country_open" "previous_country_ratio" "target_country_ratio"]
+      :unprojected-fields :unknown-not-zero
+      :country-control-zero-exemption false
+      :report-country-concurrency 1
+      :required-report-read-identity ["scope_key" "record_type" "country_code" "vendor_code" "previous_snapshot_date" "target_snapshot_date" "metric_version" "scope_status" "row_ordinal" "expected_record_count"]}}
   :evidence {:data-conflict-requires :two-raw-same-scope-contradictory-responses
     :separate-errors ["DATA_CONFLICT" "ASSOCIATION_ERROR" "REPORT_ERROR"]
     :conflict-comparison "contradictory COMMON semantic fields only, not whole response shape or capture metadata"}
@@ -107,7 +113,7 @@
   :metric-version "3.1.0"
   :selection-version "3.1.0"
   :calendar-version "weekdays-v1-no-holidays"
-  :report-rendering {:contract-version "3.3.0"
+  :report-rendering {:contract-version "3.3.7"
     :standard-layout "report-format.md"
     :fact-source "structured report-query/rows"
     :country-summary-position "after Vendor ranking, before individual Vendor details"
@@ -116,5 +122,8 @@
     :joint-source-default-table false
     :joint-source-analysis-retained true
     :self-awarded-report-pass false
+    :delivery-distinct-from-retrieval true
+    :delta-only-summary-replaces-full-vendor-unit false
+    :required-vendor-unit ["metrics" "Code Top5+returned Other P/T table" "Source Top5+returned Other P/T table" "Code and Source signed totals" "diagnosis or precise local failure"]
     :native-renderer-installed false
     :independent-output-review "not performed unless actually evidenced"}}

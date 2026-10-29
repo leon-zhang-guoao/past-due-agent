@@ -1,4 +1,4 @@
-# Evidence and completion — 3.3.2
+# Evidence and completion — 3.3.7
 
 This is an Agent procedure, not an installed runtime gate. Query execution,
 retrieval and delivery are separate; none proves independent final-output accuracy.
@@ -11,9 +11,17 @@ UNVERIFIED; a proven wrong attachment is ASSOCIATION_ERROR. Do not repair it by
 matching plausible numbers. Start with serial Country requests.
 
 Require scope-status=OK before interpreting selection. Compare COUNTRY_CONTROL
-PD/Open/ratios to the pinned monitor/history. Dates/keys do not prove cross-query
+dedicated previous/target-country-past-due-count, -country-open and -country-ratio
+to the pinned monitor/history. See result-reader.md's exact binding table; Vendor
+count/Open fields on this control are placeholders and MUST NOT be compared as
+Country measurements. Missing projection means not read, not zero. No zero-value
+exemption applies to the dedicated fields. Dates/keys do not prove cross-query
 transactions. Different captures that disagree remain unverified pending evidence;
 never silently overwrite one with another. Counts exact; ratios use metric tolerance.
+A genuine cross-capture mismatch limits attribution to that pinned monitor event.
+Independently verified report-scope facts may be described as such, with their own
+dates/denominators and explicit limitation; never silently merge captures. Unknown
+handle provenance limits ALL facts dependent on that handle, even if totals match.
 
 ## B. Retrieval
 
@@ -53,11 +61,19 @@ actual evidence and any remaining source limitation.
 
 Before sending, compare Vendor overview set/order to detail set/order; verify each
 has metrics, both ETA modules, signed totals and explanation or local failure.
-Check language, dates, signs and delta-vs-level field binding against original rows.
+Keep a delivery ledger separate from retrieval: per Country, actual selected
+Vendor codes/ranks → metrics → Code table → Source table → both signed totals →
+diagnosis or precise local failure. Count a unit as delivered only when all these
+applicable modules are actually present, not merely planned or available in a handle.
+Code/Source tables include both periods, not just selected deltas. Check language,
+dates, signs and delta-vs-level field binding against original rows.
 This self-review is not independent validation and cannot guarantee final accuracy.
 
 Report the actual analysis scope as complete/partial/unavailable/not required.
-Keep actual business trigger and freshness separate. A source/read success with
+Keep actual business trigger and freshness separate. At the end report selected
+Vendor count, fully delivered unit count, delivered-with-local-failure count and
+not-yet-delivered codes/ranks. A local failure placeholder is not valid ETA analysis;
+its presence makes the report honest, not the failed data complete. A source/read success with
 missing Vendor sections is an incomplete delivery. Confirmed wrong rendered facts
 are REPORT_ERROR; correct the output, not the valid source. No model-issued overall
 PASS, invented evaluation score or source-hash proof of final text correctness.

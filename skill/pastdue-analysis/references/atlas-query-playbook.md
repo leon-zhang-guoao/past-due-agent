@@ -1,4 +1,4 @@
-# Atlas query playbook — 3.3.6
+# Atlas query playbook — 3.3.7
 
 Retained reads copy the `analyze_result` object and the SQL in
 [result-reader.md](result-reader.md).
@@ -269,107 +269,21 @@ not invented fields. An incomplete history list cannot establish the latest even
 
 ## Read layer 2: retained-result materialization
 
-The analyze_result object and the two report statements that returned rows are
-in result-reader.md. Use those. The SQL examples below are the same partitions
-if a reader needs a narrower page; they are not a second argument schema.
+The only maintained retained-read arguments, typed SQL projections and paging
+procedure are in [result-reader.md](result-reader.md). Read its active section,
+not every query example. Known-schema reads can skip redundant discovery;
+unknown columns need actual schema, never guessed aliases.
 
-1. Bind the exact handle from the actual execute response. Inspect actual flattened
-   columns. Schema-only responses aren't fact retrieval. If linkage is missing or
-   wrong, stop dependent use; don't obtain a plausible handle from memory.
-2. Prefer explicit typed columns, no Markdown, diagnostic prose or embedded arrays.
-   Read control/metrics, then checks, then Code, Source and conditional US summaries
-   in type-specific projections from the SAME retained result. Each contains the
-   actual scope, Country, Vendor, P/T, record type, dimension, ordinal and total;
-   keep scope-status and metric-version in every partition as well.
-   Control/metrics additionally need dates/calendar/version/status, selected count,
-   Country totals, Vendor PD/Open/ratios/contributions/rank/share/coverage. Checks
-   need required, counts-match, bucket counts, actual/expected P/T totals and signed
-   totals. Summary groups need eta-value,row-kind,display-rank,represented Other
-   count, bucket count, P/T PD,delta,relative-change,delta-country-contribution.
-3. Lossless type partitions and bounded page windows are permitted over `data`
-   ONLY. This is retained-result reading, not source SQL or a new fact request.
-   The disjoint partitions must collectively cover all returned record types/rows.
-   Any unexpected type must be read and reported, not discarded. Keep a coverage
-   ledger of raw identities/ordinals; per-group expected source count remains the
-   whole source count, not that group's count. Never compare one partition's length
-   to the whole result and call it incomplete without considering the union.
-4. Inspect BOTH row and cell truncation metadata on every read. `truncated?=false`
-   or result-complete=true alone is insufficient. Start bounded (e.g. ≤40 rows),
-   use actual supported paging to continue; don't assume a fixed preview cap.
-   Fewer columns won't fix a long string cell. Affected names remain display-limited;
-   affected identities/metrics remain unverified. Do not turn cut-off text into facts.
-5. Stored full values may still exist when a preview is truncated. Use only a
-   discovered supported full-value read/export if available. No invented substring,
-   length override, raw export or local script. If unavailable, report the precise
-   affected field/scope. No retries of giant Markdown blocks.
-
-Illustrative retained-only SQL, ONLY after discovering these actual column names
-and confirming reader support for WHERE/LIMIT/OFFSET. These are NOT ClickHouse
-queries, NOT proven host syntax, and NOT a full report projection:
-
-Control+metrics partition (use the exact same handle for the following partitions):
-
-```sql
-SELECT "scope_key", "scope_status", "metric_version", "record_type", "country_code",
-       "vendor_code", "vendor_name", "previous_snapshot_date", "target_snapshot_date",
-       "calendar_mode", "selection_mode", "business_timezone", "queried_at_local",
-       "selected_vendor_count", "contribution_rank", "previous_past_due_count",
-       "target_past_due_count", "past_due_count_change", "previous_open_count",
-       "target_open_count", "previous_vendor_ratio", "target_vendor_ratio",
-       "previous_country_open", "target_country_open",
-       "previous_country_past_due_count", "target_country_past_due_count",
-       "previous_country_ratio", "target_country_ratio", "previous_country_contribution",
-       "target_country_contribution", "delta_country_contribution",
-       "positive_contribution_share", "selected_positive_coverage",
-       "row_ordinal", "expected_record_count"
-FROM data
-WHERE "record_type" IN ('COUNTRY_CONTROL', 'VENDOR_METRICS')
-ORDER BY "row_ordinal" ASC
-LIMIT 40 OFFSET 0
-```
-
-Check partition (don't replace required=false with a failed result):
-
-```sql
-SELECT "scope_key", "scope_status", "metric_version", "record_type", "country_code",
-       "vendor_code", "previous_snapshot_date", "target_snapshot_date", "dimension",
-       "required", "counts_match", "expected_bucket_count", "previous_total",
-       "target_total", "previous_expected_total", "target_expected_total",
-       "increase_total", "decrease_total", "net_change", "row_ordinal", "expected_record_count"
-FROM data
-WHERE "record_type" = 'VENDOR_CHECK'
-ORDER BY "row_ordinal" ASC
-LIMIT 40 OFFSET 0
-```
-
-Code partition (repeat with ETA_SOURCE_SUMMARY and US_SOURCE_SUMMARY as separate
-disjoint partitions; preserve columns/handle, read further supported pages as needed):
-
-```sql
-SELECT "scope_key", "scope_status", "metric_version", "record_type", "country_code", "vendor_code",
-       "previous_snapshot_date", "target_snapshot_date", "dimension",
-       "eta_value", "row_kind", "display_rank", "other_bucket_count",
-       "expected_bucket_count", "previous_past_due_count", "target_past_due_count",
-       "past_due_count_change", "past_due_count_relative_change",
-       "delta_country_contribution", "row_ordinal", "expected_record_count"
-FROM data
-WHERE "record_type" = 'ETA_CODE_SUMMARY'
-ORDER BY "row_ordinal" ASC
-LIMIT 40 OFFSET 0
-```
-
-Source/ETA/rank predicates are NOT allowed here. WHERE may partition only declared
-record types or bounded stable row-ordinal windows, always with accounted union.
-No metric expressions, aggregation, window functions, joins, other tables, writes,
-SELECT *, substring recovery guesses or source/denominator/rank recomputation.
-Values must retain original units. Quote actual discovered identifiers; don't
-assume underscores. Use native supported reader paging instead where available.
-If partition/paging syntax isn't supported, retain the same data projection and
-use discovered native paging; if no complete route exists, stop that scope as a
-transport limitation rather than substituting a different analysis interface.
-The five partitions above cover exactly the six declared report record types.
-These SQL examples are reading shapes, not executed evidence. If a source response
-contains another type, account for and inspect it before claiming complete coverage.
+Report order is Country Control → Vendor Metrics → ETA summaries/checks from
+one captured source result. Keep scope-key, Country, Vendor, P/T, metric version,
+record type and ordinal in every applicable projection. Source expected count is
+validated against the union of retained partitions, not each partition separately.
+Do not read Vendor placeholder zeros on COUNTRY_CONTROL as Country totals. Missing
+fields require a corrected projection, not a reconciliation waiver. Inspect row
+and cell truncation independently. Continue supported retained pages/ordinal
+windows; source paging still follows layer 1 above. No source re-execution to
+repair a retained preview limit, no metric/denominator/rank recomputation or joins.
+The Skill does not install a tool-argument sanitizer or a deterministic renderer.
 
 ## Binding, budgets and failures
 

@@ -4,7 +4,8 @@
 ; Report3.3 source default1000/max1000, compact Top10 bound221; verify actual server behavior.
 ; Other collections retain their defaults; discover real source paging as needed.
 ; A complete retained handle can STILL have row/cell preview truncation.
-; Then read the exact handle using the Skill playbook; never reuse example handles.
+; Agent3.3.7: typed retained reads are in result-reader.md; never reuse example handles.
+; Keep dedicated Country fields and identity below; do not compare Vendor placeholder zeros on CONTROL.
 
 {:entity {:pastdue.monitor-query/calendar-mode "WEEKDAYS"
     :pastdue.monitor-query/relative-change-threshold 0.1}

@@ -1,4 +1,4 @@
-# Display reference — 3.3.0
+# Display reference — 3.3.7
 
 `report-format.md` is the ONLY maintained report layout: bilingual headings,
 column order, required Vendor modules and empty/error behavior. The accompanying

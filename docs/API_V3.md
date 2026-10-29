@@ -1,4 +1,4 @@
-# Current routing — Agent3.3.0
+# Current routing — Agent3.3.7
 
 Standard: monitor-query/countries, history-query/comparisons or trigger-events,
 report-query/rows. Flexible: explore-query/rows. Existing typed inputs/outputs and
@@ -6,8 +6,10 @@ metric semantics3.1.0 unchanged. Atlas publication3.3.0/revision4 changes report
 source default page200→1000/max1000; calculation SQL unchanged. Long-text3.2
 block interfaces remain compatibility-only, not required or fixed by this release.
 Source pagination differs from retained-result reads; check both rows and cells.
-Skill atlas-query-playbook.md is the single reader procedure; report-format.md
-is the sole layout. These documents are not evidence of platform acceptance.
+Source collection guidance is in atlas-query-playbook.md; typed retained-result
+reads are in result-reader.md; report-format.md is the sole human-facing layout.
+The Skill cannot install a host serialization hook. These documents are not
+evidence of platform acceptance.
 
 # API v3.1 — unified flexible analysis + report preset
 
@@ -124,10 +126,11 @@ materialization and pagination are excluded, retries/corrections stay in the sam
 slot. Report presets have no six-request cap and attempt all mandatory work.
 Broad history/optional scope can be bounded explicitly, never silently skipped.
 No per-Vendor fanout, unconstrained/source SQL, runtime Python/local CSV, mail
-or external Kernel. Handle-only execute_eql results can be materialized through
-analyze_result using read-only SELECT of explicit discovered columns FROM data
-ORDER BY discovered row-ordinal, bound to that exact retained request handle.
-Schema inspection first; no presumed structured-read tool. Lossless declared-record-type/ordinal partitions and supported paging are allowed. No other tables, joins,
+or external Kernel. Handle-only execute_eql results can be materialized through analyze_result using
+read-only SELECT of explicit discovered columns FROM data ORDER BY discovered
+row-ordinal, bound to that exact retained request handle. Schema inspection is
+optional when a known mapping is verified, not a mandatory root-cause workaround;
+no presumed structured-read tool. Lossless declared-record-type/ordinal partitions and supported paging are allowed. No other tables, joins,
 metric/denominator/rank/selection recomputation, silent fact-dropping filters or writes.
 This governed result-handle SELECT is allowed and isn't a new logical fact request.
 

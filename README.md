@@ -1,43 +1,54 @@
-# PastDue Analysis Agent — 3.3.2
+# PastDue Analysis Agent — 3.3.7
 
-**PENDING_LIVE_PILOT** — local implementation/package, not platform/production acceptance.
+**PENDING_LIVE_PILOT** — implementation/package only, not production acceptance.
 
-Default reports now use compact **structured facts**, not3.2 long Markdown cells.
-Atlas computes metrics/rank/Top5+Other/checks; Skill binds and checks reads; Agent
-explains and formats with one layout. Flexible current/snapshot/pair/range questions
-use composable explore capabilities without daily positiveTop10 restrictions.
+Atlas computes structured metrics/rank/Top5+Other/checks; Skill binds typed facts,
+reconciles them and directs complete Vendor delivery. Interactive current,
+snapshot, pair and range questions remain composable, without daily positiveTop10
+restrictions. No new required runtime, service, table or mail capability.
 
-## Update
+## What to update
 
-- **From3.3.0/3.3.1: update System Prompt + complete Skill only. Atlas EDN is unchanged.**
-- From older versions also deploy `atlas/charts/pastdue.edn`: publication3.3.0/revision4;
-  report-query/rows source default1000, max1000.
-- `agent/SYSTEM_PROMPT.md`.
-- Complete `skill/pastdue-analysis/`, or `releases/pastdue-analysis-skill-v3.3.2.zip`.
+- Replace `agent/SYSTEM_PROMPT.md` and the **entire** `skill/pastdue-analysis/`,
+  or install `releases/pastdue-analysis-skill-v3.3.7.zip`.
+- Full delivery: `releases/pastdue-agent-v3.3.7.zip`.
+- **Atlas EDN unchanged** from publication3.3.0/revision4. If already deployed,
+  do not redeploy it to fix a tool-argument error. Older deployments still need
+  compatible structured capabilities and verified complete source pagination.
+- No scripts, CSV, chat logs, notification folder or Runtime upload is required.
 
-Full delivery: `releases/pastdue-agent-v3.3.2.zip`. No scripts, CSV, notification
-folder or Runtime required in Agent environment. Preserve environment IDs/bindings.
-See [deployment/rollback](docs/DEPLOYMENT_V3.md), [design](docs/STRUCTURED_REPORTS_3_3.md),
-[actual evidence](docs/VALIDATION_V3.md) and [live request examples](docs/STRUCTURED_PILOT_3_3.eql).
-Result-reader fix: [3.3.2 evidence, scope and real verification steps](docs/RESULT_READER_FIX_3_3_2.md).
-The supplied manual handle-only discovery succeeded in its connection; SQL row
-reading and the updated Agent's end-to-end behavior remain pending live verification.
+## This correction
 
-## Business semantics retained
+- Country Control reads dedicated Country fields; Vendor placeholder zeros no
+  longer create a false Country mismatch or a special reconciliation waiver.
+- Three typed report reads preserve scope, Country/Vendor, P/T and metric version.
+- Real handle provenance, one changed correction maximum, no identical retries.
+- Staged references; one Country captured/read at a time; complete per-Vendor
+  two-period Code/Source tables and signed totals, not a delta-only summary.
+- Execution, retrieval/reconciliation and actual delivery are counted separately.
 
-America/Los_Angeles with DST; complete snapshot dates earlier than local today;
-Mon–Fri no holidays. US/CA independent, relative Country ratio increase≥10%; fixed
-positive contributionTop10, coverage reference only, Code/Source abs-count-delta
-Top5+Other. Every selected Vendor has analysis or exact local failure. Joint
-Code=US Source applies to all Countries and informs Country summary after ranking.
-Owner/contacts/PO optional/current/display-only; no mail drafts/sending.
+**No serialization middleware was added.** If the host injects conflicting
+selectors, Prompt/Skill/EDN cannot guarantee their removal. The component causing
+this remains UNCONFIRMED; same-host real calls must isolate it before rollout.
+Supplied successful discovery calls show discovery is not intrinsically broken.
 
-## Important boundary
+See [correction and evidence](docs/RESULT_READER_FIX_3_3_7.md),
+[deployment/rollback](docs/DEPLOYMENT_V3.md), [validation state](docs/VALIDATION_V3.md)
+and [source EQL examples](docs/STRUCTURED_PILOT_3_3.eql).
+The Skill's result-reader.md is the only maintained retained-read recipe;
+report-format.md is the only maintained human-facing layout.
 
-Source paging, retained-result paging, cell completeness and final delivery differ.
-The larger report source page is not a full-read guarantee. Real host reader support
-must be confirmed with oneCountry pilot first. Same modules/columns/facts are required,
-not byte-identical model prose. No installed deterministic renderer or output gate.
-Historical docs/packages are retained in the repo, superseded by this release;
-3.2 long-text APIs remain compatibility-only and their defects aren't certified fixed.
-No offline tests executed; no automatic git commit/push or production access.
+## Semantics preserved
+
+America/Los_Angeles with DST; completed snapshots earlier than local today;
+Monday–Friday, no holidays. US/CA independent, relative Country ratio increase
+≥10%; fixed positive-contribution Top10, 80% coverage reference only. Code/Source
+absolute count change Top5+Other. Conditional Code=US Source applies to any Country
+and informs the Country summary after ranking. Owner/contacts/PO on request,
+current and display-only; PO max5/Vendor and20/Country. No mail drafts/sending.
+
+No deterministic renderer or hard output gate is installed. Same module structure
+and factual meanings are required, not byte-identical model prose. A self-review
+or package hash does not prove final report correctness. No offline test suites,
+platform or live Agent tests executed for this release; staged live pilot pending.
+Historical docs and ZIPs remain history, not verified production fallbacks.

@@ -1,6 +1,7 @@
-# Real acceptance checklist —3.3.0 (not executed)
+# Real acceptance checklist —3.3.7 (not executed)
 
-Start one Country, then expand; retain original returned evidence and final output.
+First verify a same-host fresh-handle SQL read, then dedicated Country fields,
+one Vendor, one Country Top10, then expand; retain original returned evidence and final output.
 Do not substitute offline suites or model PASS for actual acceptance.
 
 - Actual Atlas config-check, approved binding, report default/max1000 honored.
@@ -27,3 +28,10 @@ Do not substitute offline suites or model PASS for actual acceptance.
   no missing Vendor disguised as source success or verified final output.
 
 Status for all3.3 runtime cases: PENDING_LIVE_PILOT. Record real outcomes individually.
+
+3.3.7 first gate: actual call has only one selector; one changed correction maximum,
+no identical resend. Do not claim host serialization fixed by Skill. Control
+comparison uses dedicated Country PD/Open/ratio, never Vendor placeholder zeros.
+If these dedicated fields genuinely disagree, preserve original values/captures
+and limit cross-capture attribution, not a blanket exception. See
+docs/RESULT_READER_FIX_3_3_7.md for current staged acceptance and actual NOT_RUN state.
