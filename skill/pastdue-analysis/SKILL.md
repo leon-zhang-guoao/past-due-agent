@@ -3,18 +3,15 @@ name: pastdue-analysis
 description: Analyze PastDue current data, snapshots, comparisons and trends through Atlas; run weekday daily monitoring, historical review or start test / 开始测试 with complete Vendor ETA analysis and evidence-based explanations.
 ---
 
-# PastDue Analysis — 3.3.2
+# PastDue Analysis — 3.3.6
 
 ## Tool-call prerequisite
 
-Before the FIRST analyze_result call, read the short
-[result reader](references/result-reader.md) in full. Follow its concrete
-discovery→rows recipe, not a fully populated tool form. Before each read compare
-the actual execute handle AND MCP connection to the request. Handle-only discovery
-returns schema/count, not metrics; proceed with the SAME handle + nonempty SQL.
-For retained reads omit query/result_handles. A supplied manual test accepted this
-in its connection; mixed-selector errors alone don't prove adapter incompatibility.
-The same recipe works for report/explore with their discovered projections.
+Before the first `analyze_result`, read [result reader](references/result-reader.md)
+and copy that object: `result_handle`, `sql`, `analysis_version` 2.
+On that call only, remove a blank string or an empty list before send. Keep
+`sql` when it contains the statement, keep `analysis_version`, and keep false and 0.
+`execute_eql` sends `query` and `retain_result` true.
 
 ## 1. Resolve intent
 

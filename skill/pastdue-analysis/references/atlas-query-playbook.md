@@ -1,12 +1,8 @@
-# Atlas query playbook — 3.3.2
+# Atlas query playbook — 3.3.6
 
-Before any analyze_result call, read [result-reader.md](result-reader.md) in full.
-Use its concrete monitor recipe: handle-only discovery, then same handle+SQL for
-row values on the same MCP connection. OMIT query/result_handles, not empty
-placeholders. Supplied manual discovery succeeded in its connection; it didn't
-validate the rows/report stages or another host's tool schema. One meaningful
-correction max; changing analysis_version is not a selector fix. This prerequisite
-is separate from EQL's `{:entity ... :query ...}` body.
+Retained reads copy the `analyze_result` object and the SQL in
+[result-reader.md](result-reader.md).
+EQL stays `{:entity ... :query ...}` inside `execute_eql.query`.
 
 ## Choose the fact capability
 
@@ -273,9 +269,9 @@ not invented fields. An incomplete history list cannot establish the latest even
 
 ## Read layer 2: retained-result materialization
 
-Use result-reader.md for the actual JSON argument shape and selector error path;
-the SQL below is not a complete analyze_result argument object. Read this section
-through its end (including examples) before constructing a report read.
+The analyze_result object and the two report statements that returned rows are
+in result-reader.md. Use those. The SQL examples below are the same partitions
+if a reader needs a narrower page; they are not a second argument schema.
 
 1. Bind the exact handle from the actual execute response. Inspect actual flattened
    columns. Schema-only responses aren't fact retrieval. If linkage is missing or

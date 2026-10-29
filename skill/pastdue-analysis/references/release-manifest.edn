@@ -1,4 +1,4 @@
-{:release-version "3.3.2"
+{:release-version "3.3.6"
   :status "PENDING_LIVE_PILOT"
   :atlas-semantic-format "2.0.0"
   :required-resolvers {"pastdue_v3_explore_query_rows" [:pastdue.explore-query/country-code :pastdue.explore-query/time-basis :pastdue.explore-query/target-snapshot-date :pastdue.explore-query/previous-snapshot-date :pastdue.explore-query/range-start-date :pastdue.explore-query/range-end-date :pastdue.explore-query/calendar-mode :pastdue.explore-query/pair-policy :pastdue.explore-query/grain :pastdue.explore-query/vendor-code :pastdue.explore-query/eta-code-filter :pastdue.explore-query/source-filter :pastdue.explore-query/department-type-filter :pastdue.explore-query/master-primary-filter :pastdue.explore-query/master-manager-filter :pastdue.explore-query/denominator-scope :pastdue.explore-query/ranking-metric :pastdue.explore-query/sort-direction :pastdue.explore-query/change-selection :pastdue.explore-query/top-n]
@@ -71,7 +71,7 @@
     "tests/fixtures/baseline-v3.1.json" "c08a7e9e52364b062c6422c9b8b0d3353e0c60c2c78a4a3eae59b64e27adf4ee"
     "tests/fixtures/latest-trace-regression.json" "ad6bdba71e76c607812e06dc0811ead4aacb52f5f50fc95107ed171f04c1d50c"
     "tests/fixtures/report-export-v3.1.json" "a8d63c8f81265bdc1167c872746d4e286b262dbedfc49a96bc49053fdb908120"}
-  :agent-contract-version "3.3.2"
+  :agent-contract-version "3.3.6"
   :recommended-atlas-publication "3.3.0"
   :atlas-compatibility "Existing structured APIs retain metric3.1.0; older report default200 needs verified complete source pagination/limit"
   :source-report-page-default 1000

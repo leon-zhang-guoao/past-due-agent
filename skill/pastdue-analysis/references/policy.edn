@@ -1,4 +1,4 @@
-{:policy-version "3.3.2"
+{:policy-version "3.3.6"
   :business-timezone "America/Los_Angeles"
   :business-timezone-iana "America/Los_Angeles"
   :display-timezone {:daylight-saving true
@@ -69,22 +69,23 @@
     :broad-scope-bounds-must-be-explicit true
     :result-handle-materialization {:allowed true
       :tool "analyze_result"
-      :schema-first true
-      :scope "exact retained result handle only"
-      :sql-shape "read-only explicit columns FROM data; stable ordinal; supported result paging and lossless record-type partitions only"
+      :schema-first false
+      :scope "retained result for this turn"
+      :sql-shape "monitor: SELECT * FROM data ORDER BY country_code; report: two record_type projections in result-reader.md"
       :source-pages-and-result-pages-distinct true
       :row-and-cell-truncation-separate true
       :partition-union-must-cover-source true
-      :prohibited ["source/database SQL" "SELECT *" "other tables" "joins" "writes" "metric/denominator/rank/selection recomputation" "silent fact-dropping filters"]
+      :prohibited ["source/database SQL" "other tables" "joins" "writes" "metric/denominator/rank/selection recomputation" "silent fact-dropping filters"]
+      :select-star-allowed "monitor country rows only"
       :argument-contract "result-reader.md"
-      :input-selector "result_handle only for retained reads"
-      :omit-unused-selectors ["query" "result_handles"]
-      :empty-placeholders-allowed false
-      :schema-read-sql "omit; discovery returns columns/count only, not business rows"
-      :selector-error-recovery "one correction reconstructing minimal args with actual execute handle; no analysis_version-only retry or mode switching"
-      :read-sequence ["same-connection execute" "exact returned handle only: discovery" "same handle plus actual SQL: rows"]
-      :bind-connection-and-handle true
-      :adapter-fault-requires "actual schema/argument transformation evidence; mixed selectors alone insufficient"}}
+      :analyze-arguments ["result_handle" "sql" "analysis_version"]
+      :analysis-version 2
+      :analyze-drop-before-send ["blank string" "empty list"]
+      :analyze-keep ["sql when it contains the statement" "analysis_version" "boolean false" "numeric 0"]
+      :execute-arguments ["query" "retain_result"]
+      :handle-only-discovery false
+      :read-sequence ["execute_eql with query and retain_result" "analyze_result with result_handle, nonempty sql, analysis_version 2"]
+      :country-control-zero-vs-monitor "keep vendor rows; cross-check unverified"}}
   :evidence {:data-conflict-requires :two-raw-same-scope-contradictory-responses
     :separate-errors ["DATA_CONFLICT" "ASSOCIATION_ERROR" "REPORT_ERROR"]
     :conflict-comparison "contradictory COMMON semantic fields only, not whole response shape or capture metadata"}
