@@ -1,4 +1,4 @@
-# Evidence and completion — 3.3.0
+# Evidence and completion — 3.3.1
 
 This is an Agent procedure, not an installed runtime gate. Query execution,
 retrieval and delivery are separate; none proves independent final-output accuracy.
@@ -83,3 +83,7 @@ One evidence-based correction retry per logical request. Unsupported result-read
 syntax may be corrected after discovering actual support. Cancellation alone does
 not identify its initiator; reducing projection/limit doesn't fix source aggregation.
 No permissions bypass, per-Vendor retry storm or fabricated platform root cause.
+For result-reader selector validation, follow result-reader.md: initial call plus
+ONE corrected call that removes conflicting keys, never an identical third attempt.
+Required/injected incompatible tool fields cannot be fixed by EQL or source SQL;
+stop that read and report the actual invocation/schema limitation.

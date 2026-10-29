@@ -1,6 +1,18 @@
-# Evidence record — 3.3.0
+# Evidence record — Agent3.3.1
 
 Status: **PENDING_LIVE_PILOT**.
+
+Supplied3.3.0 log was actually attempted: execute_eql returned a monitor handle;
+three analyze_result calls failed `give exactly one of query, result_handle, or
+result_handles`. All included conflicting selector keys; second added a nonempty
+query, third repeated the initial payload. No monitor rows or Vendor/ETA results
+were read. This evidence does not certify source content, report source page
+behavior or complete3.3 operation. Outgoing fields were visible; whether model or
+adapter populated them remains UNCONFIRMED.
+
+3.3.1 changes Prompt/Skill invocation instructions/examples/retry handling only;
+Atlas3.3.0 EDN/SQL/layout remain unchanged. Live3.3.1 selector-only reading and
+downstream report acceptance: NOT_RUN. No offline tests run for this patch.
 
 | Area | Actual state |
 |---|---|

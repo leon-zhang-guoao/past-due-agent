@@ -15,7 +15,7 @@ from pathlib import Path, PurePosixPath
 from edn_io import read, loads, dumps, K
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = '3.3.0'
+VERSION = '3.3.1'
 SKILL = 'skill/pastdue-analysis/'
 MANIFEST_PATH = SKILL + 'references/release-manifest.edn'
 MANIFEST = ROOT / MANIFEST_PATH
@@ -28,11 +28,12 @@ ROOT_FILES = {'agent/SYSTEM_PROMPT.md', 'agent/INVOCATION_EXAMPLES.md',
               'ACCEPTANCE_TESTS.md', 'DESIGN.md', 'AGENT_SKILL_EDN_DESIGN.md',
               'IMPLEMENTATION_NOTES.md', 'docs/API_V3.md',
               'docs/DEPLOYMENT_V3.md', 'docs/VALIDATION_V3.md',
-              'docs/STRUCTURED_REPORTS_3_3.md', 'docs/STRUCTURED_PILOT_3_3.eql'}
+              'docs/STRUCTURED_REPORTS_3_3.md', 'docs/STRUCTURED_PILOT_3_3.eql',
+              'docs/RESULT_READER_FIX_3_3_1.md'}
 REF_NAMES = {'atlas-query-playbook.md', 'completion-contract.md', 'current-context.md',
              'data-contract.md', 'eta-diagnostic-rules.edn', 'metric-definitions.md',
              'policy.edn', 'report-format.md', 'table-display-contract.edn',
-             'table-display-contract.md', 'structured-queries.eql'}
+             'table-display-contract.md', 'structured-queries.eql', 'result-reader.md'}
 REQUIRED_RESOLVERS = {
     'pastdue_v3_monitor_query_countries',
     'pastdue_v3_history_query_comparisons',
@@ -199,7 +200,7 @@ def _manifest(full, skill, offline, sql, inputs, doc, baseline):
         ':validation-input-sha256': {} if offline['status'] == 'NOT_RUN' else inputs,
         ':artifact-input-sha256': inputs,
         ':agent-contract-version': VERSION,
-        ':recommended-atlas-publication': VERSION,
+        ':recommended-atlas-publication': '3.3.0',
         ':atlas-compatibility': 'Existing structured APIs retain metric3.1.0; older report default200 needs verified complete source pagination/limit',
         ':source-report-page-default': 1000,
         ':compatible-metric-version': '3.1.0',

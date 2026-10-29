@@ -1,4 +1,4 @@
-{:policy-version "3.3.0"
+{:policy-version "3.3.1"
   :business-timezone "America/Los_Angeles"
   :business-timezone-iana "America/Los_Angeles"
   :display-timezone {:daylight-saving true
@@ -75,7 +75,13 @@
       :source-pages-and-result-pages-distinct true
       :row-and-cell-truncation-separate true
       :partition-union-must-cover-source true
-      :prohibited ["source/database SQL" "SELECT *" "other tables" "joins" "writes" "metric/denominator/rank/selection recomputation" "silent fact-dropping filters"]}}
+      :prohibited ["source/database SQL" "SELECT *" "other tables" "joins" "writes" "metric/denominator/rank/selection recomputation" "silent fact-dropping filters"]
+      :argument-contract "result-reader.md"
+      :input-selector "result_handle only for retained reads"
+      :omit-unused-selectors ["query" "result_handles"]
+      :empty-placeholders-allowed false
+      :schema-read-sql "omit unless actual tool schema requires it"
+      :selector-error-recovery "one corrected call removing conflicting keys; never identical retry or source reexecution"}}
   :evidence {:data-conflict-requires :two-raw-same-scope-contradictory-responses
     :separate-errors ["DATA_CONFLICT" "ASSOCIATION_ERROR" "REPORT_ERROR"]
     :conflict-comparison "contradictory COMMON semantic fields only, not whole response shape or capture metadata"}

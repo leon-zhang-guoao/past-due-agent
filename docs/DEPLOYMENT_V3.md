@@ -1,4 +1,12 @@
-# Deploy / rollback — 3.3.0
+# Deploy / rollback — Agent3.3.1, Atlas3.3.0
+
+## Patch from3.3.0
+
+Replace System Prompt and the ENTIRE Skill using3.3.1; do not change already deployed
+Atlas3.3.0/revision4 for this patch. No SQL/metric/layout changes. See
+RESULT_READER_FIX_3_3_1.md: first verify the single-selector handle read. The fix
+cannot override an incompatible host tool schema or prove that the adapter omits
+unused keys. Then continue single-Country pilot below; it is not already passed.
 
 **PENDING_LIVE_PILOT**. No offline suites or real platform/Agent acceptance performed
 for this change. Historical3.2 notes are not the current deployment instructions.

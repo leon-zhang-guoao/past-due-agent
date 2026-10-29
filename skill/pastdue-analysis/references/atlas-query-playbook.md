@@ -1,4 +1,10 @@
-# Atlas query playbook — 3.3.0
+# Atlas query playbook — 3.3.1
+
+Before any analyze_result call, read [result-reader.md](result-reader.md) in full.
+Existing-handle calls include result_handle and OMIT query/result_handles, not
+empty placeholders. Initial schema call omits sql; subsequent reads add actual
+nonempty sql only as supported. One genuinely corrected retry, never an identical
+repeat. This prerequisite is separate from EQL's `{:entity ... :query ...}` body.
 
 ## Choose the fact capability
 
@@ -264,6 +270,10 @@ use actual source pagination/coverage metadata and discovered stable identity/or
 not invented fields. An incomplete history list cannot establish the latest event.
 
 ## Read layer 2: retained-result materialization
+
+Use result-reader.md for the actual JSON argument shape and selector error path;
+the SQL below is not a complete analyze_result argument object. Read this section
+through its end (including examples) before constructing a report read.
 
 1. Bind the exact handle from the actual execute response. Inspect actual flattened
    columns. Schema-only responses aren't fact retrieval. If linkage is missing or
