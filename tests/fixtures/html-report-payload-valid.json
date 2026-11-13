@@ -1,0 +1,67 @@
+{
+  "meta": {
+    "mode": "TEST",
+    "language": "zh",
+    "timezone": "America/Los_Angeles",
+    "calendar-mode": "WEEKDAYS",
+    "generated-at": "2026-11-13T09:00:00-08:00",
+    "metric-version": "3.3.16"
+  },
+  "run": {
+    "conclusion": "测试路径：US 相对变化超过阈值，已强制完整分析。",
+    "trigger-flags": ["TEST_FORCED", "THRESHOLD_MET"],
+    "pairs": {
+      "US": {"previous-snapshot-date": "2026-10-22", "target-snapshot-date": "2026-10-23"}
+    }
+  },
+  "countries": [
+    {
+      "country-code": "US",
+      "business-status": "THRESHOLD_MET",
+      "data-status": "OK",
+      "previous-snapshot-date": "2026-10-22",
+      "target-snapshot-date": "2026-10-23",
+      "snapshot-gap-days": 1,
+      "previous-past-due-count": 1000,
+      "target-past-due-count": 1100,
+      "previous-open-count": 5000,
+      "target-open-count": 5100,
+      "previous-past-due-ratio": 0.2,
+      "target-past-due-ratio": 0.2156862745,
+      "relative-ratio-change": 0.07843137,
+      "percentage-point-change": 0.01568627
+    }
+  ],
+  "per_country": [
+    {
+      "country-code": "US",
+      "selected-vendor-codes": [3493],
+      "ranking": [
+        {
+          "contribution-rank": 1,
+          "vendor-code": 3493,
+          "vendor-name": "ACME",
+          "previous-past-due-count": 275,
+          "target-past-due-count": 319,
+          "past-due-count-change": 44,
+          "previous-open-count": 900,
+          "target-open-count": 920,
+          "previous-vendor-ratio": 0.30555556,
+          "target-vendor-ratio": 0.34673913,
+          "delta-country-contribution": 0.00400000,
+          "positive-contribution-share": 0.40000000,
+          "main-code-changes": "US 3→2 (−1)；NR 272→317 (+45)",
+          "main-source-changes": "AUTO US 3→2 (−1)；Vendor Report 272→317 (+45)",
+          "check-totals": "Code +45/−1/净44；Source +45/−1/净44",
+          "analysis-status": "OK"
+        }
+      ],
+      "summary": "ACME 为主要正向贡献；Code=US 与 Source 联合变化已核对。",
+      "coverage": "Top1覆盖全部正向贡献的40.00%。"
+    }
+  ],
+  "scope_gaps": {
+    "items": [],
+    "notes": "无缺失项"
+  }
+}
