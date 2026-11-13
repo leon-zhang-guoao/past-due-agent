@@ -90,6 +90,17 @@ class HtmlRenderTests(unittest.TestCase):
         end = html.index("</script>", start)
         self.assertEqual(json.loads(html[start:end])["run"]["conclusion"], "x</script><b>y")
 
+    def test_embedded_json_allows_html_comment_in_text(self):
+        payload = load_valid()
+        payload["run"]["conclusion"] = "note <!--not a comment--> ok"
+        html = render_ops_shell(payload)
+        start = html.index('id="pastdue-report">') + len('id="pastdue-report">')
+        end = html.index("</script>", start)
+        script_text = html[start:end]
+        parsed = json.loads(script_text)
+        self.assertEqual(parsed["run"]["conclusion"], payload["run"]["conclusion"])
+        self.assertEqual(parsed, payload)
+
     def test_html_escapes_text(self):
         payload = load_valid()
         payload["per_country"][0]["ranking"][0]["vendor-name"] = "A<b>&C"

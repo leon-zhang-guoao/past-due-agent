@@ -266,8 +266,8 @@ def _scope_gaps_html(scope_gaps, labels: dict) -> str:
 
 def _json_for_script(payload: dict) -> str:
     text = json.dumps(payload, ensure_ascii=False)
-    # Keep the JSON valid while preventing early script termination / HTML comments.
-    return text.replace("</", "<\\/").replace("<!--", "<\\!--")
+    # Prevent `</script>`-style substrings from terminating the script element early.
+    return text.replace("</", "<\\/")
 
 
 # --- CSS / JS -------------------------------------------------------------------
