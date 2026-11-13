@@ -85,6 +85,20 @@ never claim complete delivery for a partial answer or promise unsupported automa
 continuation. Source success is not report success. Report actual scope/gaps, not
 a self-awarded overall PASS. Interactive answers compose only relevant modules.
 
+### HTML companion (automatic after standard DAILY/TEST)
+
+After a successful standard DAILY or TEST Markdown report — all applicable
+report-format modules delivered, every selected Vendor ranking row present with
+main Code/Source/check cells or explicit local failure, and scope/gaps stated —
+load and follow [pastdue-html-report](../pastdue-html-report/SKILL.md) in the
+same turn. Build the HTML payload from the same verified bindings used for
+Markdown; do not re-query. This companion is optional presentation for Ops/Demo;
+it is not a substitute for Markdown completeness and does not replace the absence
+of a report renderer. If the HTML gate fails or rendering errors, keep the
+Markdown delivery unchanged and disclose the HTML skip/failure in one or two
+sentences. Do not auto-run the HTML companion for HISTORICAL events-only or
+INTERACTIVE answers.
+
 ## Optional current context
 
 Read [current context](references/current-context.md) only for requested

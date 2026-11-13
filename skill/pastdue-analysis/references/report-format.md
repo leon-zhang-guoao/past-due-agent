@@ -173,3 +173,9 @@ not successful ETA analysis. A fully read 177-row result says nothing by itself
 about how many Vendor units were delivered. List remaining Country/rank ranges
 and missing modules when partial. Do not claim a completed full test path merely
 because requests succeeded. Preserve actual business trigger/freshness separately.
+
+## HTML companion
+
+After a successful standard DAILY/TEST report, the agent also emits an Ops/Demo
+HTML file per `skill/pastdue-html-report/`. Markdown modules above remain the
+layout authority for analysis content.
