@@ -58,16 +58,45 @@ Formatting helpers: integers without separators; signed nets `+`/`−`/`0`; rati
 ## Query parameters and modes
 
 - `?mode=ops|demo` sets `data-mode` on load (default `ops`); toggle buttons update it
-  and the URL.
-- `?t=` is **reserved** for the Demo timeline (Task 5). The Ops shell does not read it.
-- Demo motion is not implemented in the Ops shell; only the mode switch exists.
+  and the URL (and drop `t`).
+- `?t=N` (seconds) is the seek/pause harness: pauses the Demo timeline and seeks to `N`.
+  It implies `mode=demo` unless `?mode=` is given. `?mode=demo&t=0` shows the first frame;
+  `?mode=demo&t=99` (>= duration) shows the final state. `body[data-t]` mirrors the time.
+- Harness API: `window.__pastdueTimeline` = `{ duration(), beats(), time(), paused(), play(), pause(), seek(t) }`.
+  The shell uses its own `requestAnimationFrame` timeline (no external library, so the
+  file stays self-contained). If a hand-authored shell uses GSAP instead, the equivalent
+  is `tl.pause(); tl.seek(N)`.
+
+## Ops vs Demo motion
+
+- **Ops (default)**: every section is fully visible immediately. When motion is allowed
+  (no `prefers-reduced-motion`, no `?t=`), ratio cells in `#country-metrics` (`xx.xx%→xx.xx%`)
+  do a short (~0.6 s) count-up and always end on the exact delivered text.
+- **Demo (`data-mode="demo"`)**: one master timeline reveals `[data-beat]` elements in DOM
+  order: `#run` → `#country-metrics` → each `#country-{CODE}` (ranking table) → its
+  `summary` → its `coverage` → `#cross-country` (if present) → `#scope-gaps`. Each beat
+  fades/slides in (opacity + small `translateY`) and ends with its inline style cleared.
+  A play/pause button (`#demo-play`, visible only in Demo) pauses/resumes; after the end
+  it becomes "Replay". Autoplays once on entering Demo; never loops.
+- **Demo never omits data.** Only reveal order and opacity change; no `display:none`,
+  no text/number rewriting, and the embedded JSON is untouched. Print always shows
+  everything.
+- Beat markup: `data-beat` on each `<section>`; per-country `summary` / `coverage` blocks are
+  `<div data-beat="summary|coverage">` wrappers around the same `<h3>` + text as Ops.
 
 ## Reduced motion
 
-A `@media (prefers-reduced-motion: reduce)` rule disables animations and transitions.
-Task 5 Demo motion must respect it (static final state, no autoplay) and extend rather
-than remove this rule.
+`prefers-reduced-motion: reduce` disables CSS animation/transition, forces `[data-beat]`
+to full opacity, skips the Ops count-up, and makes Demo jump straight to the final state
+(no autoplay, no looping; Play just re-asserts the final state). The JS also listens for
+the media query changing at runtime.
 
+## Optional isometric hook (not implemented by default)
+
+The shell contains no isometric/3D visuals. A deployment may opt in by adding its own
+decorative element (e.g. an inline SVG) inside `#run` marked `data-decor="isometric"` and
+driving it from `window.__pastdueTimeline.time()`. It must be `aria-hidden`, must not carry
+report data, and must be disabled under `prefers-reduced-motion`.
 ## File naming
 
 `pastdue-{mode}-{countries}-{target}.html`, e.g.

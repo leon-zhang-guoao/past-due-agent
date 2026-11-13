@@ -125,6 +125,48 @@ class HtmlRenderTests(unittest.TestCase):
         self.assertIn("data-mode", html)
         self.assertIn("position: sticky", html)
 
+    def test_demo_harness_present(self):
+        html = render_ops_shell(load_valid())
+        self.assertIn("mode=demo", html)
+        self.assertIn("URLSearchParams", html)
+        self.assertIn("prefers-reduced-motion", html)
+        self.assertIn("__pastdueTimeline", html)
+        self.assertIn('get("t")', html)
+        self.assertIn('id="demo-play"', html)
+        self.assertIn("requestAnimationFrame", html)
+
+    def test_demo_beats_in_order_and_data_not_omitted(self):
+        payload = load_valid()
+        html = render_ops_shell(payload)
+        order = ['id="run"', 'id="country-metrics"', 'id="country-US"',
+                 'data-beat="summary"', 'data-beat="coverage"', 'id="scope-gaps"']
+        pos = -1
+        for marker in order:
+            nxt = html.find(marker, pos + 1)
+            self.assertGreater(nxt, pos, marker)
+            pos = nxt
+        # every section is a beat; Demo only reveals, never drops data
+        for sid in ("run", "country-metrics", "country-US", "scope-gaps"):
+            self.assertRegex(html, rf'<section id="{sid}"[^>]*data-beat=')
+        self.assertIn("ACME", html)
+        self.assertNotIn("display:none", html.split("<main>")[1].split("</main>")[0])
+
+    def test_reduced_motion_forces_final_state_without_looping(self):
+        html = render_ops_shell(load_valid())
+        self.assertIn('matchMedia("(prefers-reduced-motion: reduce)")', html)
+        self.assertNotIn("repeat: -1", html)
+        self.assertNotIn("setInterval", html)
+        self.assertNotIn("iteration-count: infinite", html)
+
+    def test_no_isometric_by_default(self):
+        html = render_ops_shell(load_valid()).lower()
+        self.assertNotIn("isometric", html)
+
+    def test_gate_fail_raises(self):
+        bad = json.loads((FIX / "html-report-payload-gate-fail.json").read_text(encoding="utf-8"))
+        with self.assertRaises(ValueError):
+            render_ops_shell(bad)
+
     def test_gate_failure_raises_value_error(self):
         payload = json.loads((FIX / "html-report-payload-gate-fail.json").read_text(encoding="utf-8"))
         with self.assertRaises(ValueError):

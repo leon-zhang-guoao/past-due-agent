@@ -71,7 +71,9 @@ LABELS = {
         "down": "下降",
         "test_title": "[测试]",
         "title": "PastDue 报告",
-        "demo_hint": "Demo 动效将在后续任务中提供。",
+        "play": "播放",
+        "pause": "暂停",
+        "replay": "重播",
     },
     "en": {
         "run": "Run information and conclusion",
@@ -100,7 +102,9 @@ LABELS = {
         "down": "decrease",
         "test_title": "[TEST]",
         "title": "PastDue report",
-        "demo_hint": "Demo motion arrives in a later task.",
+        "play": "Play",
+        "pause": "Pause",
+        "replay": "Replay",
     },
 }
 
@@ -301,33 +305,157 @@ table.ranking td:nth-last-child(-n+4) { min-width:14rem; }
 dl.meta { display:grid; grid-template-columns: max-content 1fr; gap:.2rem 1rem; margin:0 0 .6rem; font-size:.9rem; }
 dl.meta dt { color:var(--muted); }
 dl.meta dd { margin:0; }
-.demo-note { display:none; color:var(--muted); font-size:.85rem; }
-body[data-mode="demo"] .demo-note { display:block; }
-/* Demo motion is filled in by a later task; keep reduced-motion safe by default. */
+.demo-only { display:none; }
+body[data-mode="demo"] .demo-only { display:inline-block; }
+#demo-play { border:1px solid var(--accent); background:#fff; color:var(--accent); padding:.25rem .7rem; border-radius:6px; cursor:pointer; font:inherit; font-size:.85rem; }
+/* Demo motion: JS only sets inline opacity/transform on [data-beat] elements (reveal order);
+   nothing is removed from the DOM and no content is hidden via display. */
+[data-beat] { will-change: auto; }
+@media print {
+  [data-beat] { opacity: 1 !important; transform: none !important; }
+}
+/* Reduced motion: no CSS animation/transition; JS forces the final visible state and never loops. */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  [data-beat] { opacity: 1 !important; transform: none !important; }
 }
 """.strip()
 
-JS = """
+JS = r"""
 (function () {
   var body = document.body;
-  // ?mode=ops|demo selects the initial view (default ops).
+  // ?mode=ops|demo selects the initial view (default ops); e.g. report.html?mode=demo
+  // ?t=N (seconds) pauses the Demo timeline and seeks to N; it implies mode=demo unless ?mode= is set.
   var params = new URLSearchParams(location.search);
-  function setMode(mode) {
-    if (mode !== "ops" && mode !== "demo") { mode = "ops"; }
-    body.setAttribute("data-mode", mode);
-    var badge = document.getElementById("view-mode");
-    if (badge) { badge.textContent = mode.toUpperCase(); }
+  var reduceMq = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : null;
+  function reduced() { return !!(reduceMq && reduceMq.matches); }
+
+  // One master timeline over the beats in DOM order:
+  // #run -> #country-metrics -> each #country-* (ranking) -> summary -> coverage -> #cross-country -> #scope-gaps
+  var beats = Array.prototype.slice.call(document.querySelectorAll("[data-beat]"));
+  var STEP = 0.7, FADE = 0.6, HOLD = 0.4;
+  var DURATION = beats.length ? (beats.length - 1) * STEP + FADE + HOLD : 0;
+  var btn = document.getElementById("demo-play");
+  var time = 0, playing = false, raf = 0, last = 0, countToken = 0;
+
+  function clamp(t) { return Math.min(DURATION, Math.max(0, t)); }
+  function mode() { return body.getAttribute("data-mode"); }
+  function clearBeats() {
+    beats.forEach(function (el) { el.style.opacity = ""; el.style.transform = ""; });
   }
-  setMode(params.get("mode") || "ops");
-  // ?t= is reserved for the Demo timeline (later task).
-  document.querySelectorAll("[data-set-mode]").forEach(function (btn) {
-    btn.addEventListener("click", function () {
-      var mode = btn.getAttribute("data-set-mode");
-      setMode(mode);
+  // Demo only changes reveal order / opacity; every beat ends fully visible.
+  function applyBeats(t) {
+    beats.forEach(function (el, i) {
+      var o = Math.min(1, Math.max(0, (t - i * STEP) / FADE));
+      if (o >= 1) { el.style.opacity = ""; el.style.transform = ""; return; }
+      el.style.opacity = String(o);
+      el.style.transform = "translateY(" + ((1 - o) * 12).toFixed(1) + "px)";
+    });
+  }
+  function updateButton() {
+    if (!btn) { return; }
+    var key = playing ? "pause" : (time >= DURATION ? "replay" : "play");
+    btn.textContent = btn.getAttribute("data-label-" + key) || key;
+    btn.setAttribute("aria-pressed", playing ? "true" : "false");
+  }
+  function render() {
+    body.setAttribute("data-t", time.toFixed(2));
+    if (mode() === "demo") { applyBeats(time); } else { clearBeats(); }
+  }
+  function tick(now) {
+    if (!playing) { return; }
+    time = clamp(time + (now - last) / 1000);
+    last = now;
+    render();
+    if (time >= DURATION) { pause(); } else { raf = requestAnimationFrame(tick); }
+  }
+  function pause() {
+    playing = false;
+    if (raf) { cancelAnimationFrame(raf); raf = 0; }
+    updateButton();
+  }
+  function seek(t) { time = clamp(Number(t) || 0); render(); updateButton(); }
+  function play() {
+    if (reduced()) { pause(); seek(DURATION); return; }  // final state, never autoplay/loop
+    if (time >= DURATION) { time = 0; }
+    pause();
+    playing = true;
+    last = performance.now();
+    raf = requestAnimationFrame(tick);
+    updateButton();
+  }
+
+  // Optional light count-up for ratio cells in Ops (skipped when reduced motion or ?t= is set).
+  function countUpRatios() {
+    var token = ++countToken;
+    var cells = [];
+    document.querySelectorAll("#country-metrics tbody td").forEach(function (td) {
+      var m = /^(\d+\.\d+)%\u2192(\d+\.\d+)%$/.exec(td.textContent);
+      if (m) { cells.push({ td: td, final: td.textContent, a: parseFloat(m[1]), b: parseFloat(m[2]) }); }
+    });
+    if (!cells.length) { return; }
+    var start = performance.now(), DUR = 600;
+    function step(now) {
+      var k = Math.min(1, (now - start) / DUR);
+      var live = token === countToken && mode() === "ops" && !reduced() && k < 1;
+      cells.forEach(function (c) {
+        c.td.textContent = live
+          ? (c.a * k).toFixed(2) + "%\u2192" + (c.b * k).toFixed(2) + "%"
+          : c.final;
+      });
+      if (live) { requestAnimationFrame(step); }
+    }
+    requestAnimationFrame(step);
+  }
+
+  function setMode(next, opts) {
+    opts = opts || {};
+    if (next !== "ops" && next !== "demo") { next = "ops"; }
+    countToken++;
+    body.setAttribute("data-mode", next);
+    var badge = document.getElementById("view-mode");
+    if (badge) { badge.textContent = next.toUpperCase(); }
+    if (next === "ops") {
+      pause();
+      render();
+      if (opts.initial && !reduced() && !opts.hasT) { countUpRatios(); }
+      return;
+    }
+    if (reduced()) { pause(); seek(DURATION); return; }  // final state, no looping
+    if (opts.hasT) { pause(); seek(opts.t); return; }    // harness: pause + seek
+    seek(0);
+    play();
+  }
+
+  window.__pastdueTimeline = {
+    duration: function () { return DURATION; },
+    beats: function () { return beats.length; },
+    time: function () { return time; },
+    paused: function () { return !playing; },
+    play: play,
+    pause: pause,
+    seek: function (t) { pause(); seek(t); }
+  };
+
+  var tRaw = params.get("t");
+  var hasT = tRaw !== null && tRaw !== "" && isFinite(parseFloat(tRaw));
+  setMode(params.get("mode") || (hasT ? "demo" : "ops"), { initial: true, hasT: hasT, t: hasT ? parseFloat(tRaw) : 0 });
+
+  if (reduceMq && reduceMq.addEventListener) {
+    reduceMq.addEventListener("change", function () {
+      if (reduced() && mode() === "demo") { pause(); seek(DURATION); }
+    });
+  }
+  if (btn) {
+    btn.addEventListener("click", function () { if (playing) { pause(); } else { play(); } });
+  }
+  document.querySelectorAll("[data-set-mode]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var next = b.getAttribute("data-set-mode");
+      setMode(next);
       var url = new URL(location.href);
-      url.searchParams.set("mode", mode);
+      url.searchParams.set("mode", next);
+      url.searchParams.delete("t");
       history.replaceState(null, "", url);
     });
   });
@@ -371,6 +499,9 @@ def render_ops_shell(payload: dict) -> str:
         '<button type="button" data-set-mode="ops">Ops</button>'
         '<button type="button" data-set-mode="demo">Demo</button>'
         "</span>"
+        f'<button type="button" id="demo-play" class="demo-only" aria-pressed="false" '
+        f'data-label-play="{_esc(labels["play"])}" data-label-pause="{_esc(labels["pause"])}" '
+        f'data-label-replay="{_esc(labels["replay"])}">{_esc(labels["pause"])}</button>'
         '<nav class="toc">'
         f'<a href="#run">{_esc(labels["run"])}</a>'
         f'<a href="#country-metrics">{_esc(labels["country_metrics"])}</a>'
@@ -395,16 +526,15 @@ def render_ops_shell(payload: dict) -> str:
     ]
     dl = "".join(f"<dt>{_esc(k)}</dt><dd>{_esc(v)}</dd>" for k, v in meta_rows)
     sections.append(
-        f'<section id="run"><h2>{_esc(labels["run"])}</h2>'
+        f'<section id="run" data-beat="run"><h2>{_esc(labels["run"])}</h2>'
         f'<dl class="meta">{dl}</dl>'
         f'<p><strong>{_esc(labels["conclusion"])}:</strong> {_esc(run.get("conclusion", ""))}</p>'
-        f'<p class="demo-note">{_esc(labels["demo_hint"])}</p>'
         "</section>"
     )
 
     # #country-metrics
     sections.append(
-        f'<section id="country-metrics"><h2>{_esc(labels["country_metrics"])}</h2>'
+        f'<section id="country-metrics" data-beat="country-metrics"><h2>{_esc(labels["country_metrics"])}</h2>'
         + _table(COUNTRY_HEADERS[lang], [_country_row(r, lang) for r in payload["countries"]])
         + "</section>"
     )
@@ -422,25 +552,25 @@ def render_ops_shell(payload: dict) -> str:
         heading = f"{code} — {pair['previous-snapshot-date']}→{pair['target-snapshot-date']}"
         sid = f"country-{_esc(code)}"
         sections.append(
-            f'<section id="{sid}" data-country="{_esc(code)}"><h2>{_esc(heading)}</h2>'
+            f'<section id="{sid}" data-country="{_esc(code)}" data-beat="country"><h2>{_esc(heading)}</h2>'
             f'<h3>{_esc(labels["ranking"])}</h3>'
             + _table(RANKING_HEADERS[lang], [_ranking_row(r, lang) for r in block["ranking"]], css="ranking")
-            + f'<h3>{_esc(labels["summary"])}</h3>{_text_block(block.get("summary", ""))}'
-            + f'<h3>{_esc(labels["coverage"])}</h3>{_text_block(block.get("coverage", ""))}'
+            + f'<div data-beat="summary"><h3>{_esc(labels["summary"])}</h3>{_text_block(block.get("summary", ""))}</div>'
+            + f'<div data-beat="coverage"><h3>{_esc(labels["coverage"])}</h3>{_text_block(block.get("coverage", ""))}</div>'
             + "</section>"
         )
 
     # #cross-country
     if payload.get("cross_country_summary"):
         sections.append(
-            f'<section id="cross-country"><h2>{_esc(labels["cross"])}</h2>'
+            f'<section id="cross-country" data-beat="cross-country"><h2>{_esc(labels["cross"])}</h2>'
             + _text_block(payload["cross_country_summary"])
             + "</section>"
         )
 
     # #scope-gaps
     sections.append(
-        f'<section id="scope-gaps" data-key="scope_gaps"><h2>{_esc(labels["gaps"])}</h2>'
+        f'<section id="scope-gaps" data-key="scope_gaps" data-beat="scope-gaps"><h2>{_esc(labels["gaps"])}</h2>'
         + _scope_gaps_html(payload["scope_gaps"], labels)
         + "</section>"
     )
