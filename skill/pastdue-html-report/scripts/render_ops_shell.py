@@ -270,8 +270,9 @@ def _scope_gaps_html(scope_gaps, labels: dict) -> str:
 
 def _json_for_script(payload: dict) -> str:
     text = json.dumps(payload, ensure_ascii=False)
-    # Prevent `</script>`-style substrings from terminating the script element early.
-    return text.replace("</", "<\\/")
+    # `<` -> \u003c is valid JSON and keeps `</script>`, `<!--` and `<script`
+    # from ever reaching the HTML parser inside the script element.
+    return text.replace("<", "\\u003c")
 
 
 # --- CSS / JS -------------------------------------------------------------------
@@ -594,7 +595,7 @@ def main(argv=None) -> int:
     payload = json.loads(Path(args.payload_json).read_text(encoding="utf-8"))
     try:
         html = render_ops_shell(payload)
-    except ValueError as exc:
+    except (ValueError, KeyError) as exc:
         print(f"gate failed: {exc}", file=sys.stderr)
         return 1
     out = Path(args.output)

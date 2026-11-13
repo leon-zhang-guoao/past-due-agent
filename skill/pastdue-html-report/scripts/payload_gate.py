@@ -44,6 +44,10 @@ VENDOR_RANKING_KEYS = [
 ]
 
 
+def _blank(value) -> bool:
+    return value is None or (isinstance(value, str) and not value.strip())
+
+
 def gate_payload(payload: dict) -> tuple[bool, str]:
     meta = payload.get("meta") or {}
     mode = meta.get("mode")
@@ -54,27 +58,37 @@ def gate_payload(payload: dict) -> tuple[bool, str]:
             return False, f"missing meta.{key}"
     if "scope_gaps" not in payload:
         return False, "missing scope_gaps"
-    if "countries" not in payload or not payload["countries"]:
+    countries = payload.get("countries")
+    if not countries:
         return False, "missing countries"
+    country_codes = set()
+    for row in countries:
+        for key in COUNTRY_COLUMN_KEYS:
+            if key not in row:
+                return False, f"countries row {row.get('country-code')}: missing {key}"
+        country_codes.add(row.get("country-code"))
     per = payload.get("per_country") or []
     if not per:
         return False, "missing per_country"
     for block in per:
-        selected = block.get("selected-vendor-codes") or []
+        code = block.get("country-code")
+        if code not in country_codes:
+            return False, f"{code}: per_country not in countries"
+        for key in ("summary", "coverage"):
+            if _blank(block.get(key)):
+                return False, f"{code}: missing {key}"
         ranking = block.get("ranking") or []
         if not ranking:
-            return False, f"{block.get('country-code')}: empty ranking"
+            return False, f"{code}: empty ranking"
+        selected = block.get("selected-vendor-codes")
+        if not isinstance(selected, list) or not selected:
+            return False, f"{code}: empty selected-vendor-codes"
         present = {row.get("vendor-code") for row in ranking}
-        for code in selected:
-            if code not in present:
-                return False, f"{block.get('country-code')}: missing vendor {code}"
+        for vendor in selected:
+            if vendor not in present:
+                return False, f"{code}: missing vendor {vendor}"
         for row in ranking:
-            for cell in (
-                "main-code-changes",
-                "main-source-changes",
-                "check-totals",
-                "analysis-status",
-            ):
+            for cell in VENDOR_RANKING_KEYS:
                 if cell not in row:
-                    return False, f"ranking missing {cell}"
+                    return False, f"{code}: ranking row {row.get('vendor-code')} missing {cell}"
     return True, "ok"

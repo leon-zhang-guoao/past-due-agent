@@ -6,9 +6,13 @@ layout authority stay in `skill/pastdue-analysis/references/report-format.md`.
 
 ## Producing the file
 
+Preferred agent path: hand-author equivalent HTML matching this shell (no Atlas, no
+runtime Python). `scripts/render_ops_shell.py` is an **optional local verification
+helper** for fixtures/CI, not a required runtime service or Markdown renderer.
+
 Agents may either:
 
-1. Run the renderer:
+1. (Optional, verification only) Run the renderer:
 
    ```bash
    python skill/pastdue-html-report/scripts/render_ops_shell.py <payload.json> -o <out.html>
@@ -19,7 +23,7 @@ Agents may either:
    exits non-zero and writes no file. On gate failure agents skip HTML and state the
    reason briefly.
 
-2. Hand-author equivalent HTML that matches this shell (same section IDs, `data-mode`
+2. (Preferred) Hand-author equivalent HTML that matches this shell (same section IDs, `data-mode`
    handling, embedded JSON script, column order and headers).
 
 ## Document structure

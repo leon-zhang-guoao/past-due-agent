@@ -49,7 +49,15 @@ it). On failure:
 Read [html-shell](references/html-shell.md) for document structure, section IDs,
 mode toggle, naming, and reduced-motion rules.
 
-**Preferred path (Ops baseline):**
+**Preferred agent path (no Atlas, no runtime Python):** emit equivalent HTML directly,
+matching `html-shell.md` and the payload contract (same section IDs, `data-mode`,
+embedded `#pastdue-report` JSON, column order, headers). Apply the gate checklist in
+`payload-contract.md` by hand before writing the file.
+
+**Optional local verification helper:** `scripts/render_ops_shell.py` is a
+fixture/CI aid for checking that the shell and gate behave as documented. It is not a
+required runtime service, not a Markdown report renderer, and not something the
+agent must invoke to deliver HTML:
 
 ```bash
 python skill/pastdue-html-report/scripts/render_ops_shell.py <payload.json> -o <out.html>
@@ -58,8 +66,8 @@ python skill/pastdue-html-report/scripts/render_ops_shell.py <payload.json> -o <
 `render_ops_shell(payload) -> str` is importable; it gates first and raises
 `ValueError(reason)` on failure (CLI: `gate failed: …`, exit 1, no file).
 
-Hand-authored HTML is acceptable only if it matches the shell conventions
-(same section IDs, `data-mode`, embedded `#pastdue-report` JSON, column order).
+The `pastdue-analysis` ban on runtime Python/service still applies to the analysis
+itself. The helper is out-of-band verification tooling only.
 
 Enhance **Demo** motion in-page after the Ops baseline exists (`data-mode=demo`,
 `?mode=demo`, master timeline per html-shell). Ops remains fully readable without

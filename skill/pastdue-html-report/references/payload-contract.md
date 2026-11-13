@@ -128,12 +128,8 @@ Metric columns bind **VENDOR_METRICS only**. The three ETA/check columns are
 **pre-rendered strings** copied from the Markdown delivery (same Vendor identity and
 rank as the overview row).
 
-Gate additionally requires these four keys on every ranking row (subset of the list above):
-
-- `main-code-changes`
-- `main-source-changes`
-- `check-totals`
-- `analysis-status`
+Gate requires **every** key in `VENDOR_RANKING_KEYS` on every ranking row, including
+`main-code-changes`, `main-source-changes`, `check-totals` and `analysis-status`.
 
 Vendor ranking headers and order: `report-format.md` § Vendor ranking with main ETA changes.
 
@@ -207,20 +203,21 @@ Run `gate_payload(payload)` before emitting HTML. Behavior matches
 1. **`meta.mode`** ∈ `DAILY`, `TEST` — otherwise reject (e.g. `INTERACTIVE`, `HISTORICAL` events-only).
 2. **Every `REQUIRED_META_KEYS` entry** present on `meta`.
 3. **Top-level `scope_gaps`** present.
-4. **`countries`** present and non-empty.
+4. **`countries`** present and non-empty; **every** row contains **all** `COUNTRY_COLUMN_KEYS`.
 5. **`per_country`** present and non-empty.
 6. For **each** `per_country` block:
+   - `country-code` appears in `countries[]`.
+   - `summary` and `coverage` present, non-null and non-empty strings.
    - `ranking` non-empty (else reject with `{country-code}: empty ranking`).
-   - For each code in `selected-vendor-codes`, a ranking row with matching `vendor-code`.
-   - For each ranking row, keys present: `main-code-changes`, `main-source-changes`,
-     `check-totals`, `analysis-status`.
+   - `selected-vendor-codes` is a **non-empty list** (DAILY/TEST standard reports always
+     select Vendors); for each code a ranking row with matching `vendor-code` exists.
+   - Every ranking row contains **all** `VENDOR_RANKING_KEYS`.
 
 On success: `(True, "ok")`. On failure: `(False, reason)` — skip HTML and state the
 reason briefly (same honesty as analysis delivery gate).
 
-**Note:** `gate_payload` does not validate every `COUNTRY_COLUMN_KEYS` / `VENDOR_RANKING_KEYS`
-field; unit tests assert full column lists on the canonical fixture. Producers should still
-populate every key in those lists on each row.
+The renderer CLI (`render_ops_shell.py`, optional verification helper) catches
+`ValueError` and `KeyError`, prints `gate failed: <reason>`, exits 1 and writes no file.
 
 ---
 

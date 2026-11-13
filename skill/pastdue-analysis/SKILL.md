@@ -92,7 +92,12 @@ report-format modules delivered, every selected Vendor ranking row present with
 main Code/Source/check cells or explicit local failure, and scope/gaps stated —
 load and follow [pastdue-html-report](../pastdue-html-report/SKILL.md) in the
 same turn. Build the HTML payload from the same verified bindings used for
-Markdown; do not re-query. This companion is optional presentation for Ops/Demo;
+Markdown; do not re-query. Preferred path: emit equivalent HTML matching the
+companion's `html-shell.md` / payload contract (no Atlas). Its
+`scripts/render_ops_shell.py` is an optional local verification helper for
+fixtures/CI, not a required runtime service or Markdown report renderer; the
+runtime Python/service ban below still applies to the analysis itself. This
+companion is optional presentation for Ops/Demo;
 it is not a substitute for Markdown completeness and does not replace the absence
 of a report renderer. If the HTML gate fails or rendering errors, keep the
 Markdown delivery unchanged and disclose the HTML skip/failure in one or two

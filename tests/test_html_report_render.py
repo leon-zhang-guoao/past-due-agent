@@ -1,3 +1,5 @@
+import contextlib
+import io
 import json
 import subprocess
 import sys
@@ -101,6 +103,19 @@ class HtmlRenderTests(unittest.TestCase):
         self.assertEqual(parsed["run"]["conclusion"], payload["run"]["conclusion"])
         self.assertEqual(parsed, payload)
 
+    def test_embedded_json_escapes_lt_for_comment_and_script_open(self):
+        payload = load_valid()
+        text = "a <!-- b <script>alert(1)</script> c"
+        payload["run"]["conclusion"] = text
+        html = render_ops_shell(payload)
+        start = html.index('id="pastdue-report">') + len('id="pastdue-report">')
+        end = html.index("</script>", start)
+        script_text = html[start:end]
+        self.assertNotIn("<", script_text)
+        self.assertNotIn("<!--", script_text)
+        self.assertNotIn("<script", script_text)
+        self.assertEqual(json.loads(script_text)["run"]["conclusion"], text)
+
     def test_html_escapes_text(self):
         payload = load_valid()
         payload["per_country"][0]["ranking"][0]["vendor-name"] = "A<b>&C"
@@ -167,8 +182,9 @@ class HtmlRenderTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             render_ops_shell(bad)
 
-    def test_gate_failure_raises_value_error(self):
-        payload = json.loads((FIX / "html-report-payload-gate-fail.json").read_text(encoding="utf-8"))
+    def test_incomplete_payload_with_valid_mode_raises(self):
+        payload = load_valid()
+        del payload["per_country"][0]["coverage"]
         with self.assertRaises(ValueError):
             render_ops_shell(payload)
 
@@ -205,6 +221,35 @@ class HtmlRenderTests(unittest.TestCase):
             )
             self.assertNotEqual(r.returncode, 0)
             self.assertFalse(bad_out.exists())
+
+    def test_cli_keyerror_exits_1_without_file(self):
+        import render_ops_shell as mod
+        from unittest import mock
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp) / "k.html"
+            good = FIX / "html-report-payload-valid.json"
+            stderr = io.StringIO()
+            with mock.patch.object(mod, "render_ops_shell", side_effect=KeyError("boom")), \
+                    contextlib.redirect_stderr(stderr):
+                rc = mod.main([str(good), "-o", str(out)])
+            self.assertEqual(rc, 1)
+            self.assertIn("boom", stderr.getvalue())
+            self.assertFalse(out.exists())
+
+    def test_cli_incomplete_payload_exits_1_without_file(self):
+        payload = load_valid()
+        del payload["countries"][0]["target-open-count"]
+        with tempfile.TemporaryDirectory() as tmp:
+            src = Path(tmp) / "p.json"
+            src.write_text(json.dumps(payload), encoding="utf-8")
+            out = Path(tmp) / "o.html"
+            r = subprocess.run(
+                [sys.executable, str(SCRIPTS / "render_ops_shell.py"), str(src), "-o", str(out)],
+                capture_output=True, text=True,
+            )
+            self.assertEqual(r.returncode, 1)
+            self.assertIn("target-open-count", r.stderr)
+            self.assertFalse(out.exists())
 
 
 if __name__ == "__main__":
