@@ -1,0 +1,158 @@
+import json
+import subprocess
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+SCRIPTS = ROOT / "skill" / "pastdue-html-report" / "scripts"
+sys.path.insert(0, str(SCRIPTS))
+from render_ops_shell import (  # noqa: E402
+    fmt_int,
+    fmt_pp,
+    fmt_ratio,
+    fmt_signed,
+    render_ops_shell,
+)
+
+FIX = Path(__file__).resolve().parent / "fixtures"
+
+ZH_COUNTRY_HEADERS = [
+    "Country", "业务状态", "数据状态", "上期日期", "本期日期", "间隔天数",
+    "逾期 上期→本期", "Open 上期→本期", "逾期率 上期→本期", "相对变化", "百分点变化",
+]
+ZH_RANKING_HEADERS = [
+    "排名", "Vendor Code／名称", "逾期 上期→本期", "净变化", "Open 上期→本期",
+    "Vendor 逾期率 上期→本期", "Country 贡献变化 pp", "正向贡献占比",
+    "主要 Code 变化", "主要 Source 变化", "核对", "分析状态",
+]
+
+
+def load_valid():
+    return json.loads((FIX / "html-report-payload-valid.json").read_text(encoding="utf-8"))
+
+
+class HtmlRenderTests(unittest.TestCase):
+    def test_ops_html_contains_required_sections_and_payload(self):
+        html = render_ops_shell(load_valid())
+        self.assertIn('id="pastdue-report"', html)
+        self.assertIn("ACME", html)
+        self.assertIn("scope_gaps", html)
+        self.assertIn('data-mode="ops"', html)
+        self.assertIn("main-code-changes", html)
+        self.assertIn("核对", html)
+        self.assertIn("业务状态", html)
+
+    def test_section_ids_and_lang(self):
+        html = render_ops_shell(load_valid())
+        self.assertIn('<html lang="zh">', html)
+        for sid in ("run", "country-metrics", "country-US", "scope-gaps"):
+            self.assertIn(f'id="{sid}"', html)
+        self.assertNotIn('id="cross-country"', html)
+
+    def test_cross_country_when_present(self):
+        payload = load_valid()
+        payload["cross_country_summary"] = "US 与 CA 对比摘要"
+        html = render_ops_shell(payload)
+        self.assertIn('id="cross-country"', html)
+        self.assertIn("US 与 CA 对比摘要", html)
+
+    def test_zh_headers_exact_order(self):
+        html = render_ops_shell(load_valid())
+        for headers in (ZH_COUNTRY_HEADERS, ZH_RANKING_HEADERS):
+            pos = -1
+            for h in headers:
+                nxt = html.find(f"<th>{h}</th>", pos + 1)
+                self.assertGreater(nxt, pos, h)
+                pos = nxt
+
+    def test_en_headers(self):
+        payload = load_valid()
+        payload["meta"]["language"] = "en"
+        html = render_ops_shell(payload)
+        self.assertIn('<html lang="en">', html)
+        self.assertIn("<th>Business status</th>", html)
+        self.assertIn("<th>Check totals</th>", html)
+
+    def test_embedded_json_roundtrip(self):
+        payload = load_valid()
+        html = render_ops_shell(payload)
+        start = html.index('id="pastdue-report">') + len('id="pastdue-report">')
+        end = html.index("</script>", start)
+        self.assertEqual(json.loads(html[start:end]), payload)
+
+    def test_embedded_json_escapes_script_close(self):
+        payload = load_valid()
+        payload["run"]["conclusion"] = "x</script><b>y"
+        html = render_ops_shell(payload)
+        start = html.index('id="pastdue-report">') + len('id="pastdue-report">')
+        end = html.index("</script>", start)
+        self.assertEqual(json.loads(html[start:end])["run"]["conclusion"], "x</script><b>y")
+
+    def test_html_escapes_text(self):
+        payload = load_valid()
+        payload["per_country"][0]["ranking"][0]["vendor-name"] = "A<b>&C"
+        html = render_ops_shell(payload)
+        self.assertIn("A&lt;b&gt;&amp;C", html)
+
+    def test_formatted_values(self):
+        html = render_ops_shell(load_valid())
+        self.assertIn("1000→1100", html)
+        self.assertIn("20.00%→21.57%", html)
+        self.assertIn("7.84%", html)
+        self.assertIn("1.5686 pp", html)
+        self.assertIn("2026-10-22", html)
+        self.assertIn("0.4000 pp", html)
+        self.assertIn("40.00%", html)
+        self.assertIn("+44", html)
+
+    def test_toggle_motion_stub_and_script(self):
+        html = render_ops_shell(load_valid())
+        self.assertIn("prefers-reduced-motion", html)
+        self.assertIn("?mode=", html)
+        self.assertIn("data-mode", html)
+        self.assertIn("position: sticky", html)
+
+    def test_gate_failure_raises_value_error(self):
+        payload = json.loads((FIX / "html-report-payload-gate-fail.json").read_text(encoding="utf-8"))
+        with self.assertRaises(ValueError):
+            render_ops_shell(payload)
+
+    def test_format_helpers(self):
+        self.assertEqual(fmt_ratio(0.2), "20.00%")
+        self.assertEqual(fmt_ratio(None), "未提供")
+        self.assertEqual(fmt_ratio(0.0784, signed=True), "+7.84%")
+        self.assertEqual(fmt_ratio(-0.0784, signed=True), "−7.84%")
+        self.assertEqual(fmt_ratio(0.00001, signed=True), "<0.01%（上升）")
+        self.assertEqual(fmt_ratio(0.00001), "<0.01%")
+        self.assertEqual(fmt_ratio(0), "0.00%")
+        self.assertEqual(fmt_pp(0.01568627), "1.5686 pp")
+        self.assertEqual(fmt_pp(0.0000001), "<0.0001 pp")
+        self.assertEqual(fmt_int(12345), "12345")
+        self.assertEqual(fmt_signed(44), "+44")
+        self.assertEqual(fmt_signed(-3), "−3")
+        self.assertEqual(fmt_signed(0), "0")
+
+    def test_cli_writes_file_and_fails_on_gate(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp) / "r.html"
+            good = FIX / "html-report-payload-valid.json"
+            r = subprocess.run(
+                [sys.executable, str(SCRIPTS / "render_ops_shell.py"), str(good), "-o", str(out)],
+                capture_output=True, text=True,
+            )
+            self.assertEqual(r.returncode, 0, r.stderr)
+            self.assertIn("ACME", out.read_text(encoding="utf-8"))
+            bad_out = Path(tmp) / "bad.html"
+            bad = FIX / "html-report-payload-gate-fail.json"
+            r = subprocess.run(
+                [sys.executable, str(SCRIPTS / "render_ops_shell.py"), str(bad), "-o", str(bad_out)],
+                capture_output=True, text=True,
+            )
+            self.assertNotEqual(r.returncode, 0)
+            self.assertFalse(bad_out.exists())
+
+
+if __name__ == "__main__":
+    unittest.main()
