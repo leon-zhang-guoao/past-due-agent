@@ -3,7 +3,7 @@ name: pastdue-analysis
 description: Analyze PastDue current data, snapshots, comparisons and trends through Atlas; run weekday daily monitoring, historical review or start test / 开始测试 with complete Vendor ETA analysis and evidence-based explanations.
 ---
 
-# PastDue Analysis — 3.3.7
+# PastDue Analysis — 3.3.16
 
 ## 1. Resolve the analysis specification
 
@@ -73,40 +73,60 @@ applicable mandatory work. Keep failures local to the evidence they affect.
 
 Before composing a standard report read [report modules](references/report-format.md),
 the only layout authority, and the applicable [diagnostic rules](references/eta-diagnostic-rules.edn).
-For EACH selected Vendor in returned rank order, deliver metrics, both complete
-compact ETA tables and signed totals with diagnosis, or exact local failure.
-Do not replace these units with a delta-only summary or PASS/PASS.
+Do not run a report renderer. For EACH selected Vendor in returned rank order,
+deliver one ranking row with metrics, main Code changes (≤5 by |net|), main Source
+changes (≤5 by |net|), VENDOR_CHECK signed totals, or exact local failure. Do not
+omit those ETA cells, invent buckets, or award PASS/PASS.
 Use verified Code=US Source in Country interpretation after ranking, not a default
 technical column/table. Do not infer Other constituents, PO migration or causality.
+Full six-column Code/Source tables are on-request only.
 
-Track separately selected Vendors, retrieved facts and delivered Vendor units.
-If a bounded part is necessary, state its Country/rank range and remaining scope;
-never claim complete delivery for a partial answer or promise unsupported automatic
-continuation. Source success is not report success. Report actual scope/gaps, not
-a self-awarded overall PASS. Interactive answers compose only relevant modules.
+Track separately selected Vendors, retrieved facts and delivered ranking rows.
+A standard daily, history or test report copies report-format.md in the request
+language: same section order, same Country columns, and the ranking table with
+main Code, main Source and check cells for every selected Vendor. Do not stop
+after metric-only ranking. There is no report renderer. Its absence is not a
+reason to omit the ETA cells. Write them from the rows already read. Source
+success is not report success. Report actual scope/gaps, not a self-awarded
+overall PASS. Interactive answers compose only relevant modules.
 
-### HTML companion (automatic after standard DAILY/TEST)
+### HTML companion (on-demand)
 
-After a successful standard DAILY or TEST Markdown report — all applicable
-report-format modules delivered, every selected Vendor ranking row present with
-main Code/Source/check cells or explicit local failure, and scope/gaps stated —
-load and follow [pastdue-html-report](../pastdue-html-report/SKILL.md) in the
-same turn. Build the HTML payload from the same verified bindings used for
-Markdown; do not re-query. Preferred path: emit equivalent HTML matching the
-companion's `html-shell.md` / payload contract (no Atlas). Its
-`scripts/render_ops_shell.py` is an optional local verification helper for
-fixtures/CI, not a required runtime service or Markdown report renderer; the
-runtime Python/service ban below still applies to the analysis itself. This
-companion is optional presentation for Ops/Demo;
-it is not a substitute for Markdown completeness and does not replace the absence
-of a report renderer. If the HTML gate fails or rendering errors, keep the
-Markdown delivery unchanged and disclose the HTML skip/failure in one or two
-sentences. Do not auto-run the HTML companion for HISTORICAL events-only or
-INTERACTIVE answers.
+Markdown is the primary deliverable. Do **not** auto-write HTML after MD.
+
+**HTML_ONLY:** If the user clearly wants only HTML / a web report, complete
+bind/verify as usual, **do not emit the Markdown body**, and load
+[pastdue-html-report](../pastdue-html-report/SKILL.md) in the same turn from
+verified bindings (any mode that can assemble a gated payload). Analysis must
+**not** emit `HTML: WRITTEN` itself — the companion writes and discloses paths.
+
+**Default DAILY / TEST (HTML not requested):** After a successful standard
+Markdown report (modules complete; every selected Vendor ranking row with main
+Code/Source/check cells or explicit local failure; scope/gaps stated), end with
+**one** ask in the request language, e.g. Chinese
+`需要我再生成一份 Ops/Demo HTML 报告吗？` or English
+`Would you like me to generate an Ops/Demo HTML report as well?`
+Do **not** load `pastdue-html-report` or write HTML in that turn.
+
+**Confirm follow-up:** If the user says yes, load `pastdue-html-report` and build
+from **prior-turn verified bindings** (no Atlas re-query). Missing bindings →
+companion `SKIPPED — reason=BINDING` (may tell the user to re-run or explicitly
+allow re-query). Prefer one file; CAPACITY may SPLIT by Country.
+
+**HISTORICAL / INTERACTIVE:** Do not ask about HTML unless the user initiates;
+then treat as HTML_ONLY or confirm-export with binding reuse.
+
+Companion `scripts/render_ops_shell.py` remains optional fixtures/CI verification
+only. Keep Markdown unchanged on GATE/HOST. Never claim `WRITTEN` without a real
+path. After a session HTML file is disclosed, do not delete it without overwrite
+in the same turn.
 
 ## Optional current context
 
 Read [current context](references/current-context.md) only for requested
 Buyer/Primary/Manager, contacts or PO. These are current facts, not historical
-causes. No runtime Python/service, direct DB/local CSV, arbitrary source SQL,
-mail drafts or sending. Nothing here installs a host renderer or hard gate.
+causes. No runtime Python/service for analysis, direct DB/local CSV, arbitrary
+source SQL, mail drafts or sending. Optional HTML companion verification via
+`pastdue-html-report/scripts/render_ops_shell.py` is out-of-band fixtures/CI
+tooling only — not an analysis runtime service. Nothing here installs a host
+Markdown renderer or hard gate.

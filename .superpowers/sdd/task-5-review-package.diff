@@ -1,0 +1,482 @@
+=== COMMITS ===
+9ed76d5 Add Demo mode motion timeline, ?t= seek harness and reduced-motion handling to Ops HTML shell.
+
+=== STAT ===
+ skill/pastdue-html-report/references/html-shell.md |  41 ++++-
+ .../scripts/render_ops_shell.py                    | 182 ++++++++++++++++++---
+ tests/test_html_report_render.py                   |  42 +++++
+ 3 files changed, 233 insertions(+), 32 deletions(-)
+
+=== DIFF -U10 ===
+diff --git a/skill/pastdue-html-report/references/html-shell.md b/skill/pastdue-html-report/references/html-shell.md
+index 947ba4d..d8c4ddb 100644
+--- a/skill/pastdue-html-report/references/html-shell.md
++++ b/skill/pastdue-html-report/references/html-shell.md
+@@ -51,25 +51,54 @@ escaped for HTML only. Ranking tables scroll horizontally; `thead` is sticky.
+ 
+ Formatting helpers: integers without separators; signed nets `+`/`−`/`0`; ratios
+ `xx.xx%`; contribution `x.xxxx pp`; nonzero values that round to zero render as
+ `<0.01%` / `<0.0001 pp` with direction in words; null relative change with P=0 renders
+ 零基线上升 / Zero-baseline increase (P=T=0: 无变化 / No change). Missing values render
+ 未提供 / Not provided, never as zero.
+ 
+ ## Query parameters and modes
+ 
+ - `?mode=ops|demo` sets `data-mode` on load (default `ops`); toggle buttons update it
+-  and the URL.
+-- `?t=` is **reserved** for the Demo timeline (Task 5). The Ops shell does not read it.
+-- Demo motion is not implemented in the Ops shell; only the mode switch exists.
++  and the URL (and drop `t`).
++- `?t=N` (seconds) is the seek/pause harness: pauses the Demo timeline and seeks to `N`.
++  It implies `mode=demo` unless `?mode=` is given. `?mode=demo&t=0` shows the first frame;
++  `?mode=demo&t=99` (>= duration) shows the final state. `body[data-t]` mirrors the time.
++- Harness API: `window.__pastdueTimeline` = `{ duration(), beats(), time(), paused(), play(), pause(), seek(t) }`.
++  The shell uses its own `requestAnimationFrame` timeline (no external library, so the
++  file stays self-contained). If a hand-authored shell uses GSAP instead, the equivalent
++  is `tl.pause(); tl.seek(N)`.
++
++## Ops vs Demo motion
++
++- **Ops (default)**: every section is fully visible immediately. When motion is allowed
++  (no `prefers-reduced-motion`, no `?t=`), ratio cells in `#country-metrics` (`xx.xx%→xx.xx%`)
++  do a short (~0.6 s) count-up and always end on the exact delivered text.
++- **Demo (`data-mode="demo"`)**: one master timeline reveals `[data-beat]` elements in DOM
++  order: `#run` → `#country-metrics` → each `#country-{CODE}` (ranking table) → its
++  `summary` → its `coverage` → `#cross-country` (if present) → `#scope-gaps`. Each beat
++  fades/slides in (opacity + small `translateY`) and ends with its inline style cleared.
++  A play/pause button (`#demo-play`, visible only in Demo) pauses/resumes; after the end
++  it becomes "Replay". Autoplays once on entering Demo; never loops.
++- **Demo never omits data.** Only reveal order and opacity change; no `display:none`,
++  no text/number rewriting, and the embedded JSON is untouched. Print always shows
++  everything.
++- Beat markup: `data-beat` on each `<section>`; per-country `summary` / `coverage` blocks are
++  `<div data-beat="summary|coverage">` wrappers around the same `<h3>` + text as Ops.
+ 
+ ## Reduced motion
+ 
+-A `@media (prefers-reduced-motion: reduce)` rule disables animations and transitions.
+-Task 5 Demo motion must respect it (static final state, no autoplay) and extend rather
+-than remove this rule.
++`prefers-reduced-motion: reduce` disables CSS animation/transition, forces `[data-beat]`
++to full opacity, skips the Ops count-up, and makes Demo jump straight to the final state
++(no autoplay, no looping; Play just re-asserts the final state). The JS also listens for
++the media query changing at runtime.
+ 
++## Optional isometric hook (not implemented by default)
++
++The shell contains no isometric/3D visuals. A deployment may opt in by adding its own
++decorative element (e.g. an inline SVG) inside `#run` marked `data-decor="isometric"` and
++driving it from `window.__pastdueTimeline.time()`. It must be `aria-hidden`, must not carry
++report data, and must be disabled under `prefers-reduced-motion`.
+ ## File naming
+ 
+ `pastdue-{mode}-{countries}-{target}.html`, e.g.
+ `pastdue-TEST-US-2026-10-23.html`, `pastdue-DAILY-US-CA-2026-10-23.html`.
+ Generated samples may live under `skill/pastdue-html-report/scripts/out/`.
+diff --git a/skill/pastdue-html-report/scripts/render_ops_shell.py b/skill/pastdue-html-report/scripts/render_ops_shell.py
+index acd5f43..9099eab 100644
+--- a/skill/pastdue-html-report/scripts/render_ops_shell.py
++++ b/skill/pastdue-html-report/scripts/render_ops_shell.py
+@@ -64,21 +64,23 @@ LABELS = {
+         "no_items": "无缺失项记录",
+         "notes": "备注",
+         "items": "条目",
+         "missing": "未提供",
+         "zero_up": "零基线上升",
+         "no_change": "无变化",
+         "up": "上升",
+         "down": "下降",
+         "test_title": "[测试]",
+         "title": "PastDue 报告",
+-        "demo_hint": "Demo 动效将在后续任务中提供。",
++        "play": "播放",
++        "pause": "暂停",
++        "replay": "重播",
+     },
+     "en": {
+         "run": "Run information and conclusion",
+         "country_metrics": "Country metrics",
+         "ranking": "Vendor ranking with main ETA changes",
+         "summary": "Country Vendor analysis summary",
+         "coverage": "Coverage and limitations",
+         "cross": "Cross-Country summary",
+         "gaps": "Execution scope and gaps",
+         "mode": "Mode",
+@@ -93,21 +95,23 @@ LABELS = {
+         "no_items": "No gap items recorded",
+         "notes": "Notes",
+         "items": "Items",
+         "missing": "Not provided",
+         "zero_up": "Zero-baseline increase",
+         "no_change": "No change",
+         "up": "increase",
+         "down": "decrease",
+         "test_title": "[TEST]",
+         "title": "PastDue report",
+-        "demo_hint": "Demo motion arrives in a later task.",
++        "play": "Play",
++        "pause": "Pause",
++        "replay": "Replay",
+     },
+ }
+ 
+ MINUS = "\u2212"
+ 
+ # --- display formatting helpers ---------------------------------------------
+ 
+ 
+ def _missing(lang: str = "zh") -> str:
+     return LABELS.get(lang, LABELS["zh"])["missing"]
+@@ -294,47 +298,171 @@ section h2 { margin:.1rem 0 .6rem; font-size:1.1rem; }
+ .table-wrap.scroll-x { overflow-x:auto; }
+ table { border-collapse: collapse; width:100%; font-size:.88rem; }
+ th, td { border:1px solid var(--line); padding:.35rem .55rem; text-align:left; vertical-align:top; }
+ thead th { position: sticky; top: 0; background:#eef1f5; z-index:5; white-space:nowrap; }
+ table.ranking td { min-width:6rem; }
+ table.ranking td:nth-last-child(-n+4) { min-width:14rem; }
+ .muted { color:var(--muted); }
+ dl.meta { display:grid; grid-template-columns: max-content 1fr; gap:.2rem 1rem; margin:0 0 .6rem; font-size:.9rem; }
+ dl.meta dt { color:var(--muted); }
+ dl.meta dd { margin:0; }
+-.demo-note { display:none; color:var(--muted); font-size:.85rem; }
+-body[data-mode="demo"] .demo-note { display:block; }
+-/* Demo motion is filled in by a later task; keep reduced-motion safe by default. */
++.demo-only { display:none; }
++body[data-mode="demo"] .demo-only { display:inline-block; }
++#demo-play { border:1px solid var(--accent); background:#fff; color:var(--accent); padding:.25rem .7rem; border-radius:6px; cursor:pointer; font:inherit; font-size:.85rem; }
++/* Demo motion: JS only sets inline opacity/transform on [data-beat] elements (reveal order);
++   nothing is removed from the DOM and no content is hidden via display. */
++[data-beat] { will-change: auto; }
++@media print {
++  [data-beat] { opacity: 1 !important; transform: none !important; }
++}
++/* Reduced motion: no CSS animation/transition; JS forces the final visible state and never loops. */
+ @media (prefers-reduced-motion: reduce) {
+   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
++  [data-beat] { opacity: 1 !important; transform: none !important; }
+ }
+ """.strip()
+ 
+-JS = """
++JS = r"""
+ (function () {
+   var body = document.body;
+-  // ?mode=ops|demo selects the initial view (default ops).
++  // ?mode=ops|demo selects the initial view (default ops); e.g. report.html?mode=demo
++  // ?t=N (seconds) pauses the Demo timeline and seeks to N; it implies mode=demo unless ?mode= is set.
+   var params = new URLSearchParams(location.search);
+-  function setMode(mode) {
+-    if (mode !== "ops" && mode !== "demo") { mode = "ops"; }
+-    body.setAttribute("data-mode", mode);
++  var reduceMq = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : null;
++  function reduced() { return !!(reduceMq && reduceMq.matches); }
++
++  // One master timeline over the beats in DOM order:
++  // #run -> #country-metrics -> each #country-* (ranking) -> summary -> coverage -> #cross-country -> #scope-gaps
++  var beats = Array.prototype.slice.call(document.querySelectorAll("[data-beat]"));
++  var STEP = 0.7, FADE = 0.6, HOLD = 0.4;
++  var DURATION = beats.length ? (beats.length - 1) * STEP + FADE + HOLD : 0;
++  var btn = document.getElementById("demo-play");
++  var time = 0, playing = false, raf = 0, last = 0, countToken = 0;
++
++  function clamp(t) { return Math.min(DURATION, Math.max(0, t)); }
++  function mode() { return body.getAttribute("data-mode"); }
++  function clearBeats() {
++    beats.forEach(function (el) { el.style.opacity = ""; el.style.transform = ""; });
++  }
++  // Demo only changes reveal order / opacity; every beat ends fully visible.
++  function applyBeats(t) {
++    beats.forEach(function (el, i) {
++      var o = Math.min(1, Math.max(0, (t - i * STEP) / FADE));
++      if (o >= 1) { el.style.opacity = ""; el.style.transform = ""; return; }
++      el.style.opacity = String(o);
++      el.style.transform = "translateY(" + ((1 - o) * 12).toFixed(1) + "px)";
++    });
++  }
++  function updateButton() {
++    if (!btn) { return; }
++    var key = playing ? "pause" : (time >= DURATION ? "replay" : "play");
++    btn.textContent = btn.getAttribute("data-label-" + key) || key;
++    btn.setAttribute("aria-pressed", playing ? "true" : "false");
++  }
++  function render() {
++    body.setAttribute("data-t", time.toFixed(2));
++    if (mode() === "demo") { applyBeats(time); } else { clearBeats(); }
++  }
++  function tick(now) {
++    if (!playing) { return; }
++    time = clamp(time + (now - last) / 1000);
++    last = now;
++    render();
++    if (time >= DURATION) { pause(); } else { raf = requestAnimationFrame(tick); }
++  }
++  function pause() {
++    playing = false;
++    if (raf) { cancelAnimationFrame(raf); raf = 0; }
++    updateButton();
++  }
++  function seek(t) { time = clamp(Number(t) || 0); render(); updateButton(); }
++  function play() {
++    if (reduced()) { pause(); seek(DURATION); return; }  // final state, never autoplay/loop
++    if (time >= DURATION) { time = 0; }
++    pause();
++    playing = true;
++    last = performance.now();
++    raf = requestAnimationFrame(tick);
++    updateButton();
++  }
++
++  // Optional light count-up for ratio cells in Ops (skipped when reduced motion or ?t= is set).
++  function countUpRatios() {
++    var token = ++countToken;
++    var cells = [];
++    document.querySelectorAll("#country-metrics tbody td").forEach(function (td) {
++      var m = /^(\d+\.\d+)%\u2192(\d+\.\d+)%$/.exec(td.textContent);
++      if (m) { cells.push({ td: td, final: td.textContent, a: parseFloat(m[1]), b: parseFloat(m[2]) }); }
++    });
++    if (!cells.length) { return; }
++    var start = performance.now(), DUR = 600;
++    function step(now) {
++      var k = Math.min(1, (now - start) / DUR);
++      var live = token === countToken && mode() === "ops" && !reduced() && k < 1;
++      cells.forEach(function (c) {
++        c.td.textContent = live
++          ? (c.a * k).toFixed(2) + "%\u2192" + (c.b * k).toFixed(2) + "%"
++          : c.final;
++      });
++      if (live) { requestAnimationFrame(step); }
++    }
++    requestAnimationFrame(step);
++  }
++
++  function setMode(next, opts) {
++    opts = opts || {};
++    if (next !== "ops" && next !== "demo") { next = "ops"; }
++    countToken++;
++    body.setAttribute("data-mode", next);
+     var badge = document.getElementById("view-mode");
+-    if (badge) { badge.textContent = mode.toUpperCase(); }
++    if (badge) { badge.textContent = next.toUpperCase(); }
++    if (next === "ops") {
++      pause();
++      render();
++      if (opts.initial && !reduced() && !opts.hasT) { countUpRatios(); }
++      return;
++    }
++    if (reduced()) { pause(); seek(DURATION); return; }  // final state, no looping
++    if (opts.hasT) { pause(); seek(opts.t); return; }    // harness: pause + seek
++    seek(0);
++    play();
++  }
++
++  window.__pastdueTimeline = {
++    duration: function () { return DURATION; },
++    beats: function () { return beats.length; },
++    time: function () { return time; },
++    paused: function () { return !playing; },
++    play: play,
++    pause: pause,
++    seek: function (t) { pause(); seek(t); }
++  };
++
++  var tRaw = params.get("t");
++  var hasT = tRaw !== null && tRaw !== "" && isFinite(parseFloat(tRaw));
++  setMode(params.get("mode") || (hasT ? "demo" : "ops"), { initial: true, hasT: hasT, t: hasT ? parseFloat(tRaw) : 0 });
++
++  if (reduceMq && reduceMq.addEventListener) {
++    reduceMq.addEventListener("change", function () {
++      if (reduced() && mode() === "demo") { pause(); seek(DURATION); }
++    });
++  }
++  if (btn) {
++    btn.addEventListener("click", function () { if (playing) { pause(); } else { play(); } });
+   }
+-  setMode(params.get("mode") || "ops");
+-  // ?t= is reserved for the Demo timeline (later task).
+-  document.querySelectorAll("[data-set-mode]").forEach(function (btn) {
+-    btn.addEventListener("click", function () {
+-      var mode = btn.getAttribute("data-set-mode");
+-      setMode(mode);
++  document.querySelectorAll("[data-set-mode]").forEach(function (b) {
++    b.addEventListener("click", function () {
++      var next = b.getAttribute("data-set-mode");
++      setMode(next);
+       var url = new URL(location.href);
+-      url.searchParams.set("mode", mode);
++      url.searchParams.set("mode", next);
++      url.searchParams.delete("t");
+       history.replaceState(null, "", url);
+     });
+   });
+ })();
+ """.strip()
+ 
+ 
+ # --- main renderer ----------------------------------------------------------------
+ 
+ 
+@@ -364,20 +492,23 @@ def render_ops_shell(payload: dict) -> str:
+     header = (
+         '<header class="top">'
+         f"<h1>{_esc(title)}</h1>"
+         f'<span class="{badge_cls}" id="run-mode">{_esc(meta["mode"])}</span>'
+         f'<span class="badge" id="view-mode">OPS</span>'
+         f'<span class="pt" title="P/T">P/T: {_esc(pairs_text)}</span>'
+         '<span class="toggle" role="group" aria-label="Ops/Demo">'
+         '<button type="button" data-set-mode="ops">Ops</button>'
+         '<button type="button" data-set-mode="demo">Demo</button>'
+         "</span>"
++        f'<button type="button" id="demo-play" class="demo-only" aria-pressed="false" '
++        f'data-label-play="{_esc(labels["play"])}" data-label-pause="{_esc(labels["pause"])}" '
++        f'data-label-replay="{_esc(labels["replay"])}">{_esc(labels["pause"])}</button>'
+         '<nav class="toc">'
+         f'<a href="#run">{_esc(labels["run"])}</a>'
+         f'<a href="#country-metrics">{_esc(labels["country_metrics"])}</a>'
+         f'<a href="#scope-gaps">{_esc(labels["gaps"])}</a>'
+         "</nav>"
+         "</header>"
+     )
+ 
+     sections: list[str] = []
+ 
+@@ -388,66 +519,65 @@ def render_ops_shell(payload: dict) -> str:
+         (labels["language"], meta["language"]),
+         (labels["timezone"], meta["timezone"]),
+         (labels["calendar"], meta["calendar-mode"]),
+         (labels["generated"], meta["generated-at"]),
+         (labels["metric_version"], meta["metric-version"]),
+         (labels["flags"], " / ".join(flags) if flags else "—"),
+         (labels["pairs"], pairs_text or "—"),
+     ]
+     dl = "".join(f"<dt>{_esc(k)}</dt><dd>{_esc(v)}</dd>" for k, v in meta_rows)
+     sections.append(
+-        f'<section id="run"><h2>{_esc(labels["run"])}</h2>'
++        f'<section id="run" data-beat="run"><h2>{_esc(labels["run"])}</h2>'
+         f'<dl class="meta">{dl}</dl>'
+         f'<p><strong>{_esc(labels["conclusion"])}:</strong> {_esc(run.get("conclusion", ""))}</p>'
+-        f'<p class="demo-note">{_esc(labels["demo_hint"])}</p>'
+         "</section>"
+     )
+ 
+     # #country-metrics
+     sections.append(
+-        f'<section id="country-metrics"><h2>{_esc(labels["country_metrics"])}</h2>'
++        f'<section id="country-metrics" data-beat="country-metrics"><h2>{_esc(labels["country_metrics"])}</h2>'
+         + _table(COUNTRY_HEADERS[lang], [_country_row(r, lang) for r in payload["countries"]])
+         + "</section>"
+     )
+ 
+     # #country-XX
+     for block in payload["per_country"]:
+         code = block["country-code"]
+         pair = (run.get("pairs") or {}).get(code)
+         if not pair:
+             row = next((r for r in payload["countries"] if r.get("country-code") == code), {})
+             pair = {
+                 "previous-snapshot-date": row.get("previous-snapshot-date", "—"),
+                 "target-snapshot-date": row.get("target-snapshot-date", "—"),
+             }
+         heading = f"{code} — {pair['previous-snapshot-date']}→{pair['target-snapshot-date']}"
+         sid = f"country-{_esc(code)}"
+         sections.append(
+-            f'<section id="{sid}" data-country="{_esc(code)}"><h2>{_esc(heading)}</h2>'
++            f'<section id="{sid}" data-country="{_esc(code)}" data-beat="country"><h2>{_esc(heading)}</h2>'
+             f'<h3>{_esc(labels["ranking"])}</h3>'
+             + _table(RANKING_HEADERS[lang], [_ranking_row(r, lang) for r in block["ranking"]], css="ranking")
+-            + f'<h3>{_esc(labels["summary"])}</h3>{_text_block(block.get("summary", ""))}'
+-            + f'<h3>{_esc(labels["coverage"])}</h3>{_text_block(block.get("coverage", ""))}'
++            + f'<div data-beat="summary"><h3>{_esc(labels["summary"])}</h3>{_text_block(block.get("summary", ""))}</div>'
++            + f'<div data-beat="coverage"><h3>{_esc(labels["coverage"])}</h3>{_text_block(block.get("coverage", ""))}</div>'
+             + "</section>"
+         )
+ 
+     # #cross-country
+     if payload.get("cross_country_summary"):
+         sections.append(
+-            f'<section id="cross-country"><h2>{_esc(labels["cross"])}</h2>'
++            f'<section id="cross-country" data-beat="cross-country"><h2>{_esc(labels["cross"])}</h2>'
+             + _text_block(payload["cross_country_summary"])
+             + "</section>"
+         )
+ 
+     # #scope-gaps
+     sections.append(
+-        f'<section id="scope-gaps" data-key="scope_gaps"><h2>{_esc(labels["gaps"])}</h2>'
++        f'<section id="scope-gaps" data-key="scope_gaps" data-beat="scope-gaps"><h2>{_esc(labels["gaps"])}</h2>'
+         + _scope_gaps_html(payload["scope_gaps"], labels)
+         + "</section>"
+     )
+ 
+     return (
+         "<!DOCTYPE html>\n"
+         f'<html lang="{lang}">\n<head>\n<meta charset="utf-8">\n'
+         '<meta name="viewport" content="width=device-width, initial-scale=1">\n'
+         f"<title>{_esc(title)}</title>\n<style>\n{CSS}\n</style>\n</head>\n"
+         f'<body data-mode="ops">\n{header}\n<main>\n' + "\n".join(sections) + "\n</main>\n"
+diff --git a/tests/test_html_report_render.py b/tests/test_html_report_render.py
+index edd7276..e802d30 100644
+--- a/tests/test_html_report_render.py
++++ b/tests/test_html_report_render.py
+@@ -118,20 +118,62 @@ class HtmlRenderTests(unittest.TestCase):
+         self.assertIn("40.00%", html)
+         self.assertIn("+44", html)
+ 
+     def test_toggle_motion_stub_and_script(self):
+         html = render_ops_shell(load_valid())
+         self.assertIn("prefers-reduced-motion", html)
+         self.assertIn("?mode=", html)
+         self.assertIn("data-mode", html)
+         self.assertIn("position: sticky", html)
+ 
++    def test_demo_harness_present(self):
++        html = render_ops_shell(load_valid())
++        self.assertIn("mode=demo", html)
++        self.assertIn("URLSearchParams", html)
++        self.assertIn("prefers-reduced-motion", html)
++        self.assertIn("__pastdueTimeline", html)
++        self.assertIn('get("t")', html)
++        self.assertIn('id="demo-play"', html)
++        self.assertIn("requestAnimationFrame", html)
++
++    def test_demo_beats_in_order_and_data_not_omitted(self):
++        payload = load_valid()
++        html = render_ops_shell(payload)
++        order = ['id="run"', 'id="country-metrics"', 'id="country-US"',
++                 'data-beat="summary"', 'data-beat="coverage"', 'id="scope-gaps"']
++        pos = -1
++        for marker in order:
++            nxt = html.find(marker, pos + 1)
++            self.assertGreater(nxt, pos, marker)
++            pos = nxt
++        # every section is a beat; Demo only reveals, never drops data
++        for sid in ("run", "country-metrics", "country-US", "scope-gaps"):
++            self.assertRegex(html, rf'<section id="{sid}"[^>]*data-beat=')
++        self.assertIn("ACME", html)
++        self.assertNotIn("display:none", html.split("<main>")[1].split("</main>")[0])
++
++    def test_reduced_motion_forces_final_state_without_looping(self):
++        html = render_ops_shell(load_valid())
++        self.assertIn('matchMedia("(prefers-reduced-motion: reduce)")', html)
++        self.assertNotIn("repeat: -1", html)
++        self.assertNotIn("setInterval", html)
++        self.assertNotIn("iteration-count: infinite", html)
++
++    def test_no_isometric_by_default(self):
++        html = render_ops_shell(load_valid()).lower()
++        self.assertNotIn("isometric", html)
++
++    def test_gate_fail_raises(self):
++        bad = json.loads((FIX / "html-report-payload-gate-fail.json").read_text(encoding="utf-8"))
++        with self.assertRaises(ValueError):
++            render_ops_shell(bad)
++
+     def test_gate_failure_raises_value_error(self):
+         payload = json.loads((FIX / "html-report-payload-gate-fail.json").read_text(encoding="utf-8"))
+         with self.assertRaises(ValueError):
+             render_ops_shell(payload)
+ 
+     def test_format_helpers(self):
+         self.assertEqual(fmt_ratio(0.2), "20.00%")
+         self.assertEqual(fmt_ratio(None), "未提供")
+         self.assertEqual(fmt_ratio(0.0784, signed=True), "+7.84%")
+         self.assertEqual(fmt_ratio(-0.0784, signed=True), "−7.84%")

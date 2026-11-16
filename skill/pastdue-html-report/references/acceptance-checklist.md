@@ -1,42 +1,28 @@
-# Acceptance checklist — spec §9
+# Acceptance checklist — HTML on-demand
 
-Maps [design spec §9](../../../../docs/superpowers/specs/2026-11-13-pastdue-html-report-design.md#9-acceptance-criteria) to automated or file evidence. Manual browser checks are noted where tests do not cover UX.
+Maps `docs/superpowers/specs/2026-11-16-pastdue-html-on-demand-design.md` acceptance
+plus retained Ops/Demo shell evidence from the original companion suite.
 
-| # | Spec §9 criterion | Evidence |
-|---|-------------------|----------|
-| 1 | Auto hook after successful DAILY/TEST Markdown | `skill/pastdue-analysis/SKILL.md` §4 `### HTML companion` → `pastdue-html-report`; pointer in `references/report-format.md` § HTML companion |
-| 2 | Ranking numbers / ETA/check cells match Markdown source | Fixture `tests/fixtures/html-report-payload-valid.json` (ACME row); `tests.test_html_report_render`: `test_formatted_values`, `test_ops_html_contains_required_sections_and_payload`, `test_zh_headers_exact_order`; embedded JSON roundtrip |
-| 3 | Vendor rows complete; `scope_gaps` visible in Ops and Demo | `gate_payload` + `test_scope_gaps_key_required`; render: `#scope-gaps`, `data-beat="scope-gaps"`; `test_demo_beats_in_order_and_data_not_omitted` (no `display:none` in `<main>`, ACME present) |
-| 4 | Default Ops; Demo via toggle / `?mode=demo` | `data-mode="ops"` default; `test_toggle_motion_stub_and_script`, `test_demo_harness_present` (`mode=demo`, `URLSearchParams`) |
-| 5 | `prefers-reduced-motion` → final state, no loop | `test_reduced_motion_forces_final_state_without_looping`; `references/html-shell.md` |
-| 6 | Demo `?t=N`; open in browser, no build | `test_demo_harness_present` (`get("t")`, `__pastdueTimeline`); single-file inline CSS/JS; regenerate: `python skill/pastdue-html-report/scripts/render_ops_shell.py … -o scripts/out/…` |
-| 7 | HISTORICAL / INTERACTIVE / gate fail → no auto HTML + explain | `pastdue-html-report/SKILL.md` §1 & §3; `pastdue-analysis/SKILL.md` exclusions; `tests.test_html_report_payload.test_gate_fail_payload_is_rejected`; `test_gate_fail_raises`, `test_cli_writes_file_and_fails_on_gate` |
+| # | Criterion | Evidence |
+|---|-----------|----------|
+| 1 | Default TEST/DAILY → MD + one ask; no HTML file; no `WRITTEN` | `pastdue-analysis/SKILL.md` § HTML companion (on-demand); `SYSTEM_PROMPT.md`; `policy.edn` `:ask-after-modes`, `:default-obligation-after-markdown-success false` |
+| 2 | User confirms → HTML from reused bindings + real path, or `BINDING` | `pastdue-html-report/SKILL.md` §1 confirm follow-up, §5.3 `BINDING`; no default re-query |
+| 3 | HTML_ONLY → no MD body; path or honest SKIPPED | `pastdue-html-report/SKILL.md` §1 HTML_ONLY; analysis handoff |
+| 4 | Never false `WRITTEN` (no path / no write) | Companion §2, §5.1, §9; payload-contract producer checklist |
+| 5 | HISTORICAL/INTERACTIVE without HTML ask → no offer, no write | Analysis skill; `policy.edn` ask-after only DAILY/TEST |
+| 6 | Ranking / ETA cells / scope_gaps in Ops and Demo | Fixtures + `tests.test_html_report_render` (unchanged shell) |
+| 7 | Gate fail / CAPACITY SPLIT | `payload_gate` tests; companion §5; `html-shell.md` multi-file naming |
 
-## Automated suite (Task 7 gate)
+## Automated suite (gate/shell unchanged)
 
 ```bash
 python -m unittest tests.test_html_report_payload tests.test_html_report_render -v
 ```
 
-Expected: **24 tests, OK** (5 payload + 19 render).
+Expected: **34 tests, OK**.
 
-## Manual browser spot-check (optional)
+## Manual sandbox spot-check
 
-Open `skill/pastdue-html-report/scripts/out/pastdue-TEST-US-2026-10-23.html` via `file://`:
-
-- Ops: full tables, `#scope-gaps` visible.
-- `?mode=demo`: progressive beats; data same as Ops.
-- `?mode=demo&t=0` (or other `t`): frozen timeline frame.
-- OS **prefers-reduced-motion**: final composed layout, no looping animation.
-
-## Spec coverage — Tasks 1–7 vs design §§4–9
-
-| Design § | Topic | Task(s) | Deliverable |
-|----------|--------|---------|-------------|
-| §4 | Architecture, trigger matrix | 4, 6 | Companion `SKILL.md`; analysis hook; no Atlas in HTML skill |
-| §5 | HTML page structure, hard rules | 3, 5 | `render_ops_shell.py`, `html-shell.md`, Demo beats / `data-beat` |
-| §6 | Data contract + gate | 1, 2 | Fixtures, `payload_gate.py`, `payload-contract.md` |
-| §7 | Skill changes | 4, 6 | `pastdue-html-report/*`; minimal analysis edits |
-| §8 | Error handling | 3, 4 | Gate → `ValueError`; CLI exit 1; skip wording in SKILL |
-| §9 | Acceptance criteria | 7 | This checklist + full unittest suite |
-| §3 non-goals | No email/Atlas/renderer swap | — | Unchanged Atlas/analysis contracts; no mail/upload paths added |
+1. TEST without mentioning HTML → MD ends with ask; no `.html` path.
+2. Reply yes → `HTML: WRITTEN` with sandbox path, or `BINDING`.
+3. 「只要 HTML」→ no MD report body; HTML path or SKIPPED.

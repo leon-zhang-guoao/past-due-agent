@@ -1,0 +1,3 @@
+# Generated sample HTML — do not package/upload (scanners false-positive on JS identifiers).
+*.html
+!*.gitkeep

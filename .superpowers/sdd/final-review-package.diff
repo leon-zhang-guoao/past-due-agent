@@ -1,0 +1,1792 @@
+=== COMMITS ===
+37600a8 Task 7: add spec §9 acceptance checklist.
+5335e25 Wire pastdue-analysis HTML companion handoff after DAILY/TEST.
+9ed76d5 Add Demo mode motion timeline, ?t= seek harness and reduced-motion handling to Ops HTML shell.
+aa0ad1a Add pastdue-html-report skill for DAILY/TEST HTML companion.
+ffcefec Fix invalid JSON escape for <!-- in embedded payload.
+00e654a Add Ops HTML shell deterministic renderer with render tests.
+23bbb65 Document HTML report payload schema in payload-contract.md.
+4cdf257 Lock HTML report JSON payload schema with fixtures and gate_payload unittest.
+
+=== STAT ===
+ .superpowers/sdd/task-3-report.md                  |  38 ++
+ skill/pastdue-analysis/SKILL.md                    |  14 +
+ skill/pastdue-analysis/references/report-format.md |   6 +
+ skill/pastdue-html-report/SKILL.md                 | 101 ++++
+ .../references/acceptance-checklist.md             |  42 ++
+ skill/pastdue-html-report/references/html-shell.md | 104 ++++
+ .../references/payload-contract.md                 | 232 ++++++++
+ .../references/sample-payload.json                 |  67 +++
+ skill/pastdue-html-report/scripts/out/.gitkeep     |   0
+ skill/pastdue-html-report/scripts/payload_gate.py  |  80 +++
+ .../scripts/render_ops_shell.py                    | 607 +++++++++++++++++++++
+ tests/fixtures/html-report-payload-gate-fail.json  |  47 ++
+ tests/fixtures/html-report-payload-valid.json      |  67 +++
+ tests/test_html_report_payload.py                  |  47 ++
+ tests/test_html_report_render.py                   | 211 +++++++
+ 15 files changed, 1663 insertions(+)
+
+=== DIFF -U5 ===
+diff --git a/.superpowers/sdd/task-3-report.md b/.superpowers/sdd/task-3-report.md
+new file mode 100644
+index 0000000..f2e0ead
+--- /dev/null
++++ b/.superpowers/sdd/task-3-report.md
+@@ -0,0 +1,38 @@
++# Task 3 report — Ops HTML shell + deterministic renderer
++
++Status: DONE (with minor concerns)
++
++## Delivered
++- `skill/pastdue-html-report/scripts/render_ops_shell.py` — `render_ops_shell(payload) -> str`, CLI (`-o`), format helpers (`fmt_int/fmt_signed/fmt_ratio/fmt_pp/fmt_relative`).
++- `skill/pastdue-html-report/references/html-shell.md`
++- `skill/pastdue-html-report/scripts/out/.gitkeep`
++- `tests/test_html_report_render.py` (written first; failed on import before implementation)
++
++## Behavior
++- Gate via `gate_payload`; failure -> `ValueError(reason)`; CLI prints `gate failed: ...`, exit 1, no file written.
++- `<html lang>` from meta.language (zh/en headers per report-format.md), sticky header (mode badge, view badge, P/T, Ops/Demo toggle), sections `run`, `country-metrics`, `country-{CODE}`, optional `cross-country`, `scope-gaps`.
++- Exact header lists (11 Country, 12 Ranking) in brief order; paired keys merged into `P→T` cells.
++- Embedded `<script type="application/json" id="pastdue-report">`; `</` escaped as `<\/` (round-trip tested).
++- `body data-mode="ops"`; JS reads `?mode=`; `?t=` reserved; `prefers-reduced-motion` stub only.
++- Text HTML-escaped; no metric recomputation.
++
++## Verification
++- `python -m unittest tests.test_html_report_render tests.test_html_report_payload` -> 18 tests OK.
++- Sample HTML generated at `scripts/out/pastdue-TEST-US-2026-10-23.html` (US metrics, ACME row, gaps section); not committed (only `.gitkeep`).
++
++## Concerns
++- Missing values render as 未提供/Not provided (report-format says missing != zero / not same '—'); brief didn't specify.
++- Near-zero rule with direction words applied to signed changes only.
++- Worktree has many unrelated uncommitted changes (pastdue-analysis etc.); untouched and not committed.
++- Demo toggle only switches `data-mode`; Task 5 adds motion.
++
++## Critical review fix (embedded JSON)
++
++- Removed illegal `<!--` → `<\!--` replacement in `_json_for_script`; `\!` is not a valid JSON escape and broke `JSON.parse` / `json.loads` when payload text contained `<!--`.
++- Retained `</` → `<\/` escaping so `</script>` substrings stay valid JSON and do not terminate the script element early.
++- Added `test_embedded_json_allows_html_comment_in_text` (conclusion contains `<!--`); asserts `json.loads` on `#pastdue-report` script body and full payload round-trip.
++
++```
++python -m unittest tests.test_html_report_render -v
++Ran 14 tests in 1.353s — OK
++```
+diff --git a/skill/pastdue-analysis/SKILL.md b/skill/pastdue-analysis/SKILL.md
+index 22494cd..4fed63b 100644
+--- a/skill/pastdue-analysis/SKILL.md
++++ b/skill/pastdue-analysis/SKILL.md
+@@ -83,10 +83,24 @@ Track separately selected Vendors, retrieved facts and delivered Vendor units.
+ If a bounded part is necessary, state its Country/rank range and remaining scope;
+ never claim complete delivery for a partial answer or promise unsupported automatic
+ continuation. Source success is not report success. Report actual scope/gaps, not
+ a self-awarded overall PASS. Interactive answers compose only relevant modules.
+ 
++### HTML companion (automatic after standard DAILY/TEST)
++
++After a successful standard DAILY or TEST Markdown report — all applicable
++report-format modules delivered, every selected Vendor ranking row present with
++main Code/Source/check cells or explicit local failure, and scope/gaps stated —
++load and follow [pastdue-html-report](../pastdue-html-report/SKILL.md) in the
++same turn. Build the HTML payload from the same verified bindings used for
++Markdown; do not re-query. This companion is optional presentation for Ops/Demo;
++it is not a substitute for Markdown completeness and does not replace the absence
++of a report renderer. If the HTML gate fails or rendering errors, keep the
++Markdown delivery unchanged and disclose the HTML skip/failure in one or two
++sentences. Do not auto-run the HTML companion for HISTORICAL events-only or
++INTERACTIVE answers.
++
+ ## Optional current context
+ 
+ Read [current context](references/current-context.md) only for requested
+ Buyer/Primary/Manager, contacts or PO. These are current facts, not historical
+ causes. No runtime Python/service, direct DB/local CSV, arbitrary source SQL,
+diff --git a/skill/pastdue-analysis/references/report-format.md b/skill/pastdue-analysis/references/report-format.md
+index 260d696..5c2f50f 100644
+--- a/skill/pastdue-analysis/references/report-format.md
++++ b/skill/pastdue-analysis/references/report-format.md
+@@ -171,5 +171,11 @@ The final scope section distinguishes:
+ All selected Vendor positions must exist, but a displayed error placeholder is
+ not successful ETA analysis. A fully read 177-row result says nothing by itself
+ about how many Vendor units were delivered. List remaining Country/rank ranges
+ and missing modules when partial. Do not claim a completed full test path merely
+ because requests succeeded. Preserve actual business trigger/freshness separately.
++
++## HTML companion
++
++After a successful standard DAILY/TEST report, the agent also emits an Ops/Demo
++HTML file per `skill/pastdue-html-report/`. Markdown modules above remain the
++layout authority for analysis content.
+diff --git a/skill/pastdue-html-report/SKILL.md b/skill/pastdue-html-report/SKILL.md
+new file mode 100644
+index 0000000..473a05b
+--- /dev/null
++++ b/skill/pastdue-html-report/SKILL.md
+@@ -0,0 +1,101 @@
++---
++name: pastdue-html-report
++description: After a successful PastDue DAILY or TEST standard Markdown report, build a verified JSON payload and emit one Ops/Demo HTML file without re-querying Atlas.
++---
++
++# PastDue HTML Report — companion
++
++HTML is a **presentation companion** only. Markdown from `pastdue-analysis` stays
++authoritative. This skill does not render or reinterpret analysis modules, does not
++re-query Atlas, and does not scrape delivered Markdown as the source of truth.
++
++## 1. When to load
++
++Load and follow this skill **only after** `pastdue-analysis` has completed a
++**successful standard DAILY or TEST** Markdown report in the same turn:
++
++- All applicable `report-format.md` modules delivered in the resolved language.
++- Every selected Vendor has a ranking row with main Code/Source/check cells or an
++  explicit local failure — not metric-only ranking.
++- Execution scope and gaps stated; no self-awarded overall PASS.
++
++Do **not** auto-emit HTML for HISTORICAL events-only lists, INTERACTIVE partial
++answers, incomplete gates, or failed standard reports.
++
++## 2. Build the payload
++
++Construct a JSON object from **in-memory verified bindings** already used for
++Markdown — same facts, same ordinals, same failure disclosures.
++
++Read [payload contract](references/payload-contract.md) for shape, required keys,
++column order, and formatting rules. Layout and number-copy authority remain in
++`skill/pastdue-analysis/references/report-format.md`; do not recompute metrics
++or fork formulas here.
++
++Set `meta.mode` to `DAILY` or `TEST` only. Embed nothing that was not verified
++during analysis.
++
++## 3. Gate
++
++Run `gate_payload` from `scripts/payload_gate.py` (or let `render_ops_shell` call
++it). On failure:
++
++- **Skip HTML entirely** — do not write a partial or “complete-looking” file.
++- Disclose the gate reason in **one or two sentences** in chat only.
++- Do not modify Markdown already delivered.
++
++## 4. Emit HTML
++
++Read [html-shell](references/html-shell.md) for document structure, section IDs,
++mode toggle, naming, and reduced-motion rules.
++
++**Preferred path (Ops baseline):**
++
++```bash
++python skill/pastdue-html-report/scripts/render_ops_shell.py <payload.json> -o <out.html>
++```
++
++`render_ops_shell(payload) -> str` is importable; it gates first and raises
++`ValueError(reason)` on failure (CLI: `gate failed: …`, exit 1, no file).
++
++Hand-authored HTML is acceptable only if it matches the shell conventions
++(same section IDs, `data-mode`, embedded `#pastdue-report` JSON, column order).
++
++Enhance **Demo** motion in-page after the Ops baseline exists (`data-mode=demo`,
++`?mode=demo`, master timeline per html-shell). Ops remains fully readable without
++Demo JS.
++
++## 5. Write and disclose
++
++Write exactly **one** self-contained `.html` file under the workspace. Suggested
++name: `pastdue-{DAILY|TEST}-{countries}-{target-date}.html` (see html-shell).
++
++Tell the user the **full path** in chat. On success, a brief note that HTML is a
++companion to the Markdown report is enough. On skip (gate failure), reason only —
++no file path.
++
++## 6. Animation skills (local paths)
++
++Animation skills live under `skill/` with **versioned directory names**. Before
++reading, resolve the local match from this skill directory:
++
++| Pattern | Use |
++|---------|-----|
++| `../diagram-animation-*/SKILL.md` | Demo section beats; light Ops count-up / bar emphasis |
++| `../svg-animation-*/SKILL.md` | Status marks, light stroke accents |
++| `../isometric-animation-*/SKILL.md` | Demo decoration **only** when explicitly wanted — **Ops default off** |
++
++Glob or list `skill/diagram-animation-*`, `skill/svg-animation-*`,
++`skill/isometric-animation-*` and open the single matching `SKILL.md` in each
++family. Invoke motion patterns only inside the HTML file; never change payload
++facts. Demo must not omit ranking rows, ETA/check cells, coverage, or
++`scope_gaps` for polish.
++
++Respect `prefers-reduced-motion: reduce` — final composed state, no looping.
++
++## 7. Hard boundaries
++
++- **Never** modify Markdown already delivered in the analysis turn.
++- **Never** award or restate an overall PASS for the run.
++- **Never** re-query Atlas, re-execute EQL, or bind new facts inside this skill.
++- HTML reformats verified bindings for display; it is not a second analysis pass.
+diff --git a/skill/pastdue-html-report/references/acceptance-checklist.md b/skill/pastdue-html-report/references/acceptance-checklist.md
+new file mode 100644
+index 0000000..3e20551
+--- /dev/null
++++ b/skill/pastdue-html-report/references/acceptance-checklist.md
+@@ -0,0 +1,42 @@
++# Acceptance checklist — spec §9
++
++Maps [design spec §9](../../../../docs/superpowers/specs/2026-11-13-pastdue-html-report-design.md#9-acceptance-criteria) to automated or file evidence. Manual browser checks are noted where tests do not cover UX.
++
++| # | Spec §9 criterion | Evidence |
++|---|-------------------|----------|
++| 1 | Auto hook after successful DAILY/TEST Markdown | `skill/pastdue-analysis/SKILL.md` §4 `### HTML companion` → `pastdue-html-report`; pointer in `references/report-format.md` § HTML companion |
++| 2 | Ranking numbers / ETA/check cells match Markdown source | Fixture `tests/fixtures/html-report-payload-valid.json` (ACME row); `tests.test_html_report_render`: `test_formatted_values`, `test_ops_html_contains_required_sections_and_payload`, `test_zh_headers_exact_order`; embedded JSON roundtrip |
++| 3 | Vendor rows complete; `scope_gaps` visible in Ops and Demo | `gate_payload` + `test_scope_gaps_key_required`; render: `#scope-gaps`, `data-beat="scope-gaps"`; `test_demo_beats_in_order_and_data_not_omitted` (no `display:none` in `<main>`, ACME present) |
++| 4 | Default Ops; Demo via toggle / `?mode=demo` | `data-mode="ops"` default; `test_toggle_motion_stub_and_script`, `test_demo_harness_present` (`mode=demo`, `URLSearchParams`) |
++| 5 | `prefers-reduced-motion` → final state, no loop | `test_reduced_motion_forces_final_state_without_looping`; `references/html-shell.md` |
++| 6 | Demo `?t=N`; open in browser, no build | `test_demo_harness_present` (`get("t")`, `__pastdueTimeline`); single-file inline CSS/JS; regenerate: `python skill/pastdue-html-report/scripts/render_ops_shell.py … -o scripts/out/…` |
++| 7 | HISTORICAL / INTERACTIVE / gate fail → no auto HTML + explain | `pastdue-html-report/SKILL.md` §1 & §3; `pastdue-analysis/SKILL.md` exclusions; `tests.test_html_report_payload.test_gate_fail_payload_is_rejected`; `test_gate_fail_raises`, `test_cli_writes_file_and_fails_on_gate` |
++
++## Automated suite (Task 7 gate)
++
++```bash
++python -m unittest tests.test_html_report_payload tests.test_html_report_render -v
++```
++
++Expected: **24 tests, OK** (5 payload + 19 render).
++
++## Manual browser spot-check (optional)
++
++Open `skill/pastdue-html-report/scripts/out/pastdue-TEST-US-2026-10-23.html` via `file://`:
++
++- Ops: full tables, `#scope-gaps` visible.
++- `?mode=demo`: progressive beats; data same as Ops.
++- `?mode=demo&t=0` (or other `t`): frozen timeline frame.
++- OS **prefers-reduced-motion**: final composed layout, no looping animation.
++
++## Spec coverage — Tasks 1–7 vs design §§4–9
++
++| Design § | Topic | Task(s) | Deliverable |
++|----------|--------|---------|-------------|
++| §4 | Architecture, trigger matrix | 4, 6 | Companion `SKILL.md`; analysis hook; no Atlas in HTML skill |
++| §5 | HTML page structure, hard rules | 3, 5 | `render_ops_shell.py`, `html-shell.md`, Demo beats / `data-beat` |
++| §6 | Data contract + gate | 1, 2 | Fixtures, `payload_gate.py`, `payload-contract.md` |
++| §7 | Skill changes | 4, 6 | `pastdue-html-report/*`; minimal analysis edits |
++| §8 | Error handling | 3, 4 | Gate → `ValueError`; CLI exit 1; skip wording in SKILL |
++| §9 | Acceptance criteria | 7 | This checklist + full unittest suite |
++| §3 non-goals | No email/Atlas/renderer swap | — | Unchanged Atlas/analysis contracts; no mail/upload paths added |
+diff --git a/skill/pastdue-html-report/references/html-shell.md b/skill/pastdue-html-report/references/html-shell.md
+new file mode 100644
+index 0000000..d8c4ddb
+--- /dev/null
++++ b/skill/pastdue-html-report/references/html-shell.md
+@@ -0,0 +1,104 @@
++# HTML shell conventions (Ops baseline)
++
++The Ops shell is a single self-contained HTML5 file produced deterministically from a
++gated payload (`payload-contract.md`). It reformats for display only; metrics and
++layout authority stay in `skill/pastdue-analysis/references/report-format.md`.
++
++## Producing the file
++
++Agents may either:
++
++1. Run the renderer:
++
++   ```bash
++   python skill/pastdue-html-report/scripts/render_ops_shell.py <payload.json> -o <out.html>
++   ```
++
++   `render_ops_shell(payload) -> str` is also importable. It calls `gate_payload` first
++   and raises `ValueError(reason)` on failure; the CLI prints `gate failed: <reason>`,
++   exits non-zero and writes no file. On gate failure agents skip HTML and state the
++   reason briefly.
++
++2. Hand-author equivalent HTML that matches this shell (same section IDs, `data-mode`
++   handling, embedded JSON script, column order and headers).
++
++## Document structure
++
++- `<html lang="zh|en">` from `meta.language` (single language, no bilingual duplication).
++- Sticky `header.top`: report title (`[测试]`/`[TEST]` prefix when `meta.mode=TEST`),
++  run-mode badge (`TEST`/`DAILY`), view-mode badge (`OPS`/`DEMO`), `P/T` pairs from
++  `run.pairs`, and Ops/Demo toggle buttons (`data-set-mode`).
++- `<body data-mode="ops">` is the default.
++- `<script type="application/json" id="pastdue-report">` embeds the full payload
++  (`json.dumps(..., ensure_ascii=False)`; `</` escaped as `<\/` so JSON stays valid).
++
++## Section IDs (in order)
++
++| ID | Content |
++|----|---------|
++| `run` | Run information and conclusion, trigger flags, P/T |
++| `country-metrics` | Country metrics table (all `countries[]` rows) |
++| `country-{CODE}` | One per `per_country[]`: ranking table, summary, coverage (e.g. `country-US`) |
++| `cross-country` | Only when `cross_country_summary` is present |
++| `scope-gaps` | Execution scope and gaps (`scope_gaps`) |
++
++## Tables
++
++Header text and column order follow `report-format.md` (Chinese for `zh`, English for
++`en`). 11 Country metric columns and 12 Vendor ranking columns; paired payload keys are
++merged into `previous→target` cells. Ranking ETA/check cells are delivered strings,
++escaped for HTML only. Ranking tables scroll horizontally; `thead` is sticky.
++
++Formatting helpers: integers without separators; signed nets `+`/`−`/`0`; ratios
++`xx.xx%`; contribution `x.xxxx pp`; nonzero values that round to zero render as
++`<0.01%` / `<0.0001 pp` with direction in words; null relative change with P=0 renders
++零基线上升 / Zero-baseline increase (P=T=0: 无变化 / No change). Missing values render
++未提供 / Not provided, never as zero.
++
++## Query parameters and modes
++
++- `?mode=ops|demo` sets `data-mode` on load (default `ops`); toggle buttons update it
++  and the URL (and drop `t`).
++- `?t=N` (seconds) is the seek/pause harness: pauses the Demo timeline and seeks to `N`.
++  It implies `mode=demo` unless `?mode=` is given. `?mode=demo&t=0` shows the first frame;
++  `?mode=demo&t=99` (>= duration) shows the final state. `body[data-t]` mirrors the time.
++- Harness API: `window.__pastdueTimeline` = `{ duration(), beats(), time(), paused(), play(), pause(), seek(t) }`.
++  The shell uses its own `requestAnimationFrame` timeline (no external library, so the
++  file stays self-contained). If a hand-authored shell uses GSAP instead, the equivalent
++  is `tl.pause(); tl.seek(N)`.
++
++## Ops vs Demo motion
++
++- **Ops (default)**: every section is fully visible immediately. When motion is allowed
++  (no `prefers-reduced-motion`, no `?t=`), ratio cells in `#country-metrics` (`xx.xx%→xx.xx%`)
++  do a short (~0.6 s) count-up and always end on the exact delivered text.
++- **Demo (`data-mode="demo"`)**: one master timeline reveals `[data-beat]` elements in DOM
++  order: `#run` → `#country-metrics` → each `#country-{CODE}` (ranking table) → its
++  `summary` → its `coverage` → `#cross-country` (if present) → `#scope-gaps`. Each beat
++  fades/slides in (opacity + small `translateY`) and ends with its inline style cleared.
++  A play/pause button (`#demo-play`, visible only in Demo) pauses/resumes; after the end
++  it becomes "Replay". Autoplays once on entering Demo; never loops.
++- **Demo never omits data.** Only reveal order and opacity change; no `display:none`,
++  no text/number rewriting, and the embedded JSON is untouched. Print always shows
++  everything.
++- Beat markup: `data-beat` on each `<section>`; per-country `summary` / `coverage` blocks are
++  `<div data-beat="summary|coverage">` wrappers around the same `<h3>` + text as Ops.
++
++## Reduced motion
++
++`prefers-reduced-motion: reduce` disables CSS animation/transition, forces `[data-beat]`
++to full opacity, skips the Ops count-up, and makes Demo jump straight to the final state
++(no autoplay, no looping; Play just re-asserts the final state). The JS also listens for
++the media query changing at runtime.
++
++## Optional isometric hook (not implemented by default)
++
++The shell contains no isometric/3D visuals. A deployment may opt in by adding its own
++decorative element (e.g. an inline SVG) inside `#run` marked `data-decor="isometric"` and
++driving it from `window.__pastdueTimeline.time()`. It must be `aria-hidden`, must not carry
++report data, and must be disabled under `prefers-reduced-motion`.
++## File naming
++
++`pastdue-{mode}-{countries}-{target}.html`, e.g.
++`pastdue-TEST-US-2026-10-23.html`, `pastdue-DAILY-US-CA-2026-10-23.html`.
++Generated samples may live under `skill/pastdue-html-report/scripts/out/`.
+diff --git a/skill/pastdue-html-report/references/payload-contract.md b/skill/pastdue-html-report/references/payload-contract.md
+new file mode 100644
+index 0000000..e391f6a
+--- /dev/null
++++ b/skill/pastdue-html-report/references/payload-contract.md
+@@ -0,0 +1,232 @@
++# HTML report payload contract
++
++Agents embed the canonical report bindings as JSON in
++
++`<script type="application/json" id="pastdue-report">…</script>`.
++
++The HTML skill **reformats for display only**. It does not re-query Atlas, re-run
++analysis, or recompute metrics. Field meanings, section order, column order, and
++number copy rules are defined in
++`skill/pastdue-analysis/references/report-format.md` — follow that document;
++do not fork formulas here.
++
++Reference sample: `sample-payload.json` in this directory.
++
++Implementation gate: `skill/pastdue-html-report/scripts/payload_gate.py`
++(`gate_payload`, `REQUIRED_META_KEYS`, `COUNTRY_COLUMN_KEYS`, `VENDOR_RANKING_KEYS`).
++
++---
++
++## Top-level object
++
++| Key | Required | Role |
++|-----|----------|------|
++| `meta` | yes | Run metadata (`REQUIRED_META_KEYS`) |
++| `run` | yes | Conclusion, trigger flags, P/T pairs per Country |
++| `countries` | yes | Non-empty array; one row per Country metrics table row |
++| `per_country` | yes | Non-empty array; drilldown blocks (ranking + summary + coverage) |
++| `cross_country_summary` | no | Text for module 4 when multiple Countries apply |
++| `scope_gaps` | yes | Execution scope and gaps (may be an explicit empty structure) |
++
++---
++
++## `meta`
++
++All keys in `REQUIRED_META_KEYS` (same tuple as `payload_gate.py`):
++
++```text
++mode
++language
++timezone
++calendar-mode
++generated-at
++metric-version
++```
++
++`mode` must be `DAILY` or `TEST` for HTML auto-delivery (see Gate below).
++`language` is the single resolved report language (`zh` or `en` per analysis delivery).
++
++---
++
++## `run`
++
++| Field | Type | Notes |
++|-------|------|-------|
++| `conclusion` | string | Run conclusion as already delivered in Markdown |
++| `trigger-flags` | string[] | e.g. `THRESHOLD_MET`, `TEST_FORCED` — preserve actual flags |
++| `pairs` | object | Map `country-code` → `{ previous-snapshot-date, target-snapshot-date }` |
++
++Date values in `pairs` use `YYYY-MM-DD`.
++
++---
++
++## `countries[]`
++
++Each element is one Country metrics row. **Key order for binding** (exact list from
++`COUNTRY_COLUMN_KEYS` in `payload_gate.py`):
++
++```text
++country-code
++business-status
++data-status
++previous-snapshot-date
++target-snapshot-date
++snapshot-gap-days
++previous-past-due-count
++target-past-due-count
++previous-open-count
++target-open-count
++previous-past-due-ratio
++target-past-due-ratio
++relative-ratio-change
++percentage-point-change
++```
++
++Scalars in the payload are stored as returned by analysis (ratios as unit fractions,
++e.g. `0.2` not `20%`). HTML display applies `report-format.md` shared formatting.
++
++Column header labels and table order: `report-format.md` § Country metrics columns.
++
++---
++
++## `per_country[]`
++
++One block per Country that received Vendor drilldown in the standard report.
++
++| Field | Required | Notes |
++|-------|----------|-------|
++| `country-code` | yes | Matches a `countries[]` row |
++| `selected-vendor-codes` | yes | Every code must appear on a `ranking[]` row |
++| `ranking` | yes | Non-empty; one row per delivered selected Vendor |
++| `summary` | yes | Country Vendor analysis summary text as delivered |
++| `coverage` | yes | Coverage and limitations text as delivered |
++
++### `ranking[]` row keys
++
++**Exact order** (`VENDOR_RANKING_KEYS` in `payload_gate.py`):
++
++```text
++contribution-rank
++vendor-code
++vendor-name
++previous-past-due-count
++target-past-due-count
++past-due-count-change
++previous-open-count
++target-open-count
++previous-vendor-ratio
++target-vendor-ratio
++delta-country-contribution
++positive-contribution-share
++main-code-changes
++main-source-changes
++check-totals
++analysis-status
++```
++
++Metric columns bind **VENDOR_METRICS only**. The three ETA/check columns are
++**pre-rendered strings** copied from the Markdown delivery (same Vendor identity and
++rank as the overview row).
++
++Gate additionally requires these four keys on every ranking row (subset of the list above):
++
++- `main-code-changes`
++- `main-source-changes`
++- `check-totals`
++- `analysis-status`
++
++Vendor ranking headers and order: `report-format.md` § Vendor ranking with main ETA changes.
++
++### HTML skill — ETA / Vendor hard rules
++
++From `report-format.md` (binding, not optional for HTML):
++
++- **Never invent OTHER** constituents or ETA buckets. Only display what the returned
++  compact rows / pre-built cell strings already contain.
++- **Never read Vendor totals from ETA bucket rows** and never recompute Vendor past-due
++  or open counts by summing buckets.
++- **Never add Code and Source together** into a single synthetic total.
++- Do not fabricate `analysis-status`; use actual scoped check/retrieval status strings.
++
++The HTML layer must not expand `main-code-changes` / `main-source-changes` with buckets
++that were not in the delivered analysis output.
++
++---
++
++## `cross_country_summary` (optional)
++
++When multiple Countries are in scope and the Markdown report included module 4,
++include a string (or structured text field) with the cross-Country summary as delivered.
++Omit the key when the module does not apply.
++
++---
++
++## `scope_gaps`
++
++Required top-level key. Structure must support rendering module 5 (execution scope and
++gaps). An explicit “no gaps” payload is valid (e.g. `items: []` plus notes).
++
++Example shape (illustrative; follow actual delivery):
++
++```json
++{
++  "items": [],
++  "notes": "无缺失项"
++}
++```
++
++---
++
++## Display formatting (authority: `report-format.md`)
++
++Apply **`skill/pastdue-analysis/references/report-format.md` § Shared formatting** when
++turning payload scalars and strings into HTML text. Summary for implementers:
++
++| Kind | Rule |
++|------|------|
++| Dates | `YYYY-MM-DD`; pairs `previous→target` |
++| Integers | No thousands separators |
++| Signed nets | Positive `+`, negative `−`, zero `0` |
++| Ratios / shares / relative changes | `100×` stored ratio, **two** decimal places `%` |
++| Contribution levels / `delta-country-contribution` | `100×` ratio, **four** decimal places `pp` |
++| Round for display only | Do not recompute underlying formulas in HTML |
++| Near-zero display | `<0.01%` / `<0.0001 pp` with direction in words when applicable |
++| Zero baseline | `report-format.md`: null relative with P=0,T>0 vs P=T=0 copy |
++| Main ETA cells / check totals | Use delivered strings; cell rules in `report-format.md` § Main Code / Main Source / Check totals |
++
++If payload numbers and formatted Markdown disagree, the Markdown delivery is wrong —
++fix upstream bindings, not HTML math.
++
++---
++
++## Gate checklist (`gate_payload`)
++
++Run `gate_payload(payload)` before emitting HTML. Behavior matches
++`skill/pastdue-html-report/scripts/payload_gate.py` exactly:
++
++1. **`meta.mode`** ∈ `DAILY`, `TEST` — otherwise reject (e.g. `INTERACTIVE`, `HISTORICAL` events-only).
++2. **Every `REQUIRED_META_KEYS` entry** present on `meta`.
++3. **Top-level `scope_gaps`** present.
++4. **`countries`** present and non-empty.
++5. **`per_country`** present and non-empty.
++6. For **each** `per_country` block:
++   - `ranking` non-empty (else reject with `{country-code}: empty ranking`).
++   - For each code in `selected-vendor-codes`, a ranking row with matching `vendor-code`.
++   - For each ranking row, keys present: `main-code-changes`, `main-source-changes`,
++     `check-totals`, `analysis-status`.
++
++On success: `(True, "ok")`. On failure: `(False, reason)` — skip HTML and state the
++reason briefly (same honesty as analysis delivery gate).
++
++**Note:** `gate_payload` does not validate every `COUNTRY_COLUMN_KEYS` / `VENDOR_RANKING_KEYS`
++field; unit tests assert full column lists on the canonical fixture. Producers should still
++populate every key in those lists on each row.
++
++---
++
++## Producer checklist
++
++1. Markdown standard modules delivered and gated per `report-format.md`.
++2. Build payload from the **same verified bindings** used for Markdown.
++3. `gate_payload` passes.
++4. Embed JSON in the HTML shell (`html-shell.md`, later tasks) without altering facts.
+diff --git a/skill/pastdue-html-report/references/sample-payload.json b/skill/pastdue-html-report/references/sample-payload.json
+new file mode 100644
+index 0000000..f5058f9
+--- /dev/null
++++ b/skill/pastdue-html-report/references/sample-payload.json
+@@ -0,0 +1,67 @@
++{
++  "meta": {
++    "mode": "TEST",
++    "language": "zh",
++    "timezone": "America/Los_Angeles",
++    "calendar-mode": "WEEKDAYS",
++    "generated-at": "2026-11-13T09:00:00-08:00",
++    "metric-version": "3.3.16"
++  },
++  "run": {
++    "conclusion": "测试路径：US 相对变化超过阈值，已强制完整分析。",
++    "trigger-flags": ["TEST_FORCED", "THRESHOLD_MET"],
++    "pairs": {
++      "US": {"previous-snapshot-date": "2026-10-22", "target-snapshot-date": "2026-10-23"}
++    }
++  },
++  "countries": [
++    {
++      "country-code": "US",
++      "business-status": "THRESHOLD_MET",
++      "data-status": "OK",
++      "previous-snapshot-date": "2026-10-22",
++      "target-snapshot-date": "2026-10-23",
++      "snapshot-gap-days": 1,
++      "previous-past-due-count": 1000,
++      "target-past-due-count": 1100,
++      "previous-open-count": 5000,
++      "target-open-count": 5100,
++      "previous-past-due-ratio": 0.2,
++      "target-past-due-ratio": 0.2156862745,
++      "relative-ratio-change": 0.07843137,
++      "percentage-point-change": 0.01568627
++    }
++  ],
++  "per_country": [
++    {
++      "country-code": "US",
++      "selected-vendor-codes": [3493],
++      "ranking": [
++        {
++          "contribution-rank": 1,
++          "vendor-code": 3493,
++          "vendor-name": "ACME",
++          "previous-past-due-count": 275,
++          "target-past-due-count": 319,
++          "past-due-count-change": 44,
++          "previous-open-count": 900,
++          "target-open-count": 920,
++          "previous-vendor-ratio": 0.30555556,
++          "target-vendor-ratio": 0.34673913,
++          "delta-country-contribution": 0.00400000,
++          "positive-contribution-share": 0.40000000,
++          "main-code-changes": "US 3→2 (−1)；NR 272→317 (+45)",
++          "main-source-changes": "AUTO US 3→2 (−1)；Vendor Report 272→317 (+45)",
++          "check-totals": "Code +45/−1/净44；Source +45/−1/净44",
++          "analysis-status": "OK"
++        }
++      ],
++      "summary": "ACME 为主要正向贡献；Code=US 与 Source 联合变化已核对。",
++      "coverage": "Top1覆盖全部正向贡献的40.00%。"
++    }
++  ],
++  "scope_gaps": {
++    "items": [],
++    "notes": "无缺失项"
++  }
++}
+diff --git a/skill/pastdue-html-report/scripts/out/.gitkeep b/skill/pastdue-html-report/scripts/out/.gitkeep
+new file mode 100644
+index 0000000..e69de29
+diff --git a/skill/pastdue-html-report/scripts/payload_gate.py b/skill/pastdue-html-report/scripts/payload_gate.py
+new file mode 100644
+index 0000000..c73c2a9
+--- /dev/null
++++ b/skill/pastdue-html-report/scripts/payload_gate.py
+@@ -0,0 +1,80 @@
++REQUIRED_META_KEYS = (
++    "mode",
++    "language",
++    "timezone",
++    "calendar-mode",
++    "generated-at",
++    "metric-version",
++)
++
++COUNTRY_COLUMN_KEYS = [
++    "country-code",
++    "business-status",
++    "data-status",
++    "previous-snapshot-date",
++    "target-snapshot-date",
++    "snapshot-gap-days",
++    "previous-past-due-count",
++    "target-past-due-count",
++    "previous-open-count",
++    "target-open-count",
++    "previous-past-due-ratio",
++    "target-past-due-ratio",
++    "relative-ratio-change",
++    "percentage-point-change",
++]
++
++VENDOR_RANKING_KEYS = [
++    "contribution-rank",
++    "vendor-code",
++    "vendor-name",
++    "previous-past-due-count",
++    "target-past-due-count",
++    "past-due-count-change",
++    "previous-open-count",
++    "target-open-count",
++    "previous-vendor-ratio",
++    "target-vendor-ratio",
++    "delta-country-contribution",
++    "positive-contribution-share",
++    "main-code-changes",
++    "main-source-changes",
++    "check-totals",
++    "analysis-status",
++]
++
++
++def gate_payload(payload: dict) -> tuple[bool, str]:
++    meta = payload.get("meta") or {}
++    mode = meta.get("mode")
++    if mode not in ("DAILY", "TEST"):
++        return False, f"mode {mode!r} is not DAILY/TEST"
++    for key in REQUIRED_META_KEYS:
++        if key not in meta:
++            return False, f"missing meta.{key}"
++    if "scope_gaps" not in payload:
++        return False, "missing scope_gaps"
++    if "countries" not in payload or not payload["countries"]:
++        return False, "missing countries"
++    per = payload.get("per_country") or []
++    if not per:
++        return False, "missing per_country"
++    for block in per:
++        selected = block.get("selected-vendor-codes") or []
++        ranking = block.get("ranking") or []
++        if not ranking:
++            return False, f"{block.get('country-code')}: empty ranking"
++        present = {row.get("vendor-code") for row in ranking}
++        for code in selected:
++            if code not in present:
++                return False, f"{block.get('country-code')}: missing vendor {code}"
++        for row in ranking:
++            for cell in (
++                "main-code-changes",
++                "main-source-changes",
++                "check-totals",
++                "analysis-status",
++            ):
++                if cell not in row:
++                    return False, f"ranking missing {cell}"
++    return True, "ok"
+diff --git a/skill/pastdue-html-report/scripts/render_ops_shell.py b/skill/pastdue-html-report/scripts/render_ops_shell.py
+new file mode 100644
+index 0000000..9099eab
+--- /dev/null
++++ b/skill/pastdue-html-report/scripts/render_ops_shell.py
+@@ -0,0 +1,607 @@
++"""Deterministic Ops HTML shell renderer for the PastDue HTML companion.
++
++Reformats an already-gated payload for display only. It never re-queries Atlas
++or recomputes metrics; formatting follows
++``skill/pastdue-analysis/references/report-format.md`` § Shared formatting.
++"""
++from __future__ import annotations
++
++import argparse
++import json
++import sys
++from html import escape
++from pathlib import Path
++
++sys.path.insert(0, str(Path(__file__).resolve().parent))
++from payload_gate import COUNTRY_COLUMN_KEYS, VENDOR_RANKING_KEYS, gate_payload  # noqa: E402,F401
++
++# --- i18n -----------------------------------------------------------------
++
++COUNTRY_HEADERS = {
++    "zh": [
++        "Country", "业务状态", "数据状态", "上期日期", "本期日期", "间隔天数",
++        "逾期 上期→本期", "Open 上期→本期", "逾期率 上期→本期", "相对变化", "百分点变化",
++    ],
++    "en": [
++        "Country", "Business status", "Data status", "Previous date", "Target date",
++        "Gap days", "Past due previous→target", "Open previous→target",
++        "Ratio previous→target", "Relative change", "Point change",
++    ],
++}
++
++RANKING_HEADERS = {
++    "zh": [
++        "排名", "Vendor Code／名称", "逾期 上期→本期", "净变化", "Open 上期→本期",
++        "Vendor 逾期率 上期→本期", "Country 贡献变化 pp", "正向贡献占比",
++        "主要 Code 变化", "主要 Source 变化", "核对", "分析状态",
++    ],
++    "en": [
++        "Rank", "Vendor code / name", "Past due previous→target", "Net change",
++        "Open previous→target", "Vendor ratio previous→target",
++        "Country contribution change pp", "Positive contribution share",
++        "Main Code changes", "Main Source changes", "Check totals", "Analysis status",
++    ],
++}
++
++LABELS = {
++    "zh": {
++        "run": "运行信息与结论",
++        "country_metrics": "Country 指标",
++        "ranking": "Vendor 排名与主要 ETA 变化",
++        "summary": "Country Vendor 总结分析",
++        "coverage": "覆盖率与限制",
++        "cross": "跨 Country 总结",
++        "gaps": "执行范围与缺失项",
++        "mode": "模式",
++        "language": "语言",
++        "timezone": "时区",
++        "calendar": "日历模式",
++        "generated": "生成时间",
++        "metric_version": "指标版本",
++        "conclusion": "结论",
++        "flags": "触发标记",
++        "pairs": "上期→本期",
++        "no_items": "无缺失项记录",
++        "notes": "备注",
++        "items": "条目",
++        "missing": "未提供",
++        "zero_up": "零基线上升",
++        "no_change": "无变化",
++        "up": "上升",
++        "down": "下降",
++        "test_title": "[测试]",
++        "title": "PastDue 报告",
++        "play": "播放",
++        "pause": "暂停",
++        "replay": "重播",
++    },
++    "en": {
++        "run": "Run information and conclusion",
++        "country_metrics": "Country metrics",
++        "ranking": "Vendor ranking with main ETA changes",
++        "summary": "Country Vendor analysis summary",
++        "coverage": "Coverage and limitations",
++        "cross": "Cross-Country summary",
++        "gaps": "Execution scope and gaps",
++        "mode": "Mode",
++        "language": "Language",
++        "timezone": "Timezone",
++        "calendar": "Calendar mode",
++        "generated": "Generated at",
++        "metric_version": "Metric version",
++        "conclusion": "Conclusion",
++        "flags": "Trigger flags",
++        "pairs": "Previous→target",
++        "no_items": "No gap items recorded",
++        "notes": "Notes",
++        "items": "Items",
++        "missing": "Not provided",
++        "zero_up": "Zero-baseline increase",
++        "no_change": "No change",
++        "up": "increase",
++        "down": "decrease",
++        "test_title": "[TEST]",
++        "title": "PastDue report",
++        "play": "Play",
++        "pause": "Pause",
++        "replay": "Replay",
++    },
++}
++
++MINUS = "\u2212"
++
++# --- display formatting helpers ---------------------------------------------
++
++
++def _missing(lang: str = "zh") -> str:
++    return LABELS.get(lang, LABELS["zh"])["missing"]
++
++
++def fmt_int(value, lang: str = "zh") -> str:
++    if value is None:
++        return _missing(lang)
++    return str(int(value))
++
++
++def fmt_signed(value, lang: str = "zh") -> str:
++    """Signed integer: + for positive, U+2212 for negative, 0 for zero."""
++    if value is None:
++        return _missing(lang)
++    n = int(value)
++    if n > 0:
++        return f"+{n}"
++    if n < 0:
++        return f"{MINUS}{abs(n)}"
++    return "0"
++
++
++def _scaled(value, decimals: int, unit: str, threshold: float, signed: bool, lang: str) -> str:
++    if value is None:
++        return _missing(lang)
++    v = float(value) * 100.0
++    labels = LABELS.get(lang, LABELS["zh"])
++    if v != 0 and round(abs(v), decimals) == 0:
++        text = f"<{threshold}{unit}"
++        if signed:
++            text += f"（{labels['up'] if v > 0 else labels['down']}）" if lang == "zh" else (
++                f" ({labels['up'] if v > 0 else labels['down']})"
++            )
++        return text
++    body = f"{abs(v):.{decimals}f}{unit}"
++    if v < 0:
++        return f"{MINUS}{body}"
++    if v > 0 and signed:
++        return f"+{body}"
++    return body
++
++
++def fmt_ratio(value, signed: bool = False, lang: str = "zh") -> str:
++    """Ratio -> ``xx.xx%`` (100x, two decimals)."""
++    return _scaled(value, 2, "%", 0.01, signed, lang)
++
++
++def fmt_pp(value, signed: bool = False, lang: str = "zh") -> str:
++    """Ratio -> ``x.xxxx pp`` (100x, four decimals)."""
++    return _scaled(value, 4, " pp", 0.0001, signed, lang)
++
++
++def fmt_relative(row: dict, lang: str = "zh") -> str:
++    """Relative ratio change with zero-baseline copy per report-format.md."""
++    labels = LABELS.get(lang, LABELS["zh"])
++    value = row.get("relative-ratio-change")
++    if value is None:
++        prev = row.get("previous-past-due-count")
++        tgt = row.get("target-past-due-count")
++        if prev == 0 and tgt is not None and tgt > 0:
++            return labels["zero_up"]
++        if prev == 0 and tgt == 0:
++            return labels["no_change"]
++        return labels["missing"]
++    return fmt_ratio(value, signed=True, lang=lang)
++
++
++def _pair(a: str, b: str) -> str:
++    return f"{a}→{b}"
++
++
++def _esc(value) -> str:
++    """Escape text for HTML; keep newlines visible, never raw table delimiters."""
++    if value is None:
++        return ""
++    return escape(str(value), quote=True).replace("\r\n", "\n").replace("\n", "<br>")
++
++
++# --- table builders -----------------------------------------------------------
++
++
++def _table(headers: list[str], rows: list[list[str]], css: str = "") -> str:
++    head = "".join(f"<th>{_esc(h)}</th>" for h in headers)
++    body = "".join(
++        "<tr>" + "".join(f"<td>{cell}</td>" for cell in row) + "</tr>" for row in rows
++    )
++    cls = f' class="{css}"' if css else ""
++    return (
++        f'<div class="table-wrap{" scroll-x" if css == "ranking" else ""}">'
++        f"<table{cls}><thead><tr>{head}</tr></thead><tbody>{body}</tbody></table></div>"
++    )
++
++
++def _country_row(row: dict, lang: str) -> list[str]:
++    return [
++        _esc(row["country-code"]),
++        _esc(row["business-status"]),
++        _esc(row["data-status"]),
++        _esc(row["previous-snapshot-date"]),
++        _esc(row["target-snapshot-date"]),
++        _esc(fmt_int(row["snapshot-gap-days"], lang)),
++        _esc(_pair(fmt_int(row["previous-past-due-count"], lang), fmt_int(row["target-past-due-count"], lang))),
++        _esc(_pair(fmt_int(row["previous-open-count"], lang), fmt_int(row["target-open-count"], lang))),
++        _esc(_pair(fmt_ratio(row["previous-past-due-ratio"], lang=lang), fmt_ratio(row["target-past-due-ratio"], lang=lang))),
++        _esc(fmt_relative(row, lang)),
++        _esc(fmt_pp(row["percentage-point-change"], signed=True, lang=lang)),
++    ]
++
++
++def _ranking_row(row: dict, lang: str) -> list[str]:
++    code_name = f"{_esc(row['vendor-code'])}／{_esc(row['vendor-name'])}"
++    return [
++        _esc(fmt_int(row["contribution-rank"], lang)),
++        code_name,
++        _esc(_pair(fmt_int(row["previous-past-due-count"], lang), fmt_int(row["target-past-due-count"], lang))),
++        _esc(fmt_signed(row["past-due-count-change"], lang)),
++        _esc(_pair(fmt_int(row["previous-open-count"], lang), fmt_int(row["target-open-count"], lang))),
++        _esc(_pair(fmt_ratio(row["previous-vendor-ratio"], lang=lang), fmt_ratio(row["target-vendor-ratio"], lang=lang))),
++        _esc(fmt_pp(row["delta-country-contribution"], signed=True, lang=lang)),
++        _esc(fmt_ratio(row["positive-contribution-share"], lang=lang)),
++        _esc(row["main-code-changes"]),
++        _esc(row["main-source-changes"]),
++        _esc(row["check-totals"]),
++        _esc(row["analysis-status"]),
++    ]
++
++
++def _text_block(value) -> str:
++    if isinstance(value, str):
++        return f"<p>{_esc(value)}</p>"
++    return f"<pre>{_esc(json.dumps(value, ensure_ascii=False, indent=2))}</pre>"
++
++
++def _scope_gaps_html(scope_gaps, labels: dict) -> str:
++    if isinstance(scope_gaps, dict):
++        items = scope_gaps.get("items") or []
++        notes = scope_gaps.get("notes")
++        parts = []
++        if items:
++            lis = "".join(
++                f"<li>{_esc(i) if isinstance(i, str) else _esc(json.dumps(i, ensure_ascii=False))}</li>"
++                for i in items
++            )
++            parts.append(f"<ul>{lis}</ul>")
++        else:
++            parts.append(f'<p class="muted">{_esc(labels["no_items"])}</p>')
++        if notes:
++            parts.append(f'<p><strong>{_esc(labels["notes"])}:</strong> {_esc(notes)}</p>')
++        extra = {k: v for k, v in scope_gaps.items() if k not in ("items", "notes")}
++        if extra:
++            parts.append(f"<pre>{_esc(json.dumps(extra, ensure_ascii=False, indent=2))}</pre>")
++        return "".join(parts)
++    return _text_block(scope_gaps)
++
++
++def _json_for_script(payload: dict) -> str:
++    text = json.dumps(payload, ensure_ascii=False)
++    # Prevent `</script>`-style substrings from terminating the script element early.
++    return text.replace("</", "<\\/")
++
++
++# --- CSS / JS -------------------------------------------------------------------
++
++CSS = """
++:root { --bg:#f7f8fa; --fg:#1b1f24; --muted:#5b6672; --line:#d6dbe1; --accent:#1f5fbf; --card:#fff; --warn:#b45309; }
++* { box-sizing: border-box; }
++body { margin:0; font-family: -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; background:var(--bg); color:var(--fg); line-height:1.5; }
++header.top { position: sticky; top: 0; z-index: 20; display:flex; flex-wrap:wrap; gap:.75rem; align-items:center; padding:.6rem 1rem; background:var(--card); border-bottom:1px solid var(--line); }
++header.top h1 { font-size:1.05rem; margin:0; }
++.badge { display:inline-block; padding:.1rem .55rem; border-radius:999px; background:var(--accent); color:#fff; font-size:.8rem; }
++.badge.test { background:var(--warn); }
++.pt { font-size:.85rem; color:var(--muted); }
++.toggle button { border:1px solid var(--line); background:#fff; padding:.25rem .7rem; cursor:pointer; font:inherit; font-size:.85rem; }
++.toggle button:first-child { border-radius:6px 0 0 6px; }
++.toggle button:last-child { border-radius:0 6px 6px 0; border-left:0; }
++body[data-mode="ops"] .toggle button[data-set-mode="ops"], body[data-mode="demo"] .toggle button[data-set-mode="demo"] { background:var(--accent); color:#fff; border-color:var(--accent); }
++nav.toc { margin-left:auto; font-size:.85rem; }
++nav.toc a { margin-left:.6rem; color:var(--accent); text-decoration:none; }
++main { max-width: 1400px; margin: 0 auto; padding: 1rem; }
++section { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:1rem; margin-bottom:1rem; scroll-margin-top:4rem; }
++section h2 { margin:.1rem 0 .6rem; font-size:1.1rem; }
++.table-wrap { overflow:auto; max-height:70vh; }
++.table-wrap.scroll-x { overflow-x:auto; }
++table { border-collapse: collapse; width:100%; font-size:.88rem; }
++th, td { border:1px solid var(--line); padding:.35rem .55rem; text-align:left; vertical-align:top; }
++thead th { position: sticky; top: 0; background:#eef1f5; z-index:5; white-space:nowrap; }
++table.ranking td { min-width:6rem; }
++table.ranking td:nth-last-child(-n+4) { min-width:14rem; }
++.muted { color:var(--muted); }
++dl.meta { display:grid; grid-template-columns: max-content 1fr; gap:.2rem 1rem; margin:0 0 .6rem; font-size:.9rem; }
++dl.meta dt { color:var(--muted); }
++dl.meta dd { margin:0; }
++.demo-only { display:none; }
++body[data-mode="demo"] .demo-only { display:inline-block; }
++#demo-play { border:1px solid var(--accent); background:#fff; color:var(--accent); padding:.25rem .7rem; border-radius:6px; cursor:pointer; font:inherit; font-size:.85rem; }
++/* Demo motion: JS only sets inline opacity/transform on [data-beat] elements (reveal order);
++   nothing is removed from the DOM and no content is hidden via display. */
++[data-beat] { will-change: auto; }
++@media print {
++  [data-beat] { opacity: 1 !important; transform: none !important; }
++}
++/* Reduced motion: no CSS animation/transition; JS forces the final visible state and never loops. */
++@media (prefers-reduced-motion: reduce) {
++  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
++  [data-beat] { opacity: 1 !important; transform: none !important; }
++}
++""".strip()
++
++JS = r"""
++(function () {
++  var body = document.body;
++  // ?mode=ops|demo selects the initial view (default ops); e.g. report.html?mode=demo
++  // ?t=N (seconds) pauses the Demo timeline and seeks to N; it implies mode=demo unless ?mode= is set.
++  var params = new URLSearchParams(location.search);
++  var reduceMq = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : null;
++  function reduced() { return !!(reduceMq && reduceMq.matches); }
++
++  // One master timeline over the beats in DOM order:
++  // #run -> #country-metrics -> each #country-* (ranking) -> summary -> coverage -> #cross-country -> #scope-gaps
++  var beats = Array.prototype.slice.call(document.querySelectorAll("[data-beat]"));
++  var STEP = 0.7, FADE = 0.6, HOLD = 0.4;
++  var DURATION = beats.length ? (beats.length - 1) * STEP + FADE + HOLD : 0;
++  var btn = document.getElementById("demo-play");
++  var time = 0, playing = false, raf = 0, last = 0, countToken = 0;
++
++  function clamp(t) { return Math.min(DURATION, Math.max(0, t)); }
++  function mode() { return body.getAttribute("data-mode"); }
++  function clearBeats() {
++    beats.forEach(function (el) { el.style.opacity = ""; el.style.transform = ""; });
++  }
++  // Demo only changes reveal order / opacity; every beat ends fully visible.
++  function applyBeats(t) {
++    beats.forEach(function (el, i) {
++      var o = Math.min(1, Math.max(0, (t - i * STEP) / FADE));
++      if (o >= 1) { el.style.opacity = ""; el.style.transform = ""; return; }
++      el.style.opacity = String(o);
++      el.style.transform = "translateY(" + ((1 - o) * 12).toFixed(1) + "px)";
++    });
++  }
++  function updateButton() {
++    if (!btn) { return; }
++    var key = playing ? "pause" : (time >= DURATION ? "replay" : "play");
++    btn.textContent = btn.getAttribute("data-label-" + key) || key;
++    btn.setAttribute("aria-pressed", playing ? "true" : "false");
++  }
++  function render() {
++    body.setAttribute("data-t", time.toFixed(2));
++    if (mode() === "demo") { applyBeats(time); } else { clearBeats(); }
++  }
++  function tick(now) {
++    if (!playing) { return; }
++    time = clamp(time + (now - last) / 1000);
++    last = now;
++    render();
++    if (time >= DURATION) { pause(); } else { raf = requestAnimationFrame(tick); }
++  }
++  function pause() {
++    playing = false;
++    if (raf) { cancelAnimationFrame(raf); raf = 0; }
++    updateButton();
++  }
++  function seek(t) { time = clamp(Number(t) || 0); render(); updateButton(); }
++  function play() {
++    if (reduced()) { pause(); seek(DURATION); return; }  // final state, never autoplay/loop
++    if (time >= DURATION) { time = 0; }
++    pause();
++    playing = true;
++    last = performance.now();
++    raf = requestAnimationFrame(tick);
++    updateButton();
++  }
++
++  // Optional light count-up for ratio cells in Ops (skipped when reduced motion or ?t= is set).
++  function countUpRatios() {
++    var token = ++countToken;
++    var cells = [];
++    document.querySelectorAll("#country-metrics tbody td").forEach(function (td) {
++      var m = /^(\d+\.\d+)%\u2192(\d+\.\d+)%$/.exec(td.textContent);
++      if (m) { cells.push({ td: td, final: td.textContent, a: parseFloat(m[1]), b: parseFloat(m[2]) }); }
++    });
++    if (!cells.length) { return; }
++    var start = performance.now(), DUR = 600;
++    function step(now) {
++      var k = Math.min(1, (now - start) / DUR);
++      var live = token === countToken && mode() === "ops" && !reduced() && k < 1;
++      cells.forEach(function (c) {
++        c.td.textContent = live
++          ? (c.a * k).toFixed(2) + "%\u2192" + (c.b * k).toFixed(2) + "%"
++          : c.final;
++      });
++      if (live) { requestAnimationFrame(step); }
++    }
++    requestAnimationFrame(step);
++  }
++
++  function setMode(next, opts) {
++    opts = opts || {};
++    if (next !== "ops" && next !== "demo") { next = "ops"; }
++    countToken++;
++    body.setAttribute("data-mode", next);
++    var badge = document.getElementById("view-mode");
++    if (badge) { badge.textContent = next.toUpperCase(); }
++    if (next === "ops") {
++      pause();
++      render();
++      if (opts.initial && !reduced() && !opts.hasT) { countUpRatios(); }
++      return;
++    }
++    if (reduced()) { pause(); seek(DURATION); return; }  // final state, no looping
++    if (opts.hasT) { pause(); seek(opts.t); return; }    // harness: pause + seek
++    seek(0);
++    play();
++  }
++
++  window.__pastdueTimeline = {
++    duration: function () { return DURATION; },
++    beats: function () { return beats.length; },
++    time: function () { return time; },
++    paused: function () { return !playing; },
++    play: play,
++    pause: pause,
++    seek: function (t) { pause(); seek(t); }
++  };
++
++  var tRaw = params.get("t");
++  var hasT = tRaw !== null && tRaw !== "" && isFinite(parseFloat(tRaw));
++  setMode(params.get("mode") || (hasT ? "demo" : "ops"), { initial: true, hasT: hasT, t: hasT ? parseFloat(tRaw) : 0 });
++
++  if (reduceMq && reduceMq.addEventListener) {
++    reduceMq.addEventListener("change", function () {
++      if (reduced() && mode() === "demo") { pause(); seek(DURATION); }
++    });
++  }
++  if (btn) {
++    btn.addEventListener("click", function () { if (playing) { pause(); } else { play(); } });
++  }
++  document.querySelectorAll("[data-set-mode]").forEach(function (b) {
++    b.addEventListener("click", function () {
++      var next = b.getAttribute("data-set-mode");
++      setMode(next);
++      var url = new URL(location.href);
++      url.searchParams.set("mode", next);
++      url.searchParams.delete("t");
++      history.replaceState(null, "", url);
++    });
++  });
++})();
++""".strip()
++
++
++# --- main renderer ----------------------------------------------------------------
++
++
++def _pairs_text(payload: dict) -> str:
++    pairs = (payload.get("run") or {}).get("pairs") or {}
++    return "；".join(
++        f"{code} {p.get('previous-snapshot-date')}→{p.get('target-snapshot-date')}"
++        for code, p in pairs.items()
++    )
++
++
++def render_ops_shell(payload: dict) -> str:
++    ok, reason = gate_payload(payload)
++    if not ok:
++        raise ValueError(reason)
++
++    meta = payload["meta"]
++    lang = meta.get("language") if meta.get("language") in ("zh", "en") else "zh"
++    labels = LABELS[lang]
++    run = payload.get("run") or {}
++    is_test = meta.get("mode") == "TEST"
++    title = f"{labels['test_title']} {labels['title']}" if is_test else labels["title"]
++    pairs_text = _pairs_text(payload)
++
++    # Header
++    badge_cls = "badge test" if is_test else "badge"
++    header = (
++        '<header class="top">'
++        f"<h1>{_esc(title)}</h1>"
++        f'<span class="{badge_cls}" id="run-mode">{_esc(meta["mode"])}</span>'
++        f'<span class="badge" id="view-mode">OPS</span>'
++        f'<span class="pt" title="P/T">P/T: {_esc(pairs_text)}</span>'
++        '<span class="toggle" role="group" aria-label="Ops/Demo">'
++        '<button type="button" data-set-mode="ops">Ops</button>'
++        '<button type="button" data-set-mode="demo">Demo</button>'
++        "</span>"
++        f'<button type="button" id="demo-play" class="demo-only" aria-pressed="false" '
++        f'data-label-play="{_esc(labels["play"])}" data-label-pause="{_esc(labels["pause"])}" '
++        f'data-label-replay="{_esc(labels["replay"])}">{_esc(labels["pause"])}</button>'
++        '<nav class="toc">'
++        f'<a href="#run">{_esc(labels["run"])}</a>'
++        f'<a href="#country-metrics">{_esc(labels["country_metrics"])}</a>'
++        f'<a href="#scope-gaps">{_esc(labels["gaps"])}</a>'
++        "</nav>"
++        "</header>"
++    )
++
++    sections: list[str] = []
++
++    # #run
++    flags = run.get("trigger-flags") or []
++    meta_rows = [
++        (labels["mode"], meta["mode"]),
++        (labels["language"], meta["language"]),
++        (labels["timezone"], meta["timezone"]),
++        (labels["calendar"], meta["calendar-mode"]),
++        (labels["generated"], meta["generated-at"]),
++        (labels["metric_version"], meta["metric-version"]),
++        (labels["flags"], " / ".join(flags) if flags else "—"),
++        (labels["pairs"], pairs_text or "—"),
++    ]
++    dl = "".join(f"<dt>{_esc(k)}</dt><dd>{_esc(v)}</dd>" for k, v in meta_rows)
++    sections.append(
++        f'<section id="run" data-beat="run"><h2>{_esc(labels["run"])}</h2>'
++        f'<dl class="meta">{dl}</dl>'
++        f'<p><strong>{_esc(labels["conclusion"])}:</strong> {_esc(run.get("conclusion", ""))}</p>'
++        "</section>"
++    )
++
++    # #country-metrics
++    sections.append(
++        f'<section id="country-metrics" data-beat="country-metrics"><h2>{_esc(labels["country_metrics"])}</h2>'
++        + _table(COUNTRY_HEADERS[lang], [_country_row(r, lang) for r in payload["countries"]])
++        + "</section>"
++    )
++
++    # #country-XX
++    for block in payload["per_country"]:
++        code = block["country-code"]
++        pair = (run.get("pairs") or {}).get(code)
++        if not pair:
++            row = next((r for r in payload["countries"] if r.get("country-code") == code), {})
++            pair = {
++                "previous-snapshot-date": row.get("previous-snapshot-date", "—"),
++                "target-snapshot-date": row.get("target-snapshot-date", "—"),
++            }
++        heading = f"{code} — {pair['previous-snapshot-date']}→{pair['target-snapshot-date']}"
++        sid = f"country-{_esc(code)}"
++        sections.append(
++            f'<section id="{sid}" data-country="{_esc(code)}" data-beat="country"><h2>{_esc(heading)}</h2>'
++            f'<h3>{_esc(labels["ranking"])}</h3>'
++            + _table(RANKING_HEADERS[lang], [_ranking_row(r, lang) for r in block["ranking"]], css="ranking")
++            + f'<div data-beat="summary"><h3>{_esc(labels["summary"])}</h3>{_text_block(block.get("summary", ""))}</div>'
++            + f'<div data-beat="coverage"><h3>{_esc(labels["coverage"])}</h3>{_text_block(block.get("coverage", ""))}</div>'
++            + "</section>"
++        )
++
++    # #cross-country
++    if payload.get("cross_country_summary"):
++        sections.append(
++            f'<section id="cross-country" data-beat="cross-country"><h2>{_esc(labels["cross"])}</h2>'
++            + _text_block(payload["cross_country_summary"])
++            + "</section>"
++        )
++
++    # #scope-gaps
++    sections.append(
++        f'<section id="scope-gaps" data-key="scope_gaps" data-beat="scope-gaps"><h2>{_esc(labels["gaps"])}</h2>'
++        + _scope_gaps_html(payload["scope_gaps"], labels)
++        + "</section>"
++    )
++
++    return (
++        "<!DOCTYPE html>\n"
++        f'<html lang="{lang}">\n<head>\n<meta charset="utf-8">\n'
++        '<meta name="viewport" content="width=device-width, initial-scale=1">\n'
++        f"<title>{_esc(title)}</title>\n<style>\n{CSS}\n</style>\n</head>\n"
++        f'<body data-mode="ops">\n{header}\n<main>\n' + "\n".join(sections) + "\n</main>\n"
++        f'<script type="application/json" id="pastdue-report">{_json_for_script(payload)}</script>\n'
++        f"<script>\n{JS}\n</script>\n</body>\n</html>\n"
++    )
++
++
++def main(argv=None) -> int:
++    p = argparse.ArgumentParser(description="Render the PastDue Ops HTML shell.")
++    p.add_argument("payload_json")
++    p.add_argument("-o", "--output", required=True)
++    args = p.parse_args(argv)
++    payload = json.loads(Path(args.payload_json).read_text(encoding="utf-8"))
++    try:
++        html = render_ops_shell(payload)
++    except ValueError as exc:
++        print(f"gate failed: {exc}", file=sys.stderr)
++        return 1
++    out = Path(args.output)
++    out.parent.mkdir(parents=True, exist_ok=True)
++    out.write_text(html, encoding="utf-8")
++    return 0
++
++
++if __name__ == "__main__":
++    sys.exit(main())
+diff --git a/tests/fixtures/html-report-payload-gate-fail.json b/tests/fixtures/html-report-payload-gate-fail.json
+new file mode 100644
+index 0000000..3f1a398
+--- /dev/null
++++ b/tests/fixtures/html-report-payload-gate-fail.json
+@@ -0,0 +1,47 @@
++{
++  "meta": {
++    "mode": "INTERACTIVE",
++    "language": "zh",
++    "timezone": "America/Los_Angeles",
++    "calendar-mode": "WEEKDAYS",
++    "generated-at": "2026-11-13T09:00:00-08:00",
++    "metric-version": "3.3.16"
++  },
++  "run": {
++    "conclusion": "测试路径：US 相对变化超过阈值，已强制完整分析。",
++    "trigger-flags": ["TEST_FORCED", "THRESHOLD_MET"],
++    "pairs": {
++      "US": {"previous-snapshot-date": "2026-10-22", "target-snapshot-date": "2026-10-23"}
++    }
++  },
++  "countries": [
++    {
++      "country-code": "US",
++      "business-status": "THRESHOLD_MET",
++      "data-status": "OK",
++      "previous-snapshot-date": "2026-10-22",
++      "target-snapshot-date": "2026-10-23",
++      "snapshot-gap-days": 1,
++      "previous-past-due-count": 1000,
++      "target-past-due-count": 1100,
++      "previous-open-count": 5000,
++      "target-open-count": 5100,
++      "previous-past-due-ratio": 0.2,
++      "target-past-due-ratio": 0.2156862745,
++      "relative-ratio-change": 0.07843137,
++      "percentage-point-change": 0.01568627
++    }
++  ],
++  "per_country": [
++    {
++      "country-code": "US",
++      "selected-vendor-codes": [3493],
++      "summary": "ACME 为主要正向贡献；Code=US 与 Source 联合变化已核对。",
++      "coverage": "Top1覆盖全部正向贡献的40.00%。"
++    }
++  ],
++  "scope_gaps": {
++    "items": [],
++    "notes": "无缺失项"
++  }
++}
+diff --git a/tests/fixtures/html-report-payload-valid.json b/tests/fixtures/html-report-payload-valid.json
+new file mode 100644
+index 0000000..f5058f9
+--- /dev/null
++++ b/tests/fixtures/html-report-payload-valid.json
+@@ -0,0 +1,67 @@
++{
++  "meta": {
++    "mode": "TEST",
++    "language": "zh",
++    "timezone": "America/Los_Angeles",
++    "calendar-mode": "WEEKDAYS",
++    "generated-at": "2026-11-13T09:00:00-08:00",
++    "metric-version": "3.3.16"
++  },
++  "run": {
++    "conclusion": "测试路径：US 相对变化超过阈值，已强制完整分析。",
++    "trigger-flags": ["TEST_FORCED", "THRESHOLD_MET"],
++    "pairs": {
++      "US": {"previous-snapshot-date": "2026-10-22", "target-snapshot-date": "2026-10-23"}
++    }
++  },
++  "countries": [
++    {
++      "country-code": "US",
++      "business-status": "THRESHOLD_MET",
++      "data-status": "OK",
++      "previous-snapshot-date": "2026-10-22",
++      "target-snapshot-date": "2026-10-23",
++      "snapshot-gap-days": 1,
++      "previous-past-due-count": 1000,
++      "target-past-due-count": 1100,
++      "previous-open-count": 5000,
++      "target-open-count": 5100,
++      "previous-past-due-ratio": 0.2,
++      "target-past-due-ratio": 0.2156862745,
++      "relative-ratio-change": 0.07843137,
++      "percentage-point-change": 0.01568627
++    }
++  ],
++  "per_country": [
++    {
++      "country-code": "US",
++      "selected-vendor-codes": [3493],
++      "ranking": [
++        {
++          "contribution-rank": 1,
++          "vendor-code": 3493,
++          "vendor-name": "ACME",
++          "previous-past-due-count": 275,
++          "target-past-due-count": 319,
++          "past-due-count-change": 44,
++          "previous-open-count": 900,
++          "target-open-count": 920,
++          "previous-vendor-ratio": 0.30555556,
++          "target-vendor-ratio": 0.34673913,
++          "delta-country-contribution": 0.00400000,
++          "positive-contribution-share": 0.40000000,
++          "main-code-changes": "US 3→2 (−1)；NR 272→317 (+45)",
++          "main-source-changes": "AUTO US 3→2 (−1)；Vendor Report 272→317 (+45)",
++          "check-totals": "Code +45/−1/净44；Source +45/−1/净44",
++          "analysis-status": "OK"
++        }
++      ],
++      "summary": "ACME 为主要正向贡献；Code=US 与 Source 联合变化已核对。",
++      "coverage": "Top1覆盖全部正向贡献的40.00%。"
++    }
++  ],
++  "scope_gaps": {
++    "items": [],
++    "notes": "无缺失项"
++  }
++}
+diff --git a/tests/test_html_report_payload.py b/tests/test_html_report_payload.py
+new file mode 100644
+index 0000000..61053dc
+--- /dev/null
++++ b/tests/test_html_report_payload.py
+@@ -0,0 +1,47 @@
++import json
++import sys
++import unittest
++from pathlib import Path
++
++ROOT = Path(__file__).resolve().parents[1]
++sys.path.insert(0, str(ROOT / "skill" / "pastdue-html-report" / "scripts"))
++from payload_gate import (  # noqa: E402
++    COUNTRY_COLUMN_KEYS,
++    VENDOR_RANKING_KEYS,
++    gate_payload,
++)
++
++FIX = Path(__file__).resolve().parent / "fixtures"
++
++
++class HtmlReportPayloadTests(unittest.TestCase):
++    def test_valid_payload_passes_gate(self):
++        payload = json.loads((FIX / "html-report-payload-valid.json").read_text(encoding="utf-8"))
++        ok, reason = gate_payload(payload)
++        self.assertTrue(ok, reason)
++
++    def test_gate_fail_payload_is_rejected(self):
++        payload = json.loads((FIX / "html-report-payload-gate-fail.json").read_text(encoding="utf-8"))
++        ok, reason = gate_payload(payload)
++        self.assertFalse(ok)
++        self.assertTrue(reason)
++
++    def test_country_row_has_required_keys(self):
++        payload = json.loads((FIX / "html-report-payload-valid.json").read_text(encoding="utf-8"))
++        row = payload["countries"][0]
++        for key in COUNTRY_COLUMN_KEYS:
++            self.assertIn(key, row, key)
++
++    def test_ranking_row_has_required_keys(self):
++        payload = json.loads((FIX / "html-report-payload-valid.json").read_text(encoding="utf-8"))
++        row = payload["per_country"][0]["ranking"][0]
++        for key in VENDOR_RANKING_KEYS:
++            self.assertIn(key, row, key)
++
++    def test_scope_gaps_key_required(self):
++        payload = json.loads((FIX / "html-report-payload-valid.json").read_text(encoding="utf-8"))
++        self.assertIn("scope_gaps", payload)
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/tests/test_html_report_render.py b/tests/test_html_report_render.py
+new file mode 100644
+index 0000000..e802d30
+--- /dev/null
++++ b/tests/test_html_report_render.py
+@@ -0,0 +1,211 @@
++import json
++import subprocess
++import sys
++import tempfile
++import unittest
++from pathlib import Path
++
++ROOT = Path(__file__).resolve().parents[1]
++SCRIPTS = ROOT / "skill" / "pastdue-html-report" / "scripts"
++sys.path.insert(0, str(SCRIPTS))
++from render_ops_shell import (  # noqa: E402
++    fmt_int,
++    fmt_pp,
++    fmt_ratio,
++    fmt_signed,
++    render_ops_shell,
++)
++
++FIX = Path(__file__).resolve().parent / "fixtures"
++
++ZH_COUNTRY_HEADERS = [
++    "Country", "业务状态", "数据状态", "上期日期", "本期日期", "间隔天数",
++    "逾期 上期→本期", "Open 上期→本期", "逾期率 上期→本期", "相对变化", "百分点变化",
++]
++ZH_RANKING_HEADERS = [
++    "排名", "Vendor Code／名称", "逾期 上期→本期", "净变化", "Open 上期→本期",
++    "Vendor 逾期率 上期→本期", "Country 贡献变化 pp", "正向贡献占比",
++    "主要 Code 变化", "主要 Source 变化", "核对", "分析状态",
++]
++
++
++def load_valid():
++    return json.loads((FIX / "html-report-payload-valid.json").read_text(encoding="utf-8"))
++
++
++class HtmlRenderTests(unittest.TestCase):
++    def test_ops_html_contains_required_sections_and_payload(self):
++        html = render_ops_shell(load_valid())
++        self.assertIn('id="pastdue-report"', html)
++        self.assertIn("ACME", html)
++        self.assertIn("scope_gaps", html)
++        self.assertIn('data-mode="ops"', html)
++        self.assertIn("main-code-changes", html)
++        self.assertIn("核对", html)
++        self.assertIn("业务状态", html)
++
++    def test_section_ids_and_lang(self):
++        html = render_ops_shell(load_valid())
++        self.assertIn('<html lang="zh">', html)
++        for sid in ("run", "country-metrics", "country-US", "scope-gaps"):
++            self.assertIn(f'id="{sid}"', html)
++        self.assertNotIn('id="cross-country"', html)
++
++    def test_cross_country_when_present(self):
++        payload = load_valid()
++        payload["cross_country_summary"] = "US 与 CA 对比摘要"
++        html = render_ops_shell(payload)
++        self.assertIn('id="cross-country"', html)
++        self.assertIn("US 与 CA 对比摘要", html)
++
++    def test_zh_headers_exact_order(self):
++        html = render_ops_shell(load_valid())
++        for headers in (ZH_COUNTRY_HEADERS, ZH_RANKING_HEADERS):
++            pos = -1
++            for h in headers:
++                nxt = html.find(f"<th>{h}</th>", pos + 1)
++                self.assertGreater(nxt, pos, h)
++                pos = nxt
++
++    def test_en_headers(self):
++        payload = load_valid()
++        payload["meta"]["language"] = "en"
++        html = render_ops_shell(payload)
++        self.assertIn('<html lang="en">', html)
++        self.assertIn("<th>Business status</th>", html)
++        self.assertIn("<th>Check totals</th>", html)
++
++    def test_embedded_json_roundtrip(self):
++        payload = load_valid()
++        html = render_ops_shell(payload)
++        start = html.index('id="pastdue-report">') + len('id="pastdue-report">')
++        end = html.index("</script>", start)
++        self.assertEqual(json.loads(html[start:end]), payload)
++
++    def test_embedded_json_escapes_script_close(self):
++        payload = load_valid()
++        payload["run"]["conclusion"] = "x</script><b>y"
++        html = render_ops_shell(payload)
++        start = html.index('id="pastdue-report">') + len('id="pastdue-report">')
++        end = html.index("</script>", start)
++        self.assertEqual(json.loads(html[start:end])["run"]["conclusion"], "x</script><b>y")
++
++    def test_embedded_json_allows_html_comment_in_text(self):
++        payload = load_valid()
++        payload["run"]["conclusion"] = "note <!--not a comment--> ok"
++        html = render_ops_shell(payload)
++        start = html.index('id="pastdue-report">') + len('id="pastdue-report">')
++        end = html.index("</script>", start)
++        script_text = html[start:end]
++        parsed = json.loads(script_text)
++        self.assertEqual(parsed["run"]["conclusion"], payload["run"]["conclusion"])
++        self.assertEqual(parsed, payload)
++
++    def test_html_escapes_text(self):
++        payload = load_valid()
++        payload["per_country"][0]["ranking"][0]["vendor-name"] = "A<b>&C"
++        html = render_ops_shell(payload)
++        self.assertIn("A&lt;b&gt;&amp;C", html)
++
++    def test_formatted_values(self):
++        html = render_ops_shell(load_valid())
++        self.assertIn("1000→1100", html)
++        self.assertIn("20.00%→21.57%", html)
++        self.assertIn("7.84%", html)
++        self.assertIn("1.5686 pp", html)
++        self.assertIn("2026-10-22", html)
++        self.assertIn("0.4000 pp", html)
++        self.assertIn("40.00%", html)
++        self.assertIn("+44", html)
++
++    def test_toggle_motion_stub_and_script(self):
++        html = render_ops_shell(load_valid())
++        self.assertIn("prefers-reduced-motion", html)
++        self.assertIn("?mode=", html)
++        self.assertIn("data-mode", html)
++        self.assertIn("position: sticky", html)
++
++    def test_demo_harness_present(self):
++        html = render_ops_shell(load_valid())
++        self.assertIn("mode=demo", html)
++        self.assertIn("URLSearchParams", html)
++        self.assertIn("prefers-reduced-motion", html)
++        self.assertIn("__pastdueTimeline", html)
++        self.assertIn('get("t")', html)
++        self.assertIn('id="demo-play"', html)
++        self.assertIn("requestAnimationFrame", html)
++
++    def test_demo_beats_in_order_and_data_not_omitted(self):
++        payload = load_valid()
++        html = render_ops_shell(payload)
++        order = ['id="run"', 'id="country-metrics"', 'id="country-US"',
++                 'data-beat="summary"', 'data-beat="coverage"', 'id="scope-gaps"']
++        pos = -1
++        for marker in order:
++            nxt = html.find(marker, pos + 1)
++            self.assertGreater(nxt, pos, marker)
++            pos = nxt
++        # every section is a beat; Demo only reveals, never drops data
++        for sid in ("run", "country-metrics", "country-US", "scope-gaps"):
++            self.assertRegex(html, rf'<section id="{sid}"[^>]*data-beat=')
++        self.assertIn("ACME", html)
++        self.assertNotIn("display:none", html.split("<main>")[1].split("</main>")[0])
++
++    def test_reduced_motion_forces_final_state_without_looping(self):
++        html = render_ops_shell(load_valid())
++        self.assertIn('matchMedia("(prefers-reduced-motion: reduce)")', html)
++        self.assertNotIn("repeat: -1", html)
++        self.assertNotIn("setInterval", html)
++        self.assertNotIn("iteration-count: infinite", html)
++
++    def test_no_isometric_by_default(self):
++        html = render_ops_shell(load_valid()).lower()
++        self.assertNotIn("isometric", html)
++
++    def test_gate_fail_raises(self):
++        bad = json.loads((FIX / "html-report-payload-gate-fail.json").read_text(encoding="utf-8"))
++        with self.assertRaises(ValueError):
++            render_ops_shell(bad)
++
++    def test_gate_failure_raises_value_error(self):
++        payload = json.loads((FIX / "html-report-payload-gate-fail.json").read_text(encoding="utf-8"))
++        with self.assertRaises(ValueError):
++            render_ops_shell(payload)
++
++    def test_format_helpers(self):
++        self.assertEqual(fmt_ratio(0.2), "20.00%")
++        self.assertEqual(fmt_ratio(None), "未提供")
++        self.assertEqual(fmt_ratio(0.0784, signed=True), "+7.84%")
++        self.assertEqual(fmt_ratio(-0.0784, signed=True), "−7.84%")
++        self.assertEqual(fmt_ratio(0.00001, signed=True), "<0.01%（上升）")
++        self.assertEqual(fmt_ratio(0.00001), "<0.01%")
++        self.assertEqual(fmt_ratio(0), "0.00%")
++        self.assertEqual(fmt_pp(0.01568627), "1.5686 pp")
++        self.assertEqual(fmt_pp(0.0000001), "<0.0001 pp")
++        self.assertEqual(fmt_int(12345), "12345")
++        self.assertEqual(fmt_signed(44), "+44")
++        self.assertEqual(fmt_signed(-3), "−3")
++        self.assertEqual(fmt_signed(0), "0")
++
++    def test_cli_writes_file_and_fails_on_gate(self):
++        with tempfile.TemporaryDirectory() as tmp:
++            out = Path(tmp) / "r.html"
++            good = FIX / "html-report-payload-valid.json"
++            r = subprocess.run(
++                [sys.executable, str(SCRIPTS / "render_ops_shell.py"), str(good), "-o", str(out)],
++                capture_output=True, text=True,
++            )
++            self.assertEqual(r.returncode, 0, r.stderr)
++            self.assertIn("ACME", out.read_text(encoding="utf-8"))
++            bad_out = Path(tmp) / "bad.html"
++            bad = FIX / "html-report-payload-gate-fail.json"
++            r = subprocess.run(
++                [sys.executable, str(SCRIPTS / "render_ops_shell.py"), str(bad), "-o", str(bad_out)],
++                capture_output=True, text=True,
++            )
++            self.assertNotEqual(r.returncode, 0)
++            self.assertFalse(bad_out.exists())
++
++
++if __name__ == "__main__":
++    unittest.main()

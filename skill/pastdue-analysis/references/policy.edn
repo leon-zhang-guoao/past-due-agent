@@ -1,4 +1,4 @@
-{:policy-version "3.3.7"
+{:policy-version "3.3.16"
   :business-timezone "America/Los_Angeles"
   :business-timezone-iana "America/Los_Angeles"
   :display-timezone {:daylight-saving true
@@ -58,6 +58,8 @@
     :recursive-fanout-fallback false
     :arbitrary-sql false
     :runtime-python false
+    :html-companion-optional-verification-script "skill/pastdue-html-report/scripts/render_ops_shell.py"
+    :html-companion-verification-script-is-runtime-service false
     :host-hard-gate-installed false
     :logical-request-limit-applies-to "INTERACTIVE"
     :discovery-excluded true
@@ -113,17 +115,40 @@
   :metric-version "3.1.0"
   :selection-version "3.1.0"
   :calendar-version "weekdays-v1-no-holidays"
-  :report-rendering {:contract-version "3.3.7"
+  :report-rendering {:contract-version "3.3.16"
     :standard-layout "report-format.md"
     :fact-source "structured report-query/rows"
-    :country-summary-position "after Vendor ranking, before individual Vendor details"
+    :country-summary-position "after Vendor ranking with main ETA cells"
     :interactive-composable true
     :custom-output-explicit true
     :joint-source-default-table false
     :joint-source-analysis-retained true
     :self-awarded-report-pass false
     :delivery-distinct-from-retrieval true
-    :delta-only-summary-replaces-full-vendor-unit false
-    :required-vendor-unit ["metrics" "Code Top5+returned Other P/T table" "Source Top5+returned Other P/T table" "Code and Source signed totals" "diagnosis or precise local failure"]
+    :full-six-column-eta-tables "on-request-only"
+    :predicted-response-budget-omits-units false
+    :prose-eta-line-replaces-main-cells false
+    :required-vendor-ranking-row ["metrics" "main Code changes ≤5 by |net|" "main Source changes ≤5 by |net|" "Code and Source signed totals" "analysis status or precise local failure"]
     :native-renderer-installed false
+    :html-companion {:skill "pastdue-html-report"
+      :auto-after-modes []
+      :ask-after-modes ["DAILY" "TEST"]
+      :html-only-when-user-requests true
+      :html-only-any-payload-capable-mode true
+      :skip-modes ["HISTORICAL_EVENTS_ONLY" "INTERACTIVE"]
+      :payload-from "same verified bindings as Markdown"
+      :re-query false
+      :confirm-reuses-prior-bindings true
+      :scrape-markdown-as-truth false
+      :authority "Markdown modules remain layout authority when MD was delivered"
+      :presentation-only true
+      :default-obligation-after-markdown-success false
+      :forbid-vague-incomplete-payload-skip true
+      :forbid-written-without-path true
+      :disclose-line "HTML: WRITTEN|SPLIT|SKIPPED — reason=GATE|CAPACITY|HOST|MODE|BINDING|OK — detail=…"
+      :capacity-split-by-country true
+      :gate-failure-keeps-markdown true
+      :preferred-emit "equivalent HTML matching html-shell.md / payload-contract"
+      :optional-verification-script "skill/pastdue-html-report/scripts/render_ops_shell.py"
+      :not-a-host-markdown-renderer true}
     :independent-output-review "not performed unless actually evidenced"}}

@@ -1,4 +1,4 @@
-# Retained-result reading — 3.3.7
+# Retained-result reading — 3.3.16
 
 ## 1. Call boundary
 
@@ -163,9 +163,22 @@ syntax. Keep every identity column in every partition. Continue from the last
 actually read ordinal; don't assume an omitted row was zero. Do not drop summaries
 or checks to reduce output, and do not compare one partition's size to the whole
 source count. Unexpected record types must be read/disclosed, not silently filtered.
-Inspect row and cell flags on EVERY page. A result's top-level row-count can refer
-to the underlying retained table; use actual returned rows/truncation metadata for
-partition counts. Validate the UNION of unique ordinals against expected_record_count.
+Inspect row and cell flags on EVERY page. `row-count` is the retained table size.
+`truncation.rows-total` and `truncation.rows-shown` are this SQL's output.
+This SQL is complete when `rows?` is false, `cells?` is false, and `rows-shown`
+equals `rows-total`. Render those rows in the report modules.
+
+`expected_record_count` is the whole compact report, not one WHERE clause.
+Add `rows-total` across the disjoint statements. When that sum equals
+`expected_record_count`, retrieval is complete. Ten Vendor Metrics rows plus
+167 other rows is 177: the other statement kept the Vendor rows, it did not
+drop them. Same for 10 plus 144 against 154. Deliver Code, Source, signed
+totals and the diagnosis from those returned rows.
+
+Treat a read as truncated only when `rows?` is true, `cells?` is true, or
+`rows-shown` is below `rows-total`. Then continue from the last `row_ordinal`.
+Do not withhold the ETA section while its rows are already in a complete response.
+The union of unique ordinals must still equal `expected_record_count`.
 This verifies transport of the compact result, not all raw ETA buckets.
 
 Source collection pagination is separate: a handle can contain only one source

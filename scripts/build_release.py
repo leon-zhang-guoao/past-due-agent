@@ -17,6 +17,7 @@ from edn_io import read, loads, dumps, K
 ROOT = Path(__file__).resolve().parents[1]
 VERSION = '3.3.7'
 SKILL = 'skill/pastdue-analysis/'
+HTML_SKILL = 'skill/pastdue-html-report/'
 MANIFEST_PATH = SKILL + 'references/release-manifest.edn'
 MANIFEST = ROOT / MANIFEST_PATH
 ARCHIVE = ROOT / f'releases/pastdue-agent-v{VERSION}.zip'
@@ -35,6 +36,9 @@ REF_NAMES = {'atlas-query-playbook.md', 'completion-contract.md', 'current-conte
              'policy.edn', 'report-format.md', 'table-display-contract.edn',
              'table-display-contract.md', 'structured-queries.eql', 'result-reader.md',
              'mcp-tool-arguments.md'}
+HTML_REF_NAMES = {'payload-contract.md', 'html-shell.md', 'acceptance-checklist.md',
+                  'sample-payload.json'}
+HTML_SCRIPT_NAMES = {'payload_gate.py', 'render_ops_shell.py'}
 REQUIRED_RESOLVERS = {
     'pastdue_v3_monitor_query_countries',
     'pastdue_v3_history_query_comparisons',
@@ -58,14 +62,22 @@ def allowed(path):
         return False
     return (path in ROOT_FILES or path in {SKILL + 'SKILL.md', SKILL + 'agents/openai.yaml'}
             or path.startswith(SKILL + 'references/') and p.name in REF_NAMES
+            and len(p.parts) == 4
+            or path == HTML_SKILL + 'SKILL.md'
+            or path.startswith(HTML_SKILL + 'references/') and p.name in HTML_REF_NAMES
+            and len(p.parts) == 4
+            or path.startswith(HTML_SKILL + 'scripts/') and p.name in HTML_SCRIPT_NAMES
             and len(p.parts) == 4)
 
 
 def files(root=ROOT, skill_only=False):
     candidates = ROOT_FILES | {SKILL + 'SKILL.md', SKILL + 'agents/openai.yaml'} | {
         SKILL + 'references/' + n for n in REF_NAMES}
+    candidates |= {HTML_SKILL + 'SKILL.md'} | {
+        HTML_SKILL + 'references/' + n for n in HTML_REF_NAMES} | {
+        HTML_SKILL + 'scripts/' + n for n in HTML_SCRIPT_NAMES}
     return sorted(root / p for p in candidates if (root / p).is_file()
-                  and (not skill_only or p.startswith(SKILL)))
+                  and (not skill_only or p.startswith(SKILL) or p.startswith(HTML_SKILL)))
 
 
 def digest(root=ROOT, skill_only=False):

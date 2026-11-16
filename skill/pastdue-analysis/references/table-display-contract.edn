@@ -44,4 +44,8 @@
     :retrieved "unique source/retained ordinals and cell checks"
     :presented "complete units, units with local failures, and not-yet-delivered identities separately"
     :source-success-implies-delivery false}
-  :native-renderer-installed false}
+  :native-renderer-installed false
+  :html-companion-is-not-host-renderer true
+  :html-companion-skill "pastdue-html-report"
+  :html-companion-auto-after-markdown false
+  :html-companion-ask-after-modes ["DAILY" "TEST"]}

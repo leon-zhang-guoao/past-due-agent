@@ -1,4 +1,4 @@
-# Report modules — 3.3.7 (single layout authority)
+# Report modules — 3.3.16 (single layout authority)
 
 Use structured facts, not 3.2 long Markdown blocks. Same modules and column order
 in Chinese and English; choose ONE language. Code/Vendor names remain literal data.
@@ -27,13 +27,14 @@ Use 无数据/No data only for verified successful empty results; 未查询/Not 
    preserve actual trigger and show TEST_FORCED/THRESHOLD_MET separately.
 2. **Country 指标 / Country metrics**: all requested Countries, default US→CA.
 3. For each applicable **{Country} — {P}→{T}**:
-   - **Vendor 排名 / Vendor ranking**
+   - **Vendor 排名与主要 ETA 变化 / Vendor ranking with main ETA changes**
    - **Country Vendor 总结分析 / Country Vendor analysis summary**
-   - **#{rank} {Vendor Code} — {name}**, EVERY selected Vendor in the same order.
    - **覆盖率与限制 / Coverage and limitations**
 4. **跨 Country 总结 / Cross-Country summary** (multiple Countries only).
 5. **执行范围与缺失项 / Execution scope and gaps**: compact actual source checks,
-   rows retrieved vs expected, Vendors delivered vs selected, exact missing scope.
+   sum of disjoint statement rows versus expected_record_count, Vendors delivered
+   vs selected, exact missing scope. A complete split read still renders every
+   selected Vendor's ranking row with main Code/Source cells and signed-total check.
 
 No-trigger Countries still appear in metrics; ordinary drilldown is not required.
 Valid zero-positive selection shows explicit empty selection, not fabricated rows.
@@ -57,8 +58,14 @@ History events-only stops at event listing. No current monitor mislabeled histor
 
 Dates not adjacent: say 较上一可用快照 / Compared with previous available snapshot,
 not 'yesterday'; include calendar gap and delay/missing-weekday warnings when returned.
+Copy every column for the chosen language, in this order. Do not drop Previous
+date, Target date or Gap days, and do not rename the headers.
 
-## Vendor ranking columns (VENDOR_METRICS only)
+## Vendor ranking with main ETA changes
+
+Metric columns bind **VENDOR_METRICS only**. ETA cells bind returned ETA bucket
+rows and VENDOR_CHECK for that same Vendor. Never read Vendor totals from ETA
+bucket rows. Never add Code and Source together. Never invent OTHER constituents.
 
 | 中文 | English | Binding |
 |---|---|---|
@@ -70,11 +77,42 @@ not 'yesterday'; include calendar gap and delay/missing-weekday warnings when re
 | Vendor 逾期率 上期→本期 | Vendor ratio previous→target | previous/target-vendor-ratio |
 | Country 贡献变化 pp | Country contribution change pp | delta-country-contribution |
 | 正向贡献占比 | Positive contribution share | positive-contribution-share |
+| 主要 Code 变化 | Main Code changes | returned Code ETA buckets (see cell rules) |
+| 主要 Source 变化 | Main Source changes | returned Source ETA buckets (see cell rules) |
+| 核对 | Check totals | VENDOR_CHECK signed totals |
 | 分析状态 | Analysis status | actual scoped checks/retrieval, not invented raw field |
 
-Bind overview and details to the SAME metrics row. Never read Vendor totals from
-ETA bucket rows. SINGLE_VENDOR retains actual rank and can have nonpositive delta;
-positive-share is not applicable there if its contribution is nonpositive.
+Bind overview and ETA cells to the SAME Vendor identity and rank. SINGLE_VENDOR
+retains actual rank and can have nonpositive delta; positive-share is not
+applicable there if its contribution is nonpositive. Copy every ranking column
+for the chosen language, in this order. Contribution changes use exactly four
+decimal places.
+
+### Main Code / Main Source cell rules
+
+For **each dimension independently** (Code separate from Source):
+
+1. Start from that Vendor's **returned** compact ETA rows for the dimension
+   (Top5 BUCKET rows + returned OTHER if present). Do not invent OTHER.
+2. Rank those returned rows by absolute net-change `|净变化|` descending.
+3. Take at most **5** rows. If fewer than 5 returned rows exist, show only the
+   actual returned rows. If zero returned rows after a successful empty read,
+   write 无 / None. If the dimension failed or was unread, write the concrete
+   failure/unread status — never fabricate values.
+4. Format each kept row as `{ETA value} {P}→{T} ({signed net})`. Join with
+   `；` (Chinese) or `; ` (English). Preserve literal ETA identity spelling.
+5. OTHER display name remains 其他（N项）/Other (N items) when that row is kept.
+   Do not re-rank by display-rank for this cell; absolute net-change is the sort.
+
+Signed net uses the shared formatting rules (+/−/0). Relative change and
+Country contribution pp are **not** required inside these cells.
+
+### Check totals cell
+
+From VENDOR_CHECK for that Vendor, one compact line:
+`Code +I/−D/净N；Source +I/−D/净N` (or English equivalents).
+I = increase-total, D = decrease-total (negative signed as returned), N = net-change.
+If a dimension's check failed/unread, state that side's status instead of numbers.
 
 ## Country Vendor analysis summary (immediately after ranking)
 
@@ -85,22 +123,18 @@ Preserve Vendor identity. Don't invent Country-wide aggregates from Top10 or add
 Code and Source. No standalone US joint-source column/table, no generic tutorial
 instead of actual observed evidence. If no applicable joint activity, omit that
 interpretation; if needed evidence failed, disclose only the affected limitation.
-Unknown/Other Source has no guessed classification. Compact Top5+Other supports
-only its visible buckets and returned signed totals, not unseen constituents.
+Unknown/Other Source has no guessed classification. Compact Top5+Other and the
+main-change cells support only their visible buckets and returned signed totals,
+not unseen constituents.
 
-## Every Vendor detail (fixed order)
+## Full six-column ETA tables (on request only)
 
-1. **指标变化 / Metric changes**: PD/Open/Vendor ratio P→T from ranking row;
-   Country contribution P→T and delta from that same row. One compact line/list,
-   no second wide metrics table.
-2. **ETA Code 变化 / ETA Code changes** table.
-3. **ETA Source 变化 / ETA Source changes** table.
-4. **变化摘要与诊断 / Change summary and diagnosis**: Code and Source EACH have
-   increase-total, decrease-total (negative signed), net-change from VENDOR_CHECK;
-   identify material worsening/improving categories, residual risk and suggested
-   check. Distinguish count change vs denominator effects. No PO migration/causality.
+Standard DAILY / HISTORICAL / TEST reports **do not** instantiate per-Vendor
+`### #{rank} …` sections or six-column Code/Source tables. Those tables are an
+interactive / follow-up module when the user asks for one Vendor's full ETA
+breakdown (or explicitly requests full tables).
 
-Both ETA tables use exactly these columns in this order:
+When requested, use exactly these columns in this order:
 
 | ETA 值 / ETA value | 上期数量 / Previous count | 本期数量 / Target count | 净变化 / Net change | 相对变化 / Relative change | Country 贡献变化 pp / Country contribution change pp |
 |---|---:|---:|---:|---:|---:|
@@ -108,15 +142,12 @@ Both ETA tables use exactly these columns in this order:
 Choose localized headers, not bilingual duplication. BUCKET order=display-rank;
 OTHER is 其他（N项）/Other (N items), server-computed counts and relative change.
 Do not invent Other when no OTHER record exists. If the server returned OTHER
-with zero counts but positive other-bucket-count, display it: real zero-valued
-remainder buckets still belong to the complete compact representation. Do not
-re-rank summary rows. A failed/unread dimension retains
-its heading and concrete failure/empty status, never a fabricated table.
+with zero counts but positive other-bucket-count, display it. Do not re-rank
+summary rows. A failed/unread dimension retains its heading and concrete
+failure/empty status, never a fabricated table. Include metrics line and
+Code/Source signed totals with diagnosis when expanding a Vendor on request.
 
-### Vendor unit skeleton (instantiate for every selected Vendor)
-
-Choose ONE language and retain the fields/order defined above. This is a model
-output contract, not generated Markdown or a deterministic renderer.
+### Optional on-request Vendor skeleton
 
 ```text
 ### #{rank} {vendor_code} — {vendor_name}
@@ -124,7 +155,7 @@ output contract, not generated Markdown or a deterministic renderer.
 Country contribution P→T; contribution change pp.
 
 ETA Code 变化 / ETA Code changes
-[the six-column table above: ALL returned Top5 BUCKET rows + returned OTHER]
+[the six-column table: ALL returned Top5 BUCKET rows + returned OTHER]
 
 ETA Source 变化 / ETA Source changes
 [the same six-column table, independent Source facts]
@@ -134,13 +165,6 @@ Code: increases +I; decreases −D; net N.
 Source: increases +I; decreases −D; net N.
 [Evidence-based worsening, improvement offsets, remaining risk, suggested check.]
 ```
-
-The slash labels indicate language alternatives, not bilingual duplication.
-Substitute actual verified facts; no fabricated empty rows. A dimension failure
-keeps its heading and exact status/reason instead of a table. A wide Country-level
-"Vendor | main Code deltas | main Source deltas | diagnosis" table may be an
-explicit brief/custom view, but cannot replace these units in a standard full
-report. Full two-period tables are required even when all deltas fit in one line.
 
 ## Coverage, context and length
 
@@ -153,29 +177,33 @@ Owner/contacts/PO remain on request, CURRENT and display-only; standard report
 needn't repeat 'not queried' under every Vendor. If requested, show actual result
 or status under that Vendor. PO quotas remain unchanged.
 
-Keep all selected Vendor units. Save space by removing repeated definitions/status
-matrices/raw JSON, not mandatory ETA facts. If evidenced output limits require
-parts, number them by Country/Vendor range and state delivered/remaining scope;
-full report is not delivered until all parts are actually present. Do not promise
-unsupported automatic continuation. No model-issued overall report/test PASS.
-
+Keep every selected Vendor as one ranking row with main Code, main Source and
+check cells in the same answer. Save space by removing repeated definitions,
+status matrices and raw JSON, not by dropping selected Vendor rows or ETA cells.
+A predicted response budget is not a reason to stop after metric-only ranking.
+Do not promise unsupported automatic continuation. No model-issued overall
+report/test PASS.
 
 ## Delivery accounting
 
 The final scope section distinguishes:
 - source execution and compact-record retrieval (actual unique rows vs expected);
 - reconciliation (actual identity, Country and dimension checks or affected gaps);
-- presentation (selected Vendor codes/ranks; complete units; units with explicit
-  local failures; units not delivered yet).
+- presentation (selected Vendor codes/ranks; ranking rows with main Code/Source
+  cells and check totals; rows with explicit local failures; rows not delivered).
 
-All selected Vendor positions must exist, but a displayed error placeholder is
-not successful ETA analysis. A fully read 177-row result says nothing by itself
-about how many Vendor units were delivered. List remaining Country/rank ranges
-and missing modules when partial. Do not claim a completed full test path merely
-because requests succeeded. Preserve actual business trigger/freshness separately.
+All selected Vendor positions must exist as ranking rows with the ETA cells filled
+from returned facts or with concrete local-failure status. A displayed error
+placeholder is not successful ETA analysis. A fully read 177-row result says
+nothing by itself about how many Vendor ranking rows were delivered. List
+remaining Country/rank ranges and missing modules when partial. Do not claim a
+completed full test path merely because requests succeeded. Preserve actual
+business trigger/freshness separately.
 
 ## HTML companion
 
-After a successful standard DAILY/TEST report, the agent also emits an Ops/Demo
-HTML file per `skill/pastdue-html-report/`. Markdown modules above remain the
-layout authority for analysis content.
+Markdown modules above remain the layout authority. Do not auto-emit HTML after
+DAILY/TEST. After a successful standard DAILY/TEST Markdown report, ask once
+whether to generate Ops/Demo HTML; only on user confirm (or explicit HTML_ONLY)
+follow `skill/pastdue-html-report/` (one file, or CAPACITY split). Disclose
+`HTML: WRITTEN|SPLIT|SKIPPED — reason=… — detail=…` with a real path on success.

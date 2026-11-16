@@ -103,6 +103,16 @@ driving it from `window.__pastdueTimeline.time()`. It must be `aria-hidden`, mus
 report data, and must be disabled under `prefers-reduced-motion`.
 ## File naming
 
-`pastdue-{mode}-{countries}-{target}.html`, e.g.
+**Single-file (default):** `pastdue-{mode}-{countries}-{target}.html`, e.g.
 `pastdue-TEST-US-2026-10-23.html`, `pastdue-DAILY-US-CA-2026-10-23.html`.
-Generated samples may live under `skill/pastdue-html-report/scripts/out/`.
+
+**CAPACITY split (one Country per file):** `pastdue-{mode}-{COUNTRY}-{target}.html`,
+e.g. `pastdue-TEST-US-2026-10-23.html` and `pastdue-TEST-CA-2026-10-23.html`.
+Each file embeds only that country’s gated payload slice and remains a full Ops/Demo
+shell (same section IDs; omit empty `country-*` sections for other countries). Chat
+must list every path. Do not use split naming to hide empty `ranking`.
+
+Local/CI samples may use this skill’s `scripts/out/` (`*.html` gitignored for
+skill upload only). Session deliverables use the host working directory
+(e.g. `/sandbox/pastdue-….html`) and must not be deleted after disclose unless
+replaced by an overwrite in the same turn.

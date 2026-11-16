@@ -337,7 +337,7 @@ JS = r"""
   var STEP = 0.7, FADE = 0.6, HOLD = 0.4;
   var DURATION = beats.length ? (beats.length - 1) * STEP + FADE + HOLD : 0;
   var btn = document.getElementById("demo-play");
-  var time = 0, playing = false, raf = 0, last = 0, countToken = 0;
+  var time = 0, playing = false, raf = 0, last = 0, countGen = 0;
 
   function clamp(t) { return Math.min(DURATION, Math.max(0, t)); }
   function mode() { return body.getAttribute("data-mode"); }
@@ -388,7 +388,7 @@ JS = r"""
 
   // Optional light count-up for ratio cells in Ops (skipped when reduced motion or ?t= is set).
   function countUpRatios() {
-    var token = ++countToken;
+    var gen = ++countGen;
     var cells = [];
     document.querySelectorAll("#country-metrics tbody td").forEach(function (td) {
       var m = /^(\d+\.\d+)%\u2192(\d+\.\d+)%$/.exec(td.textContent);
@@ -398,7 +398,7 @@ JS = r"""
     var start = performance.now(), DUR = 600;
     function step(now) {
       var k = Math.min(1, (now - start) / DUR);
-      var live = token === countToken && mode() === "ops" && !reduced() && k < 1;
+      var live = gen === countGen && mode() === "ops" && !reduced() && k < 1;
       cells.forEach(function (c) {
         c.td.textContent = live
           ? (c.a * k).toFixed(2) + "%\u2192" + (c.b * k).toFixed(2) + "%"
@@ -412,7 +412,7 @@ JS = r"""
   function setMode(next, opts) {
     opts = opts || {};
     if (next !== "ops" && next !== "demo") { next = "ops"; }
-    countToken++;
+    countGen++;
     body.setAttribute("data-mode", next);
     var badge = document.getElementById("view-mode");
     if (badge) { badge.textContent = next.toUpperCase(); }

@@ -1,4 +1,4 @@
-# Atlas query playbook — 3.3.7
+# Atlas query playbook — 3.3.16
 
 Retained reads copy the `analyze_result` object and the SQL in
 [result-reader.md](result-reader.md).
@@ -283,7 +283,7 @@ fields require a corrected projection, not a reconciliation waiver. Inspect row
 and cell truncation independently. Continue supported retained pages/ordinal
 windows; source paging still follows layer 1 above. No source re-execution to
 repair a retained preview limit, no metric/denominator/rank recomputation or joins.
-The Skill does not install a tool-argument sanitizer or a deterministic renderer.
+The Skill does not install a tool-argument sanitizer or a report renderer.
 
 ## Binding, budgets and failures
 

@@ -1,0 +1,65 @@
+=== COMMITS ===
+5335e25 Wire pastdue-analysis HTML companion handoff after DAILY/TEST.
+
+=== STAT ===
+ skill/pastdue-analysis/SKILL.md                    | 14 ++++++++++++++
+ skill/pastdue-analysis/references/report-format.md |  6 ++++++
+ 2 files changed, 20 insertions(+)
+
+=== DIFF -U10 ===
+diff --git a/skill/pastdue-analysis/SKILL.md b/skill/pastdue-analysis/SKILL.md
+index 22494cd..4fed63b 100644
+--- a/skill/pastdue-analysis/SKILL.md
++++ b/skill/pastdue-analysis/SKILL.md
+@@ -78,16 +78,30 @@ compact ETA tables and signed totals with diagnosis, or exact local failure.
+ Do not replace these units with a delta-only summary or PASS/PASS.
+ Use verified Code=US Source in Country interpretation after ranking, not a default
+ technical column/table. Do not infer Other constituents, PO migration or causality.
+ 
+ Track separately selected Vendors, retrieved facts and delivered Vendor units.
+ If a bounded part is necessary, state its Country/rank range and remaining scope;
+ never claim complete delivery for a partial answer or promise unsupported automatic
+ continuation. Source success is not report success. Report actual scope/gaps, not
+ a self-awarded overall PASS. Interactive answers compose only relevant modules.
+ 
++### HTML companion (automatic after standard DAILY/TEST)
++
++After a successful standard DAILY or TEST Markdown report — all applicable
++report-format modules delivered, every selected Vendor ranking row present with
++main Code/Source/check cells or explicit local failure, and scope/gaps stated —
++load and follow [pastdue-html-report](../pastdue-html-report/SKILL.md) in the
++same turn. Build the HTML payload from the same verified bindings used for
++Markdown; do not re-query. This companion is optional presentation for Ops/Demo;
++it is not a substitute for Markdown completeness and does not replace the absence
++of a report renderer. If the HTML gate fails or rendering errors, keep the
++Markdown delivery unchanged and disclose the HTML skip/failure in one or two
++sentences. Do not auto-run the HTML companion for HISTORICAL events-only or
++INTERACTIVE answers.
++
+ ## Optional current context
+ 
+ Read [current context](references/current-context.md) only for requested
+ Buyer/Primary/Manager, contacts or PO. These are current facts, not historical
+ causes. No runtime Python/service, direct DB/local CSV, arbitrary source SQL,
+ mail drafts or sending. Nothing here installs a host renderer or hard gate.
+diff --git a/skill/pastdue-analysis/references/report-format.md b/skill/pastdue-analysis/references/report-format.md
+index 260d696..5c2f50f 100644
+--- a/skill/pastdue-analysis/references/report-format.md
++++ b/skill/pastdue-analysis/references/report-format.md
+@@ -166,10 +166,16 @@ The final scope section distinguishes:
+ - source execution and compact-record retrieval (actual unique rows vs expected);
+ - reconciliation (actual identity, Country and dimension checks or affected gaps);
+ - presentation (selected Vendor codes/ranks; complete units; units with explicit
+   local failures; units not delivered yet).
+ 
+ All selected Vendor positions must exist, but a displayed error placeholder is
+ not successful ETA analysis. A fully read 177-row result says nothing by itself
+ about how many Vendor units were delivered. List remaining Country/rank ranges
+ and missing modules when partial. Do not claim a completed full test path merely
+ because requests succeeded. Preserve actual business trigger/freshness separately.
++
++## HTML companion
++
++After a successful standard DAILY/TEST report, the agent also emits an Ops/Demo
++HTML file per `skill/pastdue-html-report/`. Markdown modules above remain the
++layout authority for analysis content.

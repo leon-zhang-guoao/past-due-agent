@@ -1,4 +1,4 @@
-# Evidence and completion — 3.3.7
+# Evidence and completion — 3.3.16
 
 This is an Agent procedure, not an installed runtime gate. Query execution,
 retrieval and delivery are separate; none proves independent final-output accuracy.
@@ -30,7 +30,13 @@ Use the playbook's two-layer reading procedure. Track separately:
 - retained-result rows actually read, across all reading partitions/pages;
 - cell truncation affecting each field, not only top-level truncated?.
 
-Exactly expected rows with cut-off cells is not complete retrieval. A successful
+A statement is complete when `truncation.rows?` is false, `cells?` is false, and
+`rows-shown` equals `rows-total`. `row-count` is the retained table. One
+statement's `rows-total` may be lower than `expected_record_count` because the
+other statement holds the remaining record types. Add the disjoint `rows-total`
+values. Equality with `expected_record_count` means the compact report was read.
+Render Code, Source, signed totals and diagnosis from those rows. Exactly
+expected rows with cut-off cells is not complete retrieval. A successful
 SELECT over an incomplete retained result is not source completeness. A truncated
 name limits name display, not independently intact numeric facts under verified
 Country/Vendor identity. A truncated identity/scope field requires a supported
@@ -59,26 +65,30 @@ actual evidence and any remaining source limitation.
 
 ## D. Delivery
 
-Before sending, compare Vendor overview set/order to detail set/order; verify each
-has metrics, both ETA modules, signed totals and explanation or local failure.
-Keep a delivery ledger separate from retrieval: per Country, actual selected
-Vendor codes/ranks → metrics → Code table → Source table → both signed totals →
-diagnosis or precise local failure. Count a unit as delivered only when all these
-applicable modules are actually present, not merely planned or available in a handle.
-Code/Source tables include both periods, not just selected deltas. Check language,
-dates, signs and delta-vs-level field binding against original rows.
-This self-review is not independent validation and cannot guarantee final accuracy.
+Before sending, compare selected Vendor set/order to ranking rows; verify each
+has metrics, main Code cell, main Source cell, check totals and status or local
+failure. Keep a delivery ledger separate from retrieval: per Country, actual
+selected Vendor codes/ranks → metrics → main Code (≤5 by |net| from returned
+rows) → main Source (≤5 by |net|) → both signed totals → analysis status or
+precise local failure. Count a ranking row as delivered only when all these
+applicable cells are actually present, not merely planned or available in a handle.
+Main cells use returned bucket identities and both-period counts in P→T form;
+do not invent buckets. Full six-column tables are on-request only and are not
+required for standard delivery. Check language, dates, signs and delta-vs-level
+field binding against original rows. This self-review is not independent
+validation and cannot guarantee final accuracy.
 
 Report the actual analysis scope as complete/partial/unavailable/not required.
 Keep actual business trigger and freshness separate. At the end report selected
-Vendor count, fully delivered unit count, delivered-with-local-failure count and
-not-yet-delivered codes/ranks. A local failure placeholder is not valid ETA analysis;
-its presence makes the report honest, not the failed data complete. A source/read success with
-missing Vendor sections is an incomplete delivery. Confirmed wrong rendered facts
-are REPORT_ERROR; correct the output, not the valid source. No model-issued overall
-PASS, invented evaluation score or source-hash proof of final text correctness.
-If independent validation is asked about, say 'not performed' unless real evidence
-exists; do not burden every successful Vendor with that technical disclaimer.
+Vendor count, fully delivered ranking-row count, delivered-with-local-failure
+count and not-yet-delivered codes/ranks. A local failure placeholder is not valid
+ETA analysis; its presence makes the report honest, not the failed data complete.
+A source/read success with missing Vendor ranking rows or empty ETA cells is an
+incomplete delivery. Confirmed wrong rendered facts are REPORT_ERROR; correct the
+output, not the valid source. No model-issued overall PASS, invented evaluation
+score or source-hash proof of final text correctness. If independent validation
+is asked about, say 'not performed' unless real evidence exists; do not burden
+every successful Vendor with that technical disclaimer.
 
 TEST shows forced vs real trigger, Countries/Vendors exercised, required steps
 executed and missing/unexercised scope. Zero-positive selection can complete its

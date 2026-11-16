@@ -213,17 +213,35 @@ Run `gate_payload(payload)` before emitting HTML. Behavior matches
      select Vendors); for each code a ranking row with matching `vendor-code` exists.
    - Every ranking row contains **all** `VENDOR_RANKING_KEYS`.
 
-On success: `(True, "ok")`. On failure: `(False, reason)` — skip HTML and state the
-reason briefly (same honesty as analysis delivery gate).
+On success: `(True, "ok")`. On failure: `(False, reason)` — do not write that
+payload; disclose `HTML: SKIPPED — reason=GATE — detail=<reason>` (same honesty as
+analysis delivery gate). Do not invent JS-only Vendor tables to bypass an empty
+`ranking`.
 
 The renderer CLI (`render_ops_shell.py`, optional verification helper) catches
 `ValueError` and `KeyError`, prints `gate failed: <reason>`, exits 1 and writes no file.
 
 ---
 
+## Capacity / multi-file
+
+When one file cannot hold the full multi-country ranking (context/output budget),
+split by Country: each slice must still satisfy this gate on its own
+(`per_country` for that country only, matching `countries` row(s), non-empty
+`ranking`, selected vendors present). Disclose `HTML: SPLIT — reason=CAPACITY — detail=…`
+and list every path. Prefer one file when it fits.
+
+---
+
 ## Producer checklist
 
-1. Markdown standard modules delivered and gated per `report-format.md`.
-2. Build payload from the **same verified bindings** used for Markdown.
-3. `gate_payload` passes.
-4. Embed JSON in the HTML shell (`html-shell.md`, later tasks) without altering facts.
+1. Load this skill only for **HTML_ONLY** (no MD body) or a **user confirm** after a
+   DAILY/TEST Markdown ask — not merely because MD succeeded.
+2. Build payload from **verified bindings** (same-turn analysis, or prior-turn
+   bindings on confirm). No default Atlas re-query. If confirm but bindings are
+   gone: `HTML: SKIPPED — reason=BINDING — detail=…`.
+3. `gate_payload` passes for the file (or each CAPACITY slice).
+4. Embed JSON in the HTML shell (`html-shell.md`) without altering facts.
+5. Write the file first; then disclose
+   `HTML: WRITTEN|SPLIT|SKIPPED — reason=GATE|CAPACITY|HOST|MODE|BINDING|OK — detail=…`
+   with **real path(s)** on WRITTEN/SPLIT. Never claim WRITTEN without a path.
