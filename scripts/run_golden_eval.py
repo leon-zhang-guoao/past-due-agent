@@ -22,13 +22,16 @@ def run_checks(root=ROOT):
                            exit_code=proc.returncode,
                            script_sha256=hashlib.sha256(path.read_bytes()).hexdigest(),
                            output=proc.stdout + proc.stderr))
-    proc = subprocess.run([sys.executable, '-B', '-m', 'unittest', 'discover',
-                           '-s', str(root / 'tests'), '-p', 'test_release_tooling.py'],
-                          cwd=root, capture_output=True, text=True)
-    checks.append(dict(name='test_release_tooling.py', status='PASS' if proc.returncode == 0 else 'FAIL',
-                       exit_code=proc.returncode,
-                       script_sha256=hashlib.sha256((root / 'tests/test_release_tooling.py').read_bytes()).hexdigest(),
-                       output=proc.stdout + proc.stderr))
+    for pattern in ('test_release_tooling.py', 'test_html*.py'):
+        paths = sorted((root / 'tests').glob(pattern))
+        proc = subprocess.run([sys.executable, '-B', '-m', 'unittest', 'discover',
+                               '-s', str(root / 'tests'), '-p', pattern],
+                              cwd=root, capture_output=True, text=True)
+        digest_input = b''.join(p.name.encode() + b'\0' + p.read_bytes() for p in paths)
+        checks.append(dict(name=pattern, status='PASS' if proc.returncode == 0 else 'FAIL',
+                           exit_code=proc.returncode,
+                           script_sha256=hashlib.sha256(digest_input).hexdigest(),
+                           output=proc.stdout + proc.stderr))
     return dict(kind='OFFLINE_CONTRACT_CHECKS_NOT_LLM_EVAL',
                 status='PASS' if all(c['exit_code'] == 0 for c in checks) else 'FAIL',
                 graph_sha256=hashlib.sha256((root / 'atlas/charts/pastdue.edn').read_bytes()).hexdigest(),

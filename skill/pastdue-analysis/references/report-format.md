@@ -205,5 +205,7 @@ business trigger/freshness separately.
 Markdown modules above remain the layout authority. Do not auto-emit HTML after
 DAILY/TEST. After a successful standard DAILY/TEST Markdown report, ask once
 whether to generate Ops/Demo HTML; only on user confirm (or explicit HTML_ONLY)
-follow `skill/pastdue-html-report/` (one file, or CAPACITY split). Disclose
-`HTML: WRITTEN|SPLIT|SKIPPED — reason=… — detail=…` with a real path on success.
+delegate via `skill/pastdue-html-report/references/sub-agent-contract.md` to
+`business-storyteller` (one file, or CAPACITY split). The parent verifies the child's
+written artifacts before disclosing `HTML: WRITTEN|SPLIT|SKIPPED — reason=… — detail=…`
+with real paths on success. The child owns HTML design and writing.

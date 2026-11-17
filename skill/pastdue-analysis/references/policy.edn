@@ -1,4 +1,4 @@
-{:policy-version "3.5.0"
+{:policy-version "3.5.1"
   :business-timezone "America/Los_Angeles"
   :business-timezone-iana "America/Los_Angeles"
   :display-timezone {:daylight-saving true
@@ -138,11 +138,20 @@
     :required-vendor-ranking-row ["metrics" "main Code changes ≤5 by |net|" "main Source changes ≤5 by |net|" "Code and Source signed totals" "analysis status or precise local failure"]
     :native-renderer-installed false
     :html-companion {:skill "pastdue-html-report"
+      :execution :native-sub-agent
+      :agent-name "business-storyteller"
+      :handoff-contract "skill/pastdue-html-report/references/sub-agent-contract.md"
+      :child-system-prompt "skill/pastdue-html-report/references/business-storyteller.md"
+      :parent-role "business analysis, payload preparation and artifact verification"
+      :child-role "presentation, HTML writing and visual validation"
+      :parent-inline-render-fallback false
+      :verify-returned-artifacts true
       :auto-after-modes []
       :ask-after-modes ["DAILY" "TEST"]
       :html-only-when-user-requests true
       :html-only-any-payload-capable-mode true
-      :skip-modes ["HISTORICAL_EVENTS_ONLY" "INTERACTIVE"]
+      :explicit-html-modes ["DAILY" "TEST" "HISTORICAL" "INTERACTIVE"]
+      :requires-complete-payload true
       :payload-from "same verified bindings as Markdown"
       :re-query false
       :confirm-reuses-prior-bindings true
@@ -152,10 +161,10 @@
       :default-obligation-after-markdown-success false
       :forbid-vague-incomplete-payload-skip true
       :forbid-written-without-path true
-      :disclose-line "HTML: WRITTEN|SPLIT|SKIPPED — reason=GATE|CAPACITY|HOST|MODE|BINDING|OK — detail=…"
+      :disclose-line "HTML: WRITTEN|SPLIT|SKIPPED — reason=GATE|CAPACITY|HOST|MODE|BINDING|DELEGATE|VERIFY|OK — detail=…"
       :capacity-split-by-country true
       :gate-failure-keeps-markdown true
-      :preferred-emit "equivalent HTML matching html-shell.md / payload-contract"
+      :preferred-emit "business-storyteller writes equivalent HTML matching html-shell.md / payload-contract"
       :optional-verification-script "skill/pastdue-html-report/scripts/render_ops_shell.py"
       :not-a-host-markdown-renderer true}
     :independent-output-review "not performed unless actually evidenced"}}

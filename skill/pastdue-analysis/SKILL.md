@@ -3,7 +3,7 @@ name: pastdue-analysis
 description: Analyze PastDue current data, snapshots, comparisons and trends through Atlas; run weekday daily monitoring, historical review or start test / 开始测试 with complete Vendor ETA analysis and evidence-based explanations.
 ---
 
-# PastDue Analysis — 3.5.0
+# PastDue Analysis — 3.5.1
 
 ## 1. Resolve the analysis specification
 
@@ -99,36 +99,32 @@ reason to omit the ETA cells. Write them from the rows already read. Source
 success is not report success. Report actual scope/gaps, not a self-awarded
 overall PASS. Interactive answers compose only relevant modules.
 
-### HTML companion (on-demand)
+### HTML presentation sub-agent (on-demand)
 
-Markdown is the primary deliverable. Do **not** auto-write HTML after MD.
+Markdown is primary. For an explicit HTML/web report request (`HTML_ONLY`), finish
+business analysis and verification without emitting the Markdown body. Prepare
+canonical bindings and delegate to `business-storyteller` using the
+[sub-agent contract](../pastdue-html-report/references/sub-agent-contract.md).
+Read that contract only when HTML is requested or confirmed. The parent prepares
+payload/provenance and checks returned files; the child loads `pastdue-html-report`
+and owns design, animation and HTML writing. Do not inline that presentation work.
 
-**HTML_ONLY:** If the user clearly wants only HTML / a web report, complete
-bind/verify as usual, **do not emit the Markdown body**, and load
-[pastdue-html-report](../pastdue-html-report/SKILL.md) in the same turn from
-verified bindings (any mode that can assemble a gated payload). Analysis must
-**not** emit `HTML: WRITTEN` itself — the companion writes and discloses paths.
-
-**Default DAILY / TEST (HTML not requested):** After a successful standard
-Markdown report (modules complete; every selected Vendor ranking row with main
-Code/Source/check cells or explicit local failure; scope/gaps stated), end with
-**one** ask in the request language, e.g. Chinese
-`需要我再生成一份 Ops/Demo HTML 报告吗？` or English
+Default DAILY/TEST: after the complete Markdown report, end with one ask in the
+request language: `需要我再生成一份 Ops/Demo HTML 报告吗？` or
 `Would you like me to generate an Ops/Demo HTML report as well?`
-Do **not** load `pastdue-html-report` or write HTML in that turn.
+End the turn without delegation or HTML writing until the user confirms.
 
-**Confirm follow-up:** If the user says yes, load `pastdue-html-report` and build
-from **prior-turn verified bindings** (no Atlas re-query). Missing bindings →
-companion `SKIPPED — reason=BINDING` (may tell the user to re-run or explicitly
-allow re-query). Prefer one file; CAPACITY may SPLIT by Country.
+Confirmation reuses prior verified bindings; it does not re-query Atlas or repeat
+the Markdown body. Missing bindings → `SKIPPED — reason=BINDING`. HISTORICAL/
+INTERACTIVE do not offer HTML by default; explicit export uses the same handoff
+when complete payload modules exist. Preserve actual analysis mode; do not fill
+missing modules merely to pass a presentation gate.
 
-**HISTORICAL / INTERACTIVE:** Do not ask about HTML unless the user initiates;
-then treat as HTML_ONLY or confirm-export with binding reuse.
-
-Companion `scripts/render_ops_shell.py` remains optional fixtures/CI verification
-only. Keep Markdown unchanged on GATE/HOST. Never claim `WRITTEN` without a real
-path. After a session HTML file is disclosed, do not delete it without overwrite
-in the same turn.
+Wait for the child, read back its artifact(s), compare payload and displayed facts
+to the retained snapshot, then disclose real paths. Missing/failed sub-agent →
+`DELEGATE`; failed readback/content check → `VERIFY`. A child success receipt alone
+never permits `WRITTEN`. Follow the contract's bounded correction and retention
+rules; already-delivered Markdown stays valid on presentation failure.
 
 ## Optional current context
 

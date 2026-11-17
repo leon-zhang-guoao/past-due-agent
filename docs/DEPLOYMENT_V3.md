@@ -1,4 +1,17 @@
-# Deploy / rollback — Agent3.5.0, Atlas3.5.0/revision6
+# Deploy / rollback — Agent3.5.1, Atlas3.5.0/revision6
+
+## Current 3.5.1 presentation rollout
+
+Use releases/pastdue-agent-v3.5.1.zip and follow
+[Business Storyteller installation](HTML_SUB_AGENT_3_5_1.md). Update the parent
+Prompt/analysis Skill, install the child prompt/HTML Skill, and register the
+native business-storyteller sub-agent callable by the parent with shared artifact
+access. No Atlas redeployment for this patch. Actual platform registration and
+end-to-end child invocation remain NOT_RUN.
+
+The Skill-only ZIP contains both complete Skills, including the child prompt and
+handoff contract; it does not install platform agent registrations or replace the
+parent System Prompt. Keep deployment-specific agent IDs/settings outside the repo.
 
 ## Current 3.5 rollout
 

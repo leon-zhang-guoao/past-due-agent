@@ -1,4 +1,4 @@
-# Responsibilities —3.4.0
+# Responsibilities —3.5.1
 
 Interactive planning: one analysis specification, supported operation composition,
 actual-feedback recovery and bounded cost. Atlas explore-v2 adds Vendor-set
@@ -22,3 +22,11 @@ validation plan: docs/STRUCTURED_REPORTS_3_3.md / DEPLOYMENT_V3.md / VALIDATION_
 The Skill cannot install a parameter cleanup interceptor; final visible malformed
 arguments do not identify which host/model component produced them. Current
 correction/live boundary: docs/RESULT_READER_FIX_3_3_7.md.
+
+
+HTML presentation uses the existing platform's native `business-storyteller`
+sub-agent. PastDue retains business facts, conclusions, Markdown and final artifact
+verification; the child owns HTML/SVG design, animation and writing. The complete
+HTML Skill contains its scoped prompt and the single handoff/receipt contract.
+See docs/HTML_SUB_AGENT_3_5_1.md for platform registration and actual live evidence
+requirements. Prompt/Skill files alone do not register or invoke a platform agent.

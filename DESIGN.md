@@ -1,4 +1,4 @@
-# Architecture — Agent3.3.7
+# Architecture — Agent3.5.1
 
 User intent → analysis spec → governed Atlas facts → complete reading/binding →
 rule application → standard or composed modules. No added runtime service.
@@ -20,3 +20,10 @@ generated; deterministic byte equality is not promised. Live pilot is pending.
 There is no installed MCP serializer; malformed host arguments are an external
 call-boundary issue, not something Atlas business SQL can repair. Country Control
 uses dedicated Country fields; no zero-total reconciliation waiver.
+
+
+Authorized HTML: verified analysis bindings + provenance → native registered
+business-storyteller sub-agent → actual written artifact → parent readback/content
+comparison → user artifact links. Default DAILY/TEST stops after Markdown plus one
+HTML offer. See docs/HTML_SUB_AGENT_3_5_1.md and the HTML Skill's sub-agent-contract.
+The child changes presentation, not business facts or query scope.

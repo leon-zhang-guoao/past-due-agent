@@ -1,4 +1,4 @@
-# Requests — Agent contract 3.4.0
+# Requests — Agent contract 3.5.1
 
 Examples illustrate operation composition, not a closed list of supported phrases.
 Prefer discovered explore-v2; old explore remains compatible for scopes it expresses.
@@ -46,3 +46,19 @@ column/table. Explicit requests for ETA Code=US Source detail remain supported.
 3.3 uses structured report facts, not long text. Source/result pages and cells need
 separate coverage checks. Start a real single-Country test; actual dates and schema
 must be verified. No self-awarded report PASS, no platform execution claimed here.
+
+
+## HTML sub-agent routing
+
+| Request | Route |
+|---|---|
+| 开始测试 | Core analysis → complete MD → one HTML offer; no child call |
+| 开始测试，生成 HTML 报告 | Core verified payload → business-storyteller; no MD body |
+| 要，生成 HTML | Reuse exact prior bindings → child; BINDING if unavailable |
+| 历史完整报告只要 HTML | HISTORICAL payload → child if complete; keep actual mode |
+| 只列历史事件 | Normal events answer; no HTML offer |
+| HTML 换成简洁蓝色风格 | Reuse same facts → child with visual preference; no re-query |
+
+The parent waits and independently reads back artifacts before disclosing paths.
+Missing child → DELEGATE; changed/missing artifact → VERIFY. No inline rendering
+fallback. See `skill/pastdue-html-report/references/sub-agent-contract.md`.

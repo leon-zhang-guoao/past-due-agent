@@ -47,5 +47,7 @@
   :native-renderer-installed false
   :html-companion-is-not-host-renderer true
   :html-companion-skill "pastdue-html-report"
+  :html-companion-agent "business-storyteller"
+  :html-companion-execution :native-sub-agent
   :html-companion-auto-after-markdown false
   :html-companion-ask-after-modes ["DAILY" "TEST"]}

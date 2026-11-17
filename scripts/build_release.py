@@ -16,7 +16,7 @@ from edn_io import read, loads, dumps, K
 from run_golden_eval import run_checks
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = '3.5.0'
+VERSION = '3.5.1'
 SKILL = 'skill/pastdue-analysis/'
 HTML_SKILL = 'skill/pastdue-html-report/'
 MANIFEST_PATH = SKILL + 'references/release-manifest.edn'
@@ -33,7 +33,7 @@ ROOT_FILES = {'agent/SYSTEM_PROMPT.md', 'agent/INVOCATION_EXAMPLES.md',
               'docs/STRUCTURED_REPORTS_3_3.md', 'docs/STRUCTURED_PILOT_3_3.eql',
               'docs/RESULT_READER_FIX_3_3_7.md', 'docs/COMPOSABLE_ANALYSIS_3_4.md',
               'tests/fixtures/live-question-cases.json', 'docs/PASTDUE_AGENT_REDESIGN.md',
-              'docs/COMPOSABLE_ANALYSIS_3_5.md'}
+              'docs/COMPOSABLE_ANALYSIS_3_5.md', 'docs/HTML_SUB_AGENT_3_5_1.md'}
 REF_NAMES = {'atlas-query-playbook.md', 'completion-contract.md', 'current-context.md',
              'data-contract.md', 'eta-diagnostic-rules.edn', 'metric-definitions.md',
              'policy.edn', 'report-format.md', 'table-display-contract.edn',
@@ -41,8 +41,8 @@ REF_NAMES = {'atlas-query-playbook.md', 'completion-contract.md', 'current-conte
              'mcp-tool-arguments.md', 'interactive-planning.md', 'explore-v2.md',
              'explore-v2-query.eql', 'explore-v3.md', 'explore-v3-query.eql'}
 HTML_REF_NAMES = {'payload-contract.md', 'html-shell.md', 'acceptance-checklist.md',
-                  'sample-payload.json'}
-HTML_SCRIPT_NAMES = {'payload_gate.py', 'render_ops_shell.py'}
+                  'sample-payload.json', 'sub-agent-contract.md', 'business-storyteller.md'}
+HTML_SCRIPT_NAMES = {'payload_gate.py', 'render_ops_shell.py', 'verify_artifact.py'}
 REQUIRED_RESOLVERS = {
     'pastdue_v3_monitor_query_countries',
     'pastdue_v3_history_query_comparisons',

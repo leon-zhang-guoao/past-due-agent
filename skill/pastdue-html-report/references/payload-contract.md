@@ -43,7 +43,8 @@ generated-at
 metric-version
 ```
 
-`mode` must be `DAILY` or `TEST` for HTML auto-delivery (see Gate below).
+`mode` retains the actual `DAILY`, `TEST`, `HISTORICAL` or `INTERACTIVE` analysis
+mode. Rendering is on-demand; every mode needs the full gated payload below.
 `language` is the single resolved report language (`zh` or `en` per analysis delivery).
 
 ---
@@ -52,7 +53,7 @@ metric-version
 
 | Field | Type | Notes |
 |-------|------|-------|
-| `conclusion` | string | Run conclusion as already delivered in Markdown |
+| `conclusion` | string | Verified analysis conclusion (Markdown need not be emitted) |
 | `trigger-flags` | string[] | e.g. `THRESHOLD_MET`, `TEST_FORCED` — preserve actual flags |
 | `pairs` | object | Map `country-code` → `{ previous-snapshot-date, target-snapshot-date }` |
 
@@ -125,8 +126,8 @@ analysis-status
 ```
 
 Metric columns bind **VENDOR_METRICS only**. The three ETA/check columns are
-**pre-rendered strings** copied from the Markdown delivery (same Vendor identity and
-rank as the overview row).
+**pre-rendered strings** from verified analysis bindings (same Vendor identity and
+rank as the overview row); HTML_ONLY does not require a Markdown delivery.
 
 Gate requires **every** key in `VENDOR_RANKING_KEYS` on every ranking row, including
 `main-code-changes`, `main-source-changes`, `check-totals` and `analysis-status`.
@@ -200,7 +201,8 @@ fix upstream bindings, not HTML math.
 Run `gate_payload(payload)` before emitting HTML. Behavior matches
 `skill/pastdue-html-report/scripts/payload_gate.py` exactly:
 
-1. **`meta.mode`** ∈ `DAILY`, `TEST` — otherwise reject (e.g. `INTERACTIVE`, `HISTORICAL` events-only).
+1. **`meta.mode`** ∈ `DAILY`, `TEST`, `HISTORICAL`, `INTERACTIVE`; preserve actual mode.
+   Events-only and partial answers without the required modules still fail the gate.
 2. **Every `REQUIRED_META_KEYS` entry** present on `meta`.
 3. **Top-level `scope_gaps`** present.
 4. **`countries`** present and non-empty; **every** row contains **all** `COUNTRY_COLUMN_KEYS`.
@@ -209,8 +211,7 @@ Run `gate_payload(payload)` before emitting HTML. Behavior matches
    - `country-code` appears in `countries[]`.
    - `summary` and `coverage` present, non-null and non-empty strings.
    - `ranking` non-empty (else reject with `{country-code}: empty ranking`).
-   - `selected-vendor-codes` is a **non-empty list** (DAILY/TEST standard reports always
-     select Vendors); for each code a ranking row with matching `vendor-code` exists.
+   - `selected-vendor-codes` is a **non-empty list**; for each code a ranking row with matching `vendor-code` exists.
    - Every ranking row contains **all** `VENDOR_RANKING_KEYS`.
 
 On success: `(True, "ok")`. On failure: `(False, reason)` — do not write that
@@ -233,15 +234,16 @@ and list every path. Prefer one file when it fits.
 
 ---
 
-## Producer checklist
+## Producer and consumer
 
-1. Load this skill only for **HTML_ONLY** (no MD body) or a **user confirm** after a
-   DAILY/TEST Markdown ask — not merely because MD succeeded.
-2. Build payload from **verified bindings** (same-turn analysis, or prior-turn
-   bindings on confirm). No default Atlas re-query. If confirm but bindings are
-   gone: `HTML: SKIPPED — reason=BINDING — detail=…`.
-3. `gate_payload` passes for the file (or each CAPACITY slice).
-4. Embed JSON in the HTML shell (`html-shell.md`) without altering facts.
-5. Write the file first; then disclose
-   `HTML: WRITTEN|SPLIT|SKIPPED — reason=GATE|CAPACITY|HOST|MODE|BINDING|OK — detail=…`
-   with **real path(s)** on WRITTEN/SPLIT. Never claim WRITTEN without a path.
+The parent builds this object from verified bindings, gates it and dispatches it
+with provenance using [sub-agent contract](sub-agent-contract.md). The child
+consumes that object unchanged, gates it again, embeds it and writes the artifact.
+The parent reads back every file and compares the embedded payload and displayed
+content to its retained snapshot before reporting success. Neither layer scrapes
+Markdown or re-queries for presentation. Binding loss returns `BINDING`.
+
+For a split, each payload is an exact copy of the original with only `countries`
+and `per_country` reduced to that Country. Retain original metadata, run, cross-
+Country summary and scope_gaps so the combined context is not lost. Every original
+Country/block occurs exactly once across the returned files, in original order.

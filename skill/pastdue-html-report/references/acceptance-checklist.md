@@ -1,28 +1,31 @@
-# Acceptance checklist — HTML on-demand
+# Acceptance — delegated HTML presentation
 
-Maps `docs/superpowers/specs/2026-11-16-pastdue-html-on-demand-design.md` acceptance
-plus retained Ops/Demo shell evidence from the original companion suite.
+| Case | Required evidence |
+|---|---|
+| Default DAILY/TEST | Complete Markdown + one HTML offer; no child call/file/WRITTEN |
+| Explicit HTML | Parent binds/verifies facts, omits Markdown body, calls business-storyteller |
+| Confirm export | Same prior bindings; no default Atlas/Metabase re-query or repeated Markdown |
+| Missing bindings | BINDING with exact missing scope, no invented payload |
+| Historical/interactive | No default offer; explicit complete payload preserves actual mode; partial input fails GATE |
+| Child unavailable/fails/times out | DELEGATE with actual error, no parent inline fallback |
+| Child missing file/fake path | Parent readback fails VERIFY; no WRITTEN |
+| Child changes payload or visible table | VERIFY, at most one targeted child correction; same fact snapshot |
+| Success | Actual child write + parent readback; exact payload/table/narrative match, real path(s) |
+| CAPACITY split | Every Country slice gated, original scope/order covered exactly once; all paths listed |
+| Ops/Demo | All ranking/ETA/check/coverage/gaps retained; controls, t seek, print and reduced motion checked in browser, or explicitly NOT_RUN |
+| Parent/child failure | Existing Markdown remains valid; no deletion of disclosed artifacts |
 
-| # | Criterion | Evidence |
-|---|-----------|----------|
-| 1 | Default TEST/DAILY → MD + one ask; no HTML file; no `WRITTEN` | `pastdue-analysis/SKILL.md` § HTML companion (on-demand); `SYSTEM_PROMPT.md`; `policy.edn` `:ask-after-modes`, `:default-obligation-after-markdown-success false` |
-| 2 | User confirms → HTML from reused bindings + real path, or `BINDING` | `pastdue-html-report/SKILL.md` §1 confirm follow-up, §5.3 `BINDING`; no default re-query |
-| 3 | HTML_ONLY → no MD body; path or honest SKIPPED | `pastdue-html-report/SKILL.md` §1 HTML_ONLY; analysis handoff |
-| 4 | Never false `WRITTEN` (no path / no write) | Companion §2, §5.1, §9; payload-contract producer checklist |
-| 5 | HISTORICAL/INTERACTIVE without HTML ask → no offer, no write | Analysis skill; `policy.edn` ask-after only DAILY/TEST |
-| 6 | Ranking / ETA cells / scope_gaps in Ops and Demo | Fixtures + `tests.test_html_report_render` (unchanged shell) |
-| 7 | Gate fail / CAPACITY SPLIT | `payload_gate` tests; companion §5; `html-shell.md` multi-file naming |
-
-## Automated suite (gate/shell unchanged)
+Local checks (synthetic fixtures; not a real sub-agent execution):
 
 ```bash
-python -m unittest tests.test_html_report_payload tests.test_html_report_render -v
+python3 -B -m unittest discover -s tests -p 'test_html*.py'
 ```
 
-Expected: **34 tests, OK**.
+The suite includes payload gates, rendering, actual temporary-file readback,
+changed embedded facts, altered visible values, missing Vendor table, missing gaps,
+duplicate payload IDs and actual-mode preservation. Release-tooling tests check
+that the handoff, child prompt and verification helper survive packaging.
 
-## Manual sandbox spot-check
-
-1. TEST without mentioning HTML → MD ends with ask; no `.html` path.
-2. Reply yes → `HTML: WRITTEN` with sandbox path, or `BINDING`.
-3. 「只要 HTML」→ no MD report body; HTML path or SKIPPED.
+Live acceptance requires the platform's actual child registration, call/wait,
+write and parent-readback trace. A correct prompt or local renderer does not
+prove that the deployed platform can invoke the child.

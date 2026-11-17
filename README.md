@@ -1,4 +1,4 @@
-# PastDue Analysis Agent — 3.5.0
+# PastDue Analysis Agent — 3.5.1
 
 Composable questions through Prompt + Skill + Atlas. Daily/history/test remain
 presets; free questions resolve a working specification and combine selection,
@@ -11,7 +11,18 @@ older resolver/SQL bindings remain unchanged. All26 scalar inputs stay explicit;
 native defaults/saved queries are not assumed. New questions
 composed of existing operations do not require new scenario-specific APIs.
 
-## What changed
+## HTML presentation update (3.5.1)
+
+PastDue now delegates requested HTML design/writing to the existing platform's
+`business-storyteller` sub-agent. Core analysis stays with PastDue; verified
+payload/provenance crosses the boundary and returned artifacts are read back and
+checked before success is reported. Default Markdown + DAILY/TEST HTML offer,
+explicit HTML-only and binding reuse remain unchanged.
+See [installation and handoff](docs/HTML_SUB_AGENT_3_5_1.md). The full package includes
+the child prompt and handoff contract; register the child on the platform before
+live use. No Atlas update is needed for this presentation patch.
+
+## What changed in Atlas3.5
 
 - Vendor set is declared JSON array text, not a comma list in a single-value input.
 - SQL pages are bounded before transport limits; counts/ordinals/checksum expose
@@ -26,8 +37,8 @@ composed of existing operations do not require new scenario-specific APIs.
 
 ## Delivery and validation
 
-Full package: `releases/pastdue-agent-v3.5.0.zip`; Skill package:
-`releases/pastdue-analysis-skill-v3.5.0.zip`. Packaging is local, not deployment.
+Full package: `releases/pastdue-agent-v3.5.1.zip`; Skill package:
+`releases/pastdue-analysis-skill-v3.5.1.zip`. Packaging is local, not deployment.
 Preserve approved graph/source IDs and credentials outside the repository.
 
 Deploy additive Atlas first, verify actual schema/JDBC/page behavior, then install

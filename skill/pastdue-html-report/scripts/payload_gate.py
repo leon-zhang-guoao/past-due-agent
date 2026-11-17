@@ -51,8 +51,8 @@ def _blank(value) -> bool:
 def gate_payload(payload: dict) -> tuple[bool, str]:
     meta = payload.get("meta") or {}
     mode = meta.get("mode")
-    if mode not in ("DAILY", "TEST"):
-        return False, f"mode {mode!r} is not DAILY/TEST"
+    if mode not in ("DAILY", "TEST", "HISTORICAL", "INTERACTIVE"):
+        return False, f"unsupported analysis mode {mode!r}"
     for key in REQUIRED_META_KEYS:
         if key not in meta:
             return False, f"missing meta.{key}"

@@ -1,171 +1,65 @@
 ---
 name: pastdue-html-report
-description: On user HTML_ONLY request or after user confirms HTML following a DAILY/TEST Markdown ask, build a verified JSON payload and emit Ops/Demo HTML (one file or per-Country split under CAPACITY) without re-querying Atlas.
+description: Business Storyteller sub-agent presentation workflow for an authorized PastDue HTML work order; render verified parent-supplied bindings as self-contained Ops/Demo HTML and return artifact evidence without querying business data.
 ---
 
-# PastDue HTML Report — companion
+# PastDue HTML Report — Business Storyteller
 
-HTML is a **presentation companion** only. When Markdown was delivered,
-`pastdue-analysis` stays authoritative. This skill does not re-query Atlas and
-does not scrape delivered Markdown as the source of truth.
+This skill runs inside the registered `business-storyteller` sub-agent. PastDue
+owns business analysis and output intent; this child owns design, HTML/SVG,
+animation, writing and presentation checks. The parent delegates through the
+[sub-agent contract](references/sub-agent-contract.md), not an inline role switch.
 
-## 1. When to load
+## 1. Accept a work order
 
-Load and follow this skill **only** when one of:
+Require `HTML_ONLY` or `CONFIRM_EXPORT` and a verified canonical payload, provenance
+and allowed output location. Default DAILY/TEST Markdown success alone does not
+authorize rendering. Read [payload contract](references/payload-contract.md) for
+required fields and `pastdue-analysis/references/report-format.md` for canonical
+sections, columns and number formatting. Prior bindings unavailable → `BINDING`.
+Keep actual mode; complete DAILY/TEST/HISTORICAL/INTERACTIVE payloads are supported.
 
-1. **HTML_ONLY** — the user clearly wants HTML / a web report and **no Markdown
-   body** this turn. Analysis must already have verified bindings sufficient to
-   assemble a gated payload (any analysis mode that can do so).
-2. **Confirm follow-up** — after a prior standard **DAILY / TEST** Markdown turn
-   that asked whether to generate HTML, the user confirmed yes. Build from
-   **prior-turn verified bindings** (no Atlas re-query by default).
+## 2. Gate before presentation
 
-Do **not** load solely because Markdown succeeded. Default DAILY/TEST turns end
-with an ask owned by `pastdue-analysis`; that turn must **not** write HTML and
-must **not** emit `HTML: WRITTEN` from this skill.
+Apply `scripts/payload_gate.py` or its documented checklist before writing.
+Require Country metrics, complete selected Vendor ranking rows including main
+Code/Source/check cells, summaries, coverage and scope_gaps. Exact local failure
+strings remain valid facts. A partial interactive answer or events-only list
+without these modules returns `GATE`; never relabel its mode or invent missing data.
 
-Do not auto-offer or auto-write for HISTORICAL / INTERACTIVE unless the user
-initiates HTML (then treat as HTML_ONLY or confirm-export with binding reuse).
+Use only parent bindings, without re-querying, recomputing metrics or scraping
+Markdown. Missing fields must name the Country/Vendor/key in the failure receipt.
 
-## 2. Attempt rules (when §1 applies)
+## 3. Design and write
 
-When loaded under §1, assemble the payload from verified bindings, pass the gate,
-then write HTML. Vague refusal is not allowed.
+Read [HTML shell](references/html-shell.md). Produce a self-contained HTML with
+the canonical embedded JSON and complete Ops tables. Ops is default; Demo changes
+the reveal sequence, not data completeness. Preserve summaries, ETA/check cells,
+coverage and gaps. Use animation skills selectively after Ops is complete;
+diagram-animation, svg-animation and isometric-animation are optional.
 
-**Forbidden:**
+Prefer one file, `pastdue-{mode}-{countries}-{target}.html`, under the work order's
+allowed directory. If capacity requires a split, write gated Country slices and
+return every path. Keep the original Country order and complete combined scope.
+Escape source strings and embedded JSON. Respect `prefers-reduced-motion`, print
+and `?t=N`. Readable Ops content must exist independently of Demo JavaScript.
 
-- `HTML: WRITTEN` or `HTML: SPLIT` without listing **real path(s)** written this turn
-- Claiming WRITTEN before the host write succeeds
-- 「未构建可验证 payload」/ “did not build a verifiable payload” as the only reason
-- 「incomplete payload」without naming the gate field/country/vendor
-- 「skipped HTML」with no `reason=` / `detail=`
+`scripts/render_ops_shell.py` is an optional local fixture/verification helper,
+not a required analysis runtime or a replacement for this sub-agent call.
 
-## 3. Build the payload
+## 4. Verify and return
 
-Construct a JSON object from **in-memory verified bindings** — same facts, same
-ordinals, same failure disclosures as the analysis delivery (or prior MD turn).
+Read back the actual file, verify unchanged payload and canonical table/text
+content. `scripts/verify_artifact.py <payload.json> <report.html>` is an optional
+local content check. Validate Ops/Demo, seek, print and reduced motion with browser
+tools when available; disclose `NOT_RUN` when unavailable.
 
-Read [payload contract](references/payload-contract.md) for shape, required keys,
-column order, and formatting rules. Layout and number-copy authority remain in
-`skill/pastdue-analysis/references/report-format.md`; do not recompute metrics
-or fork formulas here.
+Return the structured receipt defined in the sub-agent contract: work-order ID,
+WRITTEN/SPLIT/SKIPPED, reason, actual path(s) and validation evidence. Do not issue
+a separate user-facing report. The parent independently checks the artifact and
+owns the final observation line and links. A receipt alone is not delivery proof.
 
-Set `meta.mode` to `DAILY` or `TEST` only (gate requirement). Embed nothing that
-was not verified during analysis.
-
-**Prefer one file** with full `countries` / `per_country` / complete `ranking[]`.
-Do not leave `ranking: []` and invent Vendor tables only in page JS.
-
-## 4. Gate
-
-Before writing any HTML, apply the gate checklist in
-[payload-contract.md](references/payload-contract.md) (hand-check is enough;
-running `scripts/payload_gate.py` / `render_ops_shell.py` is optional).
-
-Hard rejects (do **not** write that payload as HTML):
-
-- `meta.mode` not `DAILY`/`TEST`
-- empty `per_country[].ranking`
-- any `selected-vendor-codes` entry missing a ranking row
-- missing/empty `summary` or `coverage`, or missing `scope_gaps`
-
-Ranking rows **with** explicit local-failure status are allowed. Do not park
-Vendor facts only in page JS while leaving `ranking: []`.
-
-## 5. Outcomes: WRITTEN | SPLIT | SKIPPED
-
-Disclose with a **fixed observation line** (plus at most one short sentence):
-
-```text
-HTML: WRITTEN|SPLIT|SKIPPED — reason=<CODE> — detail=<specifics>
-```
-
-### 5.1 `WRITTEN`
-
-Host write succeeded for one self-contained file; gate passed.
-`reason=OK`. **Must list the real path.** No path ⇒ must not use `WRITTEN`.
-
-### 5.2 `SPLIT` — `reason=CAPACITY`
-
-Use **only** when a single file cannot hold the full ranking/countries payload
-(context or output budget).
-
-Rules:
-
-- Split by **Country**: one HTML per gated country slice.
-- Each file self-contained and gated on its own slice.
-- Naming: `pastdue-{DAILY|TEST}-{COUNTRY}-{target-date}.html` (see html-shell).
-- Chat must list **every** written path.
-- Do **not** use empty `ranking` + JS-only Vendor tables.
-
-### 5.3 `SKIPPED` — only these `reason` codes
-
-| `reason` | When | `detail` must name |
-|----------|------|--------------------|
-| `GATE` | Payload fails gate checklist | Exact gate reason |
-| `HOST` | Write/path failed after a gated payload | Host/tool error text |
-| `MODE` | Skill loaded inappropriately for this mode/intent | Mode / intent |
-| `BINDING` | User confirmed HTML but prior verified bindings are unavailable | What is missing; **no default Atlas re-query** |
-
-On `GATE` / `HOST` / `BINDING`:
-
-- **Skip HTML entirely** for that attempt — no partial or “complete-looking” file.
-- Do not modify Markdown already delivered in a prior turn.
-- Never use `GATE` to mean laziness when ranking rows exist in bindings — assemble
-  `ranking[]` or `CAPACITY` → `SPLIT`.
-
-## 6. Emit HTML
-
-Read [html-shell](references/html-shell.md) for document structure, section IDs,
-mode toggle, naming, and reduced-motion rules.
-
-**Preferred agent path (no Atlas, no runtime Python):** emit equivalent HTML directly,
-matching `html-shell.md` and the payload contract. Apply the gate checklist by hand
-before writing.
-
-**Optional local verification helper:** `scripts/render_ops_shell.py` is fixtures/CI
-only — not a required runtime service or Markdown renderer:
-
-```bash
-python skill/pastdue-html-report/scripts/render_ops_shell.py <payload.json> -o <out.html>
-```
-
-Enhance **Demo** motion after the Ops baseline exists. Ops remains readable without
-Demo JS.
-
-## 7. Write and disclose
-
-Write under the host-allowed working directory. Suggested name:
-`pastdue-{DAILY|TEST}-{countries}-{target-date}.html` (see html-shell).
-
-**CAPACITY split:** one file per country as in §5.2.
-
-**Deliverable path vs skill-package hygiene**
-
-- Session deliverables: host working directory (e.g. `/sandbox/…`).
-- `scripts/out/*.html` gitignore is only for local/CI samples — not a reason to
-  withhold session HTML.
-
-**Retention after write (narrow)**
-
-- After a deliverable HTML is written and disclosed, do not `rm`/`delete` it
-  without a same-turn overwrite.
-- Gate failure: simply do not write.
-
-On `WRITTEN` / `SPLIT`, list path(s). On `SKIPPED`, observation line only — no fake path.
-
-## 8. Animation skills (optional, same workspace)
-
-Prefer skill names `diagram-animation`, `svg-animation`, `isometric-animation`
-when installed. Ops/Demo HTML works without them. Demo must not omit ranking,
-ETA/check, coverage, or `scope_gaps`. Respect `prefers-reduced-motion: reduce`.
-
-## 9. Hard boundaries
-
-- **Never** invent Markdown that was not requested in HTML_ONLY turns.
-- **Never** award or restate an overall PASS.
-- **Never** re-query Atlas inside this skill (default); BINDING if bindings are gone.
-- **Never** write HTML with empty `ranking` or Vendor tables only in page JS.
-- **Never** delete a disclosed session HTML without overwrite in the same turn.
-- **Never** report `WRITTEN`/`SPLIT` without real path(s) written this turn.
-- HTML reformats verified bindings for display; it is not a second analysis pass.
+After write/disclosure retain session artifacts. Gate failure writes no report;
+write failures return `HOST`; content mismatches return `VERIFY`. Do not claim
+success before a file is written or invent a path. Preserve any already-delivered
+Markdown. Business changes go back to the parent, not into the visual layer.

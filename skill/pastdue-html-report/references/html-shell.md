@@ -1,6 +1,6 @@
 # HTML shell conventions (Ops baseline)
 
-The Ops shell is a single self-contained HTML5 file produced deterministically from a
+Business Storyteller produces a single self-contained HTML5 file from a
 gated payload (`payload-contract.md`). It reformats for display only; metrics and
 layout authority stay in `skill/pastdue-analysis/references/report-format.md`.
 
@@ -10,7 +10,7 @@ Preferred agent path: hand-author equivalent HTML matching this shell (no Atlas,
 runtime Python). `scripts/render_ops_shell.py` is an **optional local verification
 helper** for fixtures/CI, not a required runtime service or Markdown renderer.
 
-Agents may either:
+Inside the presentation sub-agent, the available authoring paths are:
 
 1. (Optional, verification only) Run the renderer:
 
@@ -30,7 +30,7 @@ Agents may either:
 
 - `<html lang="zh|en">` from `meta.language` (single language, no bilingual duplication).
 - Sticky `header.top`: report title (`[测试]`/`[TEST]` prefix when `meta.mode=TEST`),
-  run-mode badge (`TEST`/`DAILY`), view-mode badge (`OPS`/`DEMO`), `P/T` pairs from
+  run-mode badge (actual `TEST`/`DAILY`/`HISTORICAL`/`INTERACTIVE`), view-mode badge (`OPS`/`DEMO`), `P/T` pairs from
   `run.pairs`, and Ops/Demo toggle buttons (`data-set-mode`).
 - `<body data-mode="ops">` is the default.
 - `<script type="application/json" id="pastdue-report">` embeds the full payload

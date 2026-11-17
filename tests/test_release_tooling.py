@@ -22,7 +22,7 @@ class ReleaseTooling(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
         self.root = Path(self.tmp.name)
-        for path in release.files(ROOT) + list((ROOT/'scripts').glob('*.py')) + list((ROOT/'tests/fixtures').glob('*.json')):
+        for path in release.files(ROOT) + list((ROOT/'scripts').glob('*.py')) + list((ROOT/'tests/fixtures').glob('*.json')) + list((ROOT/'tests').glob('*.py')):
             target = self.root / path.relative_to(ROOT)
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_bytes(path.read_bytes())
@@ -47,6 +47,9 @@ class ReleaseTooling(unittest.TestCase):
         for name in (f'pastdue-agent-v{release.VERSION}.zip',f'pastdue-analysis-skill-v{release.VERSION}.zip'):
             with zipfile.ZipFile(self.root/'releases'/name) as z:
                 self.assertIn(release.MANIFEST_PATH,z.namelist())
+                for required in ('references/sub-agent-contract.md', 'references/business-storyteller.md',
+                                 'scripts/verify_artifact.py'):
+                    self.assertIn(release.HTML_SKILL + required, z.namelist())
                 self.assertFalse(any(p.endswith(('.csv','.html','.zip')) for p in z.namelist()))
                 self.assertTrue(all(not p.endswith('.py') or p.startswith(release.HTML_SKILL+'scripts/') for p in z.namelist()))
                 if 'skill-' in name:
