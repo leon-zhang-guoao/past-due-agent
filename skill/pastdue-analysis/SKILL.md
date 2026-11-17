@@ -3,7 +3,7 @@ name: pastdue-analysis
 description: Analyze PastDue current data, snapshots, comparisons and trends through Atlas; run weekday daily monitoring, historical review or start test / 开始测试 with complete Vendor ETA analysis and evidence-based explanations.
 ---
 
-# PastDue Analysis — 3.3.16
+# PastDue Analysis — 3.5.0
 
 ## 1. Resolve the analysis specification
 
@@ -29,6 +29,9 @@ trigger-events or latest monitor. Retain actual previous date. Arbitrary explici
 P/T: explore PAIR/EXPLICIT. CURRENT is not a completed snapshot; RANGE needs dated
 facts, not endpoints called a trend. Ambiguous names require Country/code.
 Follow-ups retain exact scope unless changed by the user.
+For free questions/follow-ups read [interactive planning](references/interactive-planning.md):
+resolve one analysis specification, compose supported operations and revise the
+plan from actual feedback. Presets are conveniences, not a closed scenario list.
 
 ## 2. Fetch and bind facts
 
@@ -44,7 +47,12 @@ Standard: monitor/history → pin Country/P/T → one report-query/rows source r
 per Country/event. Finish reading and binding one Country before the next. Read
 the SAME result through Country Control, Vendor Metrics, then ETA/Check projections.
 Do not re-execute source SQL per Vendor to fix a result preview limit.
-Interactive: explore-query/rows with explicit controlled scope and denominator.
+Interactive: prefer discovered explore-v3-query/rows for selection/expansion and
+per-date ranking; read [v3 contract](references/explore-v3.md). Keep selection and
+display filters independent, retain candidate denominators and distinguish empty
+selection from all Vendors. [v2](references/explore-v2.md) supports sets and paging;
+existing explore remains
+valid for its supported scopes. Check equivalent semantics before another path.
 
 Only actual execute responses supply handles. A plausible handle from memory or
 another call is not usable provenance. Unknown association stops dependent use,
@@ -64,10 +72,11 @@ Code/Source reconcile separately to Vendor PD; conditional us reconciles to Code
 Each logical request permits at most one evidence-based changed correction;
 never repeat identical rejected arguments. A fresh source execution is justified
 only for confirmed expiry or an explicitly diagnosed source issue, not as a way
-around selector/association errors. No automatic per-Vendor fanout.
-INTERACTIVE: maximum six different logical fact requests, excluding result reads,
-discovery and pagination. Bound broader scope explicitly; presets attempt all
-applicable mandatory work. Keep failures local to the evidence they affect.
+around selector/association errors. Prefer batch; permit finite targeted worklists
+when equivalent batch is unavailable. Review cost after six distinct source scopes,
+not an automatic stop. Bound open-ended expansion; avoid duplicate work and unchanged
+failures. See interactive-planning.md for equivalence and recovery. Presets attempt
+all applicable mandatory work. Keep failures local to the evidence they affect.
 
 ## 4. Deliver the requested analysis
 

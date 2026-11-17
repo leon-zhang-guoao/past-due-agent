@@ -64,7 +64,8 @@ def validate(doc):
         if re.search(r'snapshot_date\s+IN\s*\(\s*(?:p\.)?(?:latest|target)_snapshot_date',sql,re.I):errors.append(f'{rid}: unsupported pair join')
         if 'toUInt8(' in sql:errors.append(f'{rid}: unsafe JDBC UInt8 output')
         if rid.startswith('pastdue_v3_'):
-            if r.get(':pagination')!={':default':200,':max':1000}:errors.append(f'{rid}: missing v3 page bounds')
+            default=1000 if rid in ('pastdue_v3_report_query_rows','pastdue_v3_explore_v2_query_rows','pastdue_v3_explore_v3_query_rows') else 200
+            if r.get(':pagination')!={':default':default,':max':1000}:errors.append(f'{rid}: missing v3 page bounds')
             if r.get(':result/cardinality')!=':many':errors.append(f'{rid}: invalid cardinality')
             allowed=set(r.get(':sort',{}).get(':allowed',[]))
             if not allowed<=outputs or r[':sort'][':default'][0] not in allowed:errors.append(f'{rid}: invalid sort')
@@ -115,10 +116,13 @@ def check_skill():
     if "now('UTC')" in (CHART_DIR/'pastdue.edn').read_text(encoding='utf-8'):errors.append('Graph still uses UTC now()')
     display=read(SKILL_DIR/'references/table-display-contract.edn')
     guide=(SKILL_DIR/'references/table-display-contract.md').read_text(encoding='utf-8')
-    for name,module in display[':modules'].items():
+    for name,module in display.get(':modules',{}).items():
         module_id=name.lstrip(':')
         m=re.search(r'## module: '+module_id+r'\s*\n```fields\n(.*?)\n```',guide,re.S)
         if not m or m.group(1).splitlines()!=[c[':id'] for c in module[':columns']]:errors.append('Display guide drift: '+module_id)
+    if ':modules' not in display:
+        if display.get(':layout-authority')!='report-format.md' or not display.get(':formats') or not display.get(':fact-binding'):
+            errors.append('Missing shared display formats, fact binding or layout authority')
     for x in (ROOT/'agent/SYSTEM_PROMPT.md', SKILL_DIR/'SKILL.md'):
         if re.search(r'(?<!No )machine-enforced Kernel|machine enforcement lives',x.read_text(encoding='utf-8'),re.I):errors.append('Unwired runtime claim')
     return errors

@@ -1,0 +1,15 @@
+{
+  "kind": "LOCAL_SYNTHETIC_SQL_NOT_DEPLOYED_JDBC",
+  "status": "PASS",
+  "exit_code": 0,
+  "graph_sha256": "7635c1109886559c3548b33d0228ad798fb7b07f46a2d1521a727eb29b09eef1",
+  "script_sha256": "0418b59ea2138e9a94f5ada0f08281c87dd6695d5c2d092cee61ed32c4dd4b5e",
+  "command": [
+    "/tmp/pastdue-query-validation-20261116/bin/python",
+    "-B",
+    "scripts/test_sql_fixtures.py"
+  ],
+  "output": "........................\n----------------------------------------------------------------------\nRan 24 tests in 110.139s\n\nOK\n",
+  "output_sha256": "fa9e69b13fce252dccefcce44fbfb70cfe5a07ccdf0b69fc4cc814e86a97ee87",
+  "tests_run": 24
+}

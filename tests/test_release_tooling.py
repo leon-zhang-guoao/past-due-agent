@@ -44,12 +44,13 @@ class ReleaseTooling(unittest.TestCase):
         self.build()
         m=release.check_release(self.root)
         self.assertEqual(m[':local-clickhouse-sql'],'NOT_RUN')
-        for name in ('pastdue-agent-v3.1.1.zip','pastdue-analysis-skill-v3.1.1.zip'):
+        for name in (f'pastdue-agent-v{release.VERSION}.zip',f'pastdue-analysis-skill-v{release.VERSION}.zip'):
             with zipfile.ZipFile(self.root/'releases'/name) as z:
                 self.assertIn(release.MANIFEST_PATH,z.namelist())
-                self.assertFalse(any(p.endswith(('.csv','.html','.py','.zip')) for p in z.namelist()))
+                self.assertFalse(any(p.endswith(('.csv','.html','.zip')) for p in z.namelist()))
+                self.assertTrue(all(not p.endswith('.py') or p.startswith(release.HTML_SKILL+'scripts/') for p in z.namelist()))
                 if 'skill-' in name:
-                    self.assertTrue(all(p.startswith(release.SKILL) for p in z.namelist()))
+                    self.assertTrue(all(p.startswith((release.SKILL,release.HTML_SKILL)) for p in z.namelist()))
 
     def test_allowlist_and_credentials(self):
         for name in ['chat.md','test-run/x.html','runtime/x.py','skill/pastdue-analysis/scripts/x.py',
@@ -63,7 +64,7 @@ class ReleaseTooling(unittest.TestCase):
         (self.root/'chat.md').write_text('not allowed')
         (self.root/'skill/pastdue-analysis/references/secret.md').write_text('not allowed')
         self.build()
-        with zipfile.ZipFile(self.root/'releases/pastdue-agent-v3.1.1.zip') as z:
+        with zipfile.ZipFile(self.root/f'releases/pastdue-agent-v{release.VERSION}.zip') as z:
             self.assertNotIn('chat.md',z.namelist())
             self.assertNotIn('skill/pastdue-analysis/references/secret.md',z.namelist())
 
@@ -82,7 +83,7 @@ class ReleaseTooling(unittest.TestCase):
 
     def test_independent_skill_zip_tamper_rejected(self):
         self.build()
-        path=self.root/'releases/pastdue-analysis-skill-v3.1.1.zip'
+        path=self.root/f'releases/pastdue-analysis-skill-v{release.VERSION}.zip'
         with zipfile.ZipFile(path) as z:payload={n:z.read(n) for n in z.namelist()}
         payload[release.SKILL+'SKILL.md'] += b'\ndrift'
         release.zip_write(path,payload)
@@ -90,7 +91,7 @@ class ReleaseTooling(unittest.TestCase):
             release.check_release(self.root)
 
     def test_extra_or_duplicate_archive_member_rejected(self):
-        self.build();path=self.root/'releases/pastdue-agent-v3.1.1.zip'
+        self.build();path=self.root/f'releases/pastdue-agent-v{release.VERSION}.zip'
         with zipfile.ZipFile(path,'a') as z:z.writestr('chat.md','bad')
         with self.assertRaisesRegex(ValueError,'closure'):
             release.check_release(self.root)
@@ -107,7 +108,7 @@ class ReleaseTooling(unittest.TestCase):
         self.offline['status']='FAIL'
         with self.assertRaisesRegex(ValueError,'validation failed'):
             self.build()
-        self.assertFalse((self.root/'releases/pastdue-agent-v3.1.1.zip').exists())
+        self.assertFalse((self.root/f'releases/pastdue-agent-v{release.VERSION}.zip').exists())
 
     def test_sql_receipt_bound_and_not_fabricated(self):
         receipt=self.receipt();self.assertEqual(release.validate_sql_receipt(receipt,self.root)['status'],'PASS')

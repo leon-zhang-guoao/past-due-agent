@@ -1,4 +1,9 @@
-# Requests — Agent contract 3.3.7
+# Requests — Agent contract 3.4.0
+
+Examples illustrate operation composition, not a closed list of supported phrases.
+Prefer discovered explore-v2; old explore remains compatible for scopes it expresses.
+Vendor sets use vendor-codes-json, detail stays on its own targeted APIs. Follow-ups
+modify only changed scope fields. See interactive-planning.md and explore-v2.md.
 
 | Request | Route / resolved intent |
 |---|---|

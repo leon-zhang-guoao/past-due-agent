@@ -3,6 +3,21 @@ from copy import deepcopy
 import json
 
 
+def legacy_display_contract():
+    """Fixture for the archived section-parser validator, not current layout.
+
+    Current display EDN intentionally holds only formats/bindings; report-format.md
+    owns the live layout. Keep parser unit tests independent of that migration.
+    """
+    from edn_io import K
+    from analysis_validation import REPORT_MODULES
+    modules={K(':'+name):{} for name in REPORT_MODULES}
+    return {K(':modules'):modules,
+            K(':compositions'):{K(':daily_full'):[K(':'+n) for n in REPORT_MODULES]},
+            K(':composition-rules'):{K(':per-selected-vendor'):[K(':'+n) for n in
+                ('vendor_metrics','eta_code_changes','eta_source_changes','us_source_changes','business_diagnosis')]}}
+
+
 def report_rows(bucket_count=2):
     scope = dict(country_code='US', vendor_code=3493,
                  target_snapshot_date='2026-10-23', previous_snapshot_date='2026-10-22',

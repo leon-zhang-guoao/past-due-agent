@@ -1,4 +1,4 @@
-# Retained-result reading — 3.3.16
+# Retained-result reading — 3.4.0
 
 ## 1. Call boundary
 
@@ -46,6 +46,14 @@ known current response appears expired, disclose the anomaly; only confirmed
 expiry justifies a fresh execute, not guessing a replacement handle.
 
 ## 2. Small monitor and historical results
+
+For explore-v3 pages read [explore-v3.md](explore-v3.md): SELECTION and FACT have
+different scopes, counts and grains; typed placeholders are not observations.
+For explore-v2 source pages, use the same actual-handle argument shape above.
+Read [explore-v2.md](explore-v2.md) for repeated CONTROL, coverage records,
+page-record-count, whole-result ordinals and fingerprint validation. Each source
+page has its own actual handle; a cursor is not a handle. The compact report's
+record/total rules below do not apply to VENDOR_COVERAGE placeholders.
 
 For the known small monitor result:
 

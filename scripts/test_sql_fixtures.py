@@ -61,10 +61,13 @@ class SQLFixtures(unittest.TestCase):
         page=overrides.pop('_page',None)
         b=self.doc[':execution'][':bindings'][rid+'-sql']
         params={'country_code':'CA','calendar_mode':'WEEKDAYS','target_snapshot_date':'2026-10-26','previous_snapshot_date':'2026-10-23','selection_mode':'POSITIVE_TOP_N','top_n':10,'vendor_code':0,'relative_change_threshold':'0.10','range_start_date':'2026-10-23','range_end_date':'2026-10-26','grain':'VENDOR','vendor_code_filter':'','department_type_filter':'','master_primary_filter':'','master_manager_filter':'','denominator_scope':'COUNTRY_ALL','time_basis':'PAIR','pair_policy':'EXPLICIT','eta_code_filter':'','source_filter':'','ranking_metric':'NONE','sort_direction':'DESC','change_selection':'ALL'}
+        params.update(vendor_codes_json='[]',page_after_ordinal=0,page_size=500)
+        params.update(selection_unit='VENDOR',rank_partition='GLOBAL',
+                      expansion_eta_code_filter='',expansion_source_filter='')
         params.update(overrides)
         def replace(m):
             x=params[m.group(1)]
-            if m.group(1) in ('top_n','vendor_code'):return str(x)
+            if m.group(1) in ('top_n','vendor_code','page_after_ordinal','page_size'):return str(x)
             if m.group(1)=='relative_change_threshold':return 'toDecimal128('+repr(str(x))+',18)'
             return "'"+str(x).replace("'","''")+"'"
         q=b[':binding/implementation'][':query']
@@ -78,6 +81,274 @@ class SQLFixtures(unittest.TestCase):
         mapped={v for k,v in b[':binding/output-map'].items() if self.doc[':vocabulary'][':attributes'][k][':attribute/type']!=':ref'}
         for row in rows:self.assertEqual(set(row),mapped,'Actual SQL columns differ from mapped scalar outputs: '+rid)
         return rows
+
+    def v2(self,**overrides):
+        return self.sql('pastdue_v3_explore_v2_query_rows',**overrides)
+
+    def v3(self,**overrides):
+        return self.sql('pastdue_v3_explore_v3_query_rows',**overrides)
+
+    def test_v3_rank_vendor_expand_and_preserve_denominator(self):
+        # CA current PD=3, candidate Vendors1+2 PD=2; Top1 Vendor1 has PD1
+        # and two displayed buckets. Its denominator must remain candidate PD2.
+        rows=self.v3(time_basis='CURRENT',vendor_codes_json='[1,2]',
+                     grain='VENDOR_CODE_SOURCE',ranking_metric='PAST_DUE_COUNT',
+                     top_n=1,denominator_scope='FILTERED_POPULATION')
+        selected=[r for r in rows if r['record_type']=='SELECTION']
+        facts=self.facts(rows)
+        self.assertEqual([(int(r['vendor_code']),int(r['target_past_due_count'])) for r in selected],[(1,1)])
+        self.assertEqual({r['grain'] for r in selected},{'VENDOR'})
+        self.assertEqual(len(facts),2)
+        self.assertEqual(sum(int(r['target_past_due_count']) for r in facts),1)
+        self.assertTrue(all(int(r['target_share_denominator'])==2 for r in facts+selected))
+        self.assertEqual({float(r['target_past_due_share']) for r in selected},{0.5})
+        self.assertEqual({int(r['vendor_code']):r['scope_status'] for r in rows if r['record_type']=='VENDOR_COVERAGE'},
+                         {1:'MATCHED',2:'EXCLUDED_BY_SELECTION'})
+
+    def test_v3_selection_filter_does_not_restrict_expansion(self):
+        rows=self.v3(time_basis='CURRENT',grain='VENDOR_CODE_SOURCE',eta_code_filter='NR',
+                     ranking_metric='PAST_DUE_COUNT',top_n=1)
+        selected=[r for r in rows if r['record_type']=='SELECTION']
+        self.assertEqual(len(selected),1)
+        self.assertEqual(int(selected[0]['vendor_code']),1)
+        self.assertEqual(int(selected[0]['target_open_count']),1)
+        self.assertEqual({r['eta_code'] for r in self.facts(rows)},{'NR','SH'})
+        filtered=self.v3(time_basis='CURRENT',grain='VENDOR_CODE_SOURCE',eta_code_filter='NR',
+                         expansion_eta_code_filter='SH',ranking_metric='PAST_DUE_COUNT',top_n=1)
+        self.assertEqual([r['eta_code'] for r in self.facts(filtered)],['SH'])
+        self.assertEqual(int(self.facts(filtered)[0]['target_past_due_count']),0)
+
+    def test_v3_per_date_ranking_keeps_date_vendor_binding(self):
+        self.db.query("INSERT INTO past_due.vendor_past_due_daily VALUES "
+            "('PART','2026-10-23',1,'First','NR','X',9,10),"
+            "('PART','2026-10-23',2,'Second','SH','Y',1,10),"
+            "('PART','2026-10-26',1,'First','NR','X',2,10),"
+            "('PART','2026-10-26',2,'Second','SH','Y',8,10)")
+        args=dict(country_code='PART',time_basis='RANGE',grain='VENDOR_CODE_SOURCE',
+                  ranking_metric='PAST_DUE_COUNT',top_n=1)
+        rows=self.v3(rank_partition='TARGET_DATE',**args)
+        facts=self.facts(rows)
+        self.assertEqual({(r['target_snapshot_date'],int(r['vendor_code'])) for r in facts},
+                         {('2026-10-23',1),('2026-10-26',2)})
+        self.assertTrue(all(int(r['selection_rank'])==1 for r in facts))
+        global_rows=self.v3(rank_partition='GLOBAL',**args)
+        self.assertEqual([(r['target_snapshot_date'],int(r['vendor_code'])) for r in self.facts(global_rows)],
+                         [('2026-10-23',1)])
+
+    def test_v3_empty_selection_never_expands_all(self):
+        for args in [dict(vendor_codes_json='[999]'),dict(eta_code_filter='DOES_NOT_EXIST')]:
+            rows=self.v3(time_basis='CURRENT',**args)
+            control=next(r for r in rows if r['record_type']=='CONTROL')
+            self.assertEqual(control['scope_status'],'EMPTY_SELECTION')
+            self.assertEqual(int(control['selected_object_count']),0)
+            self.assertEqual(int(control['fact_record_count']),0)
+            self.assertEqual(self.facts(rows),[])
+            self.assertEqual([r for r in rows if r['record_type']=='SELECTION'],[])
+        zero=self.v3(country_code='ZERO',grain='VENDOR_CODE',top_n=0)
+        self.assertEqual(int(self.facts(zero)[0]['target_past_due_count']),0)
+        self.assertEqual(next(r for r in zero if r['record_type']=='CONTROL')['scope_status'],'OK')
+        none=self.v3(country_code='ABSENT',time_basis='CURRENT')
+        self.assertEqual(len(none),1)
+        self.assertEqual(none[0]['scope_status'],'NO_DATA')
+
+    def test_v3_expansion_missing_is_not_empty_selection(self):
+        rows=self.v3(time_basis='CURRENT',vendor_codes_json='[1]',grain='VENDOR_CODE',
+                     expansion_eta_code_filter='ABSENT',top_n=1)
+        control=next(r for r in rows if r['record_type']=='CONTROL')
+        self.assertEqual(control['scope_status'],'OK')
+        self.assertEqual(int(control['selected_object_count']),1)
+        self.assertEqual(int(control['fact_record_count']),0)
+        self.assertEqual(next(r['scope_status'] for r in rows if r['record_type']=='VENDOR_COVERAGE'),
+                         'NO_MATCHING_EXPANSION_BUCKETS')
+        self.assertEqual(self.facts(rows),[])
+
+    def test_v3_grouped_row_parity_all_bases_grains(self):
+        from build_v31_contract import EXPLORE_FIELDS
+        fields=[n.replace('-','_') for n,_ in EXPLORE_FIELDS
+                if n not in ('scope-key','queried-at-local','row-ordinal','expected-record-count')]
+        for basis in ['CURRENT','SNAPSHOT','PAIR','RANGE']:
+            for grain in ['COUNTRY','VENDOR','VENDOR_CODE','VENDOR_SOURCE','VENDOR_CODE_SOURCE']:
+                for denominator in ['COUNTRY_ALL']:
+                    args=dict(time_basis=basis,grain=grain,denominator_scope=denominator,
+                              ranking_metric='PAST_DUE_COUNT',top_n=2)
+                    old=self.facts(self.v2(**args))
+                    new=self.facts(self.v3(selection_unit='GROUPED_ROW',**args))
+                    order=lambda r:(r['selection_rank'],r['target_snapshot_date'],r['vendor_code'],r['eta_code'],r['eta_source'])
+                    self.assertEqual([[r[f] for f in fields] for r in sorted(new,key=order)],
+                                     [[r[f] for f in fields] for r in sorted(old,key=order)],(basis,grain,denominator))
+
+    def test_v3_vendor_expansion_denominators_and_org_coverage(self):
+        for denominator,expected in [('COUNTRY_ALL',3),('FILTERED_POPULATION',2),('WITHIN_VENDOR',1)]:
+            rows=self.v3(time_basis='CURRENT',vendor_codes_json='[1,2]',grain='VENDOR_CODE',
+                         denominator_scope=denominator,top_n=1,ranking_metric='PAST_DUE_COUNT')
+            self.assertTrue(all(int(r['target_share_denominator'])==expected for r in self.facts(rows)))
+        org=self.v3(time_basis='CURRENT',vendor_codes_json='[1,2,999]',grain='VENDOR_CODE',
+                    master_primary_filter='A',top_n=0)
+        self.assertEqual({int(r['vendor_code']):r['scope_status'] for r in org if r['record_type']=='VENDOR_COVERAGE'},
+                         {1:'MATCHED',2:'EXCLUDED_BY_ORG',999:'NO_DATA_IN_PERIOD'})
+
+    def test_v3_explicit_date_coverage_and_original_vendor_set(self):
+        rows=self.v3(time_basis='RANGE',vendor_codes_json='[1,999]',grain='VENDOR_CODE',top_n=0)
+        coverage=[r for r in rows if r['record_type']=='VENDOR_COVERAGE']
+        self.assertEqual(len(coverage),4)
+        self.assertEqual({(r['target_snapshot_date'],int(r['vendor_code'])) for r in coverage},
+                         {(date,v) for date in ['2026-10-23','2026-10-26'] for v in [1,999]})
+        self.assertTrue(all(r['scope_status']==('MATCHED' if int(r['vendor_code'])==1 else 'NO_DATA_IN_PERIOD') for r in coverage))
+        codes=[64342,75256,64351,19215,65505,75257,22344,85058,71886,48378,65885,75691,72478]
+        values=','.join(f"('SET3',{v},'Vendor {v}','{code}','{source}',{pd},'Past Due')"
+                        for v in codes for code,source,pd in [('NR','EDI',1),('US','AutoUS',1),('SH','EDI',0)])
+        self.db.query('INSERT INTO past_due.past_due_detail_view VALUES '+values)
+        rows=self.v3(country_code='SET3',time_basis='CURRENT',vendor_codes_json=json.dumps(codes),
+                     grain='VENDOR_CODE_SOURCE',top_n=0,denominator_scope='WITHIN_VENDOR')
+        self.assertEqual({int(r['vendor_code']) for r in self.facts(rows)},set(codes))
+        self.assertEqual(len(self.facts(rows)),39)
+        self.assertEqual(len([r for r in rows if r['record_type']=='SELECTION']),13)
+        for vendor in codes:
+            self.assertEqual(sum(int(r['target_past_due_count']) for r in self.facts(rows) if int(r['vendor_code'])==vendor),2)
+
+    def test_v3_pair_disappearance_and_changes(self):
+        rows=self.v3(country_code='GONE',vendor_codes_json='[1]',grain='VENDOR_CODE_SOURCE',
+                     ranking_metric='COUNT_CHANGE',change_selection='NEGATIVE',top_n=1)
+        self.assertEqual(len(self.facts(rows)),1)
+        self.assertEqual(int(self.facts(rows)[0]['past_due_count_change']),-10)
+        self.assertEqual(next(r['scope_status'] for r in rows if r['record_type']=='VENDOR_COVERAGE'),'MATCHED')
+        self.assertEqual(int(self.facts(rows)[0]['target_past_due_count']),0)
+
+    def test_v3_invalid_inputs_and_error_data(self):
+        for args,status in [({'selection_unit':'INVALID'},'INVALID_SELECTION'),
+                            ({'rank_partition':'OWNER'},'INVALID_SELECTION'),
+                            ({'selection_unit':'VENDOR','grain':'COUNTRY'},'UNSUPPORTED_COMBINATION'),
+                            ({'selection_unit':'GROUPED_ROW','expansion_source_filter':'X'},'UNSUPPORTED_COMBINATION'),
+                            ({'vendor_codes_json':'[true]'},'INVALID_VENDOR_SELECTION'),
+                            ({'page_size':501},'INVALID_PAGE'),
+                            ({'country_code':'BAD'},'DATA_ERROR')]:
+            rows=self.v3(**args)
+            self.assertEqual(len(rows),1,args)
+            self.assertEqual(rows[0]['scope_status'],status,args)
+            self.assertEqual(int(rows[0]['selected_object_count']),0)
+
+    def test_v3_paging_union_and_checksum(self):
+        args=dict(vendor_codes_json=json.dumps(list(range(1,1151))))
+        args.update(grain='VENDOR_CODE_SOURCE',ranking_metric='PAST_DUE_COUNT',top_n=0,page_size=500)
+        first=self.v3(**args)
+        control=next(r for r in first if r['record_type']=='CONTROL')
+        rows=list(first);cursor=int(control['next_after_ordinal'])
+        while cursor:
+            page=self.v3(page_after_ordinal=cursor,**args)
+            meta=next(r for r in page if r['record_type']=='CONTROL')
+            self.assertEqual(meta['result_fingerprint'],control['result_fingerprint'])
+            self.assertEqual(len(page),int(meta['page_record_count']))
+            rows.extend(r for r in page if r['record_type']!='CONTROL')
+            cursor=int(meta['next_after_ordinal'])
+        self.assertGreater(len(rows),1000)
+        self.assertEqual(len(rows),int(control['expected_record_count']))
+        self.assertEqual(sorted(int(r['row_ordinal']) for r in rows),list(range(len(rows))))
+        self.assertEqual(len(self.facts(rows)),int(control['fact_record_count']))
+        self.assertEqual(len([r for r in rows if r['record_type']=='SELECTION']),int(control['selected_object_count']))
+
+    def facts(self,rows):
+        return [r for r in rows if r['record_type']=='FACT']
+
+    def test_v2_existing_metrics_parity_all_time_bases_and_grains(self):
+        from build_v31_contract import EXPLORE_FIELDS
+        fields=[n.replace('-','_') for n,_ in EXPLORE_FIELDS
+                if n not in ('scope-key','queried-at-local','row-ordinal','expected-record-count')]
+        for basis in ['CURRENT','SNAPSHOT','PAIR','RANGE']:
+            for grain in ['COUNTRY','VENDOR','VENDOR_CODE','VENDOR_SOURCE','VENDOR_CODE_SOURCE']:
+                args=dict(time_basis=basis,grain=grain,top_n=0)
+                old=self.facts(self.sql('pastdue_v3_explore_query_rows',**args))
+                new=self.facts(self.v2(**args))
+                key=lambda r:(r['selection_rank'],r['target_snapshot_date'],r['vendor_code'],r['eta_code'],r['eta_source'])
+                self.assertEqual([[r[f] for f in fields] for r in sorted(new,key=key)],[[r[f] for f in fields] for r in sorted(old,key=key)],(basis,grain))
+        for denominator in ['COUNTRY_ALL','FILTERED_POPULATION','WITHIN_VENDOR']:
+            args=dict(time_basis='CURRENT',grain='VENDOR_CODE_SOURCE',eta_code_filter='NR',denominator_scope=denominator,top_n=0)
+            old=self.facts(self.sql('pastdue_v3_explore_query_rows',vendor_code=1,**args))
+            new=self.facts(self.v2(vendor_codes_json='[1]',**args))
+            self.assertEqual([[r[f] for f in fields] for r in new],[[r[f] for f in fields] for r in old],denominator)
+
+    def test_v2_vendor_set_validation_and_invariance(self):
+        for value in ['1','"1"','{}','null','[0]','[-1]','[1.5]','[true]','["1"]','[9223372036854775808]','[18446744073709551617]','[9999999999999999999999999999999]','[1,]','broken']:
+            rows=self.v2(vendor_codes_json=value)
+            self.assertEqual(len(rows),1,value)
+            self.assertEqual(rows[0]['scope_status'],'INVALID_VENDOR_SELECTION',value)
+        for value in ['[1,2]','[2,1,1]','[ 1, 2 ]']:
+            rows=self.v2(time_basis='CURRENT',vendor_codes_json=value,top_n=0)
+            self.assertEqual({int(r['vendor_code']) for r in self.facts(rows)},{1,2})
+            self.assertEqual(int(rows[0]['requested_vendor_count']),2)
+            self.assertEqual(int(rows[0]['returned_vendor_count']),2)
+            if value=='[1,2]':counts=[r['target_past_due_count'] for r in self.facts(rows)]
+            else:self.assertEqual([r['target_past_due_count'] for r in self.facts(rows)],counts)
+
+    def test_v2_denominators_and_coverage_do_not_invent_zeros(self):
+        rows=self.v2(time_basis='CURRENT',vendor_codes_json='[1,2,999]',top_n=0,grain='VENDOR_CODE',eta_code_filter='NR')
+        coverage={int(r['vendor_code']):r['scope_status'] for r in rows if r['record_type']=='VENDOR_COVERAGE'}
+        self.assertEqual(coverage,{1:'MATCHED',2:'NO_MATCHING_BUCKETS',999:'NO_DATA_IN_PERIOD'})
+        self.assertEqual(len(self.facts(rows)),1)
+        self.assertEqual(int(self.facts(rows)[0]['target_share_denominator']),3)
+        filtered=self.v2(time_basis='CURRENT',vendor_codes_json='[1,2]',top_n=0,grain='VENDOR_CODE',eta_code_filter='NR',denominator_scope='FILTERED_POPULATION')
+        self.assertEqual(int(self.facts(filtered)[0]['target_share_denominator']),2)
+        org=self.v2(time_basis='CURRENT',vendor_codes_json='[1,2,3]',top_n=0,master_primary_filter='A')
+        coverage={int(r['vendor_code']):r['scope_status'] for r in org if r['record_type']=='VENDOR_COVERAGE'}
+        self.assertEqual(coverage,{1:'MATCHED',2:'EXCLUDED_BY_ORG',3:'EXCLUDED_BY_ORG'})
+        zero=self.v2(country_code='ZERO',vendor_codes_json='[1]',top_n=0)
+        self.assertEqual(int(self.facts(zero)[0]['target_past_due_count']),0)
+        self.assertEqual(next(r['scope_status'] for r in zero if r['record_type']=='VENDOR_COVERAGE'),'MATCHED')
+
+    def test_v2_explicit_paging_complete_above_transport_limit(self):
+        import json as json_module
+        vendors=json_module.dumps(list(range(1,1301)))
+        first=self.v2(vendor_codes_json=vendors,top_n=0,page_size=500)
+        self.assertEqual(len(first),501)
+        self.assertGreater(int(first[0]['expected_record_count']),1000)
+        pages=list(first);cursor=int(first[0]['next_after_ordinal'])
+        key=first[0]['scope_key'];fingerprint=first[0]['result_fingerprint']
+        while cursor:
+            page=self.v2(vendor_codes_json=vendors,top_n=0,page_size=500,page_after_ordinal=cursor)
+            control=next(r for r in page if r['record_type']=='CONTROL')
+            self.assertEqual(len(page),int(control['page_record_count']))
+            self.assertEqual(control['scope_key'],key)
+            self.assertEqual(control['result_fingerprint'],fingerprint)
+            pages.extend(r for r in page if r['record_type']!='CONTROL')
+            cursor=int(control['next_after_ordinal'])
+        self.assertEqual(len(pages),int(first[0]['expected_record_count']))
+        self.assertEqual(sorted(int(r['row_ordinal']) for r in pages),list(range(len(pages))))
+        small=self.v2(time_basis='CURRENT',top_n=0,page_size=2)
+        large=self.v2(time_basis='CURRENT',top_n=0,page_size=500)
+        self.assertEqual(small[0]['scope_key'],large[0]['scope_key'])
+        self.assertEqual(small[0]['result_fingerprint'],large[0]['result_fingerprint'])
+        for args in [dict(page_size=0),dict(page_size=501),dict(page_after_ordinal=-1)]:
+            self.assertEqual(self.v2(**args)[0]['scope_status'],'INVALID_PAGE')
+
+    def test_v2_two_stage_top_vendor_then_buckets(self):
+        chosen=self.facts(self.v2(grain='VENDOR',ranking_metric='COUNT_CHANGE',sort_direction='DESC',top_n=3))
+        codes=[int(r['vendor_code']) for r in chosen]
+        rows=self.v2(vendor_codes_json=json.dumps(codes),grain='VENDOR_CODE_SOURCE',top_n=0)
+        self.assertEqual({int(r['vendor_code']) for r in self.facts(rows)},set(codes))
+        self.assertEqual(len(self.facts(rows)),3*8)
+
+    def test_v2_original_thirteen_vendor_request_synthetic_data(self):
+        # Reproduce the user's set/cardinality on synthetic data, not live counts.
+        codes=[64342,75256,64351,19215,65505,75257,22344,85058,71886,48378,65885,75691,72478]
+        values=','.join(f"('SET',{code},'Vendor {code}','{eta}','{source}',{pd},'{alert}')"
+                        for code in codes for eta,source,pd,alert in
+                        [('NR','EDI',1,'Past Due'),('US','AutoUS',1,'Past Due'),('','',0,'Compliant')])
+        self.db.query('INSERT INTO past_due.past_due_detail_view VALUES '+values)
+        rows=self.v2(country_code='SET',time_basis='CURRENT',vendor_codes_json=json.dumps(codes),
+                     grain='VENDOR_CODE_SOURCE',denominator_scope='WITHIN_VENDOR',top_n=0)
+        facts=self.facts(rows)
+        self.assertEqual({int(r['vendor_code']) for r in facts},set(codes))
+        self.assertEqual(len(facts),39)
+        for code in codes:
+            vendor=[r for r in facts if int(r['vendor_code'])==code]
+            self.assertEqual(sum(int(r['target_past_due_count']) for r in vendor),2)
+            self.assertTrue(all(int(r['target_share_denominator'])==2 for r in vendor))
+        self.assertEqual(len([r for r in rows if r['record_type']=='VENDOR_COVERAGE' and r['scope_status']=='MATCHED']),13)
+
+    def test_v2_fingerprint_detects_metric_drift(self):
+        before=self.v2(time_basis='CURRENT',country_code='DRIFT',top_n=0)
+        self.db.query("INSERT INTO past_due.past_due_detail_view VALUES ('DRIFT',1,'One','NR','EDI',1,'Past Due')")
+        after=self.v2(time_basis='CURRENT',country_code='DRIFT',top_n=0)
+        self.assertNotEqual(before[0]['result_fingerprint'],after[0]['result_fingerprint'])
     def test_v31_disappearing_selected_vendor(self):
         for selection in [dict(vendor_code=1),dict(master_primary_filter='GoneOwner')]:
             for grain in ['VENDOR','VENDOR_CODE','VENDOR_SOURCE','COUNTRY']:

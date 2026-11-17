@@ -45,7 +45,48 @@ class QueryContracts(unittest.TestCase):
             self.assertEqual({a.rsplit('/',1)[1] for a in b.flatten_output(r[':output']) if not a.endswith('/rows')},{n for n,_ in fields})
             entity=self.doc[':vocabulary'][':entities']['pastdue.'+prefix+'-fact']
             self.assertIn(':pastdue.'+prefix+'-fact/scope-key',entity[':entity/identity'])
-        self.assertEqual(self.doc[':publication'][':release/version'],'3.1.1')
+        self.assertEqual(self.doc[':publication'][':release/version'],'3.5.0')
+
+    def test_additive_explore_preserves_existing_interfaces(self):
+        from build_explore_v2 import add_explore_v2, INPUTS, FIELDS
+        d=copy.deepcopy(self.doc)
+        existing={k:copy.deepcopy(v) for k,v in d[':execution'][':resolvers'].items()
+                  if k!='pastdue_v3_explore_v2_query_rows'}
+        bindings={k:copy.deepcopy(v) for k,v in d[':execution'][':bindings'].items()
+                  if k!='pastdue_v3_explore_v2_query_rows-sql'}
+        add_explore_v2(d)
+        for k,v in existing.items():self.assertEqual(d[':execution'][':resolvers'][k],v,k)
+        for k,v in bindings.items():self.assertEqual(d[':execution'][':bindings'][k],v,k)
+        r=d[':execution'][':resolvers']['pastdue_v3_explore_v2_query_rows']
+        self.assertEqual({a.rsplit('/',1)[1] for a in r[':input']},{n for n,_ in INPUTS})
+        self.assertEqual({a.rsplit('/',1)[1] for a in b.flatten_output(r[':output']) if not a.endswith('/rows')},{n for n,_ in FIELDS})
+
+    def test_no_existing_metric_changes_against_committed_baseline(self):
+        import subprocess
+        baseline=loads(subprocess.check_output(['git','show','HEAD:atlas/charts/pastdue.edn'],cwd=b.ROOT,text=True))
+        for section in (':resolvers',':bindings'):
+            for name,value in baseline[':execution'][section].items():
+                self.assertEqual(self.doc[':execution'][section][name],value,name)
+
+    def test_complete_v2_example_matches_actual_contract(self):
+        from build_explore_v2 import INPUTS,FIELDS
+        example=loads((b.SKILL_DIR/'references/explore-v2-query.eql').read_text())
+        self.assertEqual(set(example[':entity']),{K(':pastdue.explore-v2-query/'+n) for n,_ in INPUTS})
+        self.assertEqual(set(example[':query'][0][':pastdue.explore-v2-query/rows']),{K(':pastdue.explore-v2-fact/'+n) for n,_ in FIELDS})
+
+    def test_complete_v3_example_matches_actual_contract(self):
+        from build_explore_v3 import INPUTS,FIELDS
+        example=loads((b.SKILL_DIR/'references/explore-v3-query.eql').read_text())
+        self.assertEqual(set(example[':entity']),{K(':pastdue.explore-v3-query/'+n) for n,_ in INPUTS})
+        self.assertEqual(set(example[':query'][0][':pastdue.explore-v3-query/rows']),{K(':pastdue.explore-v3-fact/'+n) for n,_ in FIELDS})
+
+    def test_new_capability_preserves_v2_release_bindings(self):
+        import zipfile
+        with zipfile.ZipFile(b.ROOT/'releases/pastdue-agent-v3.4.0.zip') as archive:
+            baseline=loads(archive.read('atlas/charts/pastdue.edn').decode())
+        for section in (':resolvers',':bindings'):
+            for name,value in baseline[':execution'][section].items():
+                self.assertEqual(self.doc[':execution'][section][name],value,name)
 
     def test_report_query_has_bounded_linear_sources(self):
         sql=self.doc[':execution'][':bindings']['pastdue_v3_report_query_rows-sql'][':binding/implementation'][':query']

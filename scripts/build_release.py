@@ -13,9 +13,10 @@ import sys
 import zipfile
 from pathlib import Path, PurePosixPath
 from edn_io import read, loads, dumps, K
+from run_golden_eval import run_checks
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = '3.3.7'
+VERSION = '3.5.0'
 SKILL = 'skill/pastdue-analysis/'
 HTML_SKILL = 'skill/pastdue-html-report/'
 MANIFEST_PATH = SKILL + 'references/release-manifest.edn'
@@ -30,12 +31,15 @@ ROOT_FILES = {'agent/SYSTEM_PROMPT.md', 'agent/INVOCATION_EXAMPLES.md',
               'IMPLEMENTATION_NOTES.md', 'docs/API_V3.md',
               'docs/DEPLOYMENT_V3.md', 'docs/VALIDATION_V3.md',
               'docs/STRUCTURED_REPORTS_3_3.md', 'docs/STRUCTURED_PILOT_3_3.eql',
-              'docs/RESULT_READER_FIX_3_3_7.md'}
+              'docs/RESULT_READER_FIX_3_3_7.md', 'docs/COMPOSABLE_ANALYSIS_3_4.md',
+              'tests/fixtures/live-question-cases.json', 'docs/PASTDUE_AGENT_REDESIGN.md',
+              'docs/COMPOSABLE_ANALYSIS_3_5.md'}
 REF_NAMES = {'atlas-query-playbook.md', 'completion-contract.md', 'current-context.md',
              'data-contract.md', 'eta-diagnostic-rules.edn', 'metric-definitions.md',
              'policy.edn', 'report-format.md', 'table-display-contract.edn',
              'table-display-contract.md', 'structured-queries.eql', 'result-reader.md',
-             'mcp-tool-arguments.md'}
+             'mcp-tool-arguments.md', 'interactive-planning.md', 'explore-v2.md',
+             'explore-v2-query.eql', 'explore-v3.md', 'explore-v3-query.eql'}
 HTML_REF_NAMES = {'payload-contract.md', 'html-shell.md', 'acceptance-checklist.md',
                   'sample-payload.json'}
 HTML_SCRIPT_NAMES = {'payload_gate.py', 'render_ops_shell.py'}
@@ -204,6 +208,8 @@ def _manifest(full, skill, offline, sql, inputs, doc, baseline):
         ':atlas-semantic-format': '2.0.0',
         ':required-resolvers': {rid: doc[':execution'][':resolvers'][rid][':input']
                                 for rid in sorted(REQUIRED_RESOLVERS)},
+        ':additive-capabilities': {rid: doc[':execution'][':resolvers'][rid][':input'] for rid in
+                                   ('pastdue_v3_explore_v2_query_rows','pastdue_v3_explore_v3_query_rows')},
         ':optional-current-context': 'Discover existing Owner/contact/PO APIs only when requested',
         ':offline-contracts': offline['status'], ':skill-structure': next((c['status'] for c in offline['checks'] if c['name'] == 'validate_bundle.py'), 'NOT_RUN'),
         ':local-clickhouse-sql': sql['status'] if sql else 'NOT_RUN',
@@ -213,8 +219,8 @@ def _manifest(full, skill, offline, sql, inputs, doc, baseline):
         ':validation-input-sha256': {} if offline['status'] == 'NOT_RUN' else inputs,
         ':artifact-input-sha256': inputs,
         ':agent-contract-version': VERSION,
-        ':recommended-atlas-publication': '3.3.0',
-        ':atlas-compatibility': 'Existing structured APIs retain metric3.1.0; older report default200 needs verified complete source pagination/limit',
+        ':recommended-atlas-publication': doc[':publication'][':release/version'],
+        ':atlas-compatibility': 'Atlas3.5 adds explore-v3 source selection/expansion; all38 older resolver and SQL bindings preserved. Existing scalar EDN pattern only; verify real schema, JDBC, paging, plans and latency before rollout.',
         ':source-report-page-default': 1000,
         ':compatible-metric-version': '3.1.0',
         ':manifest-self-hash': 'excluded-to-avoid-recursion',
@@ -284,7 +290,6 @@ def build(root=ROOT, sql_receipt=None, package_only=False):
     if package_only:
         offline = dict(status='NOT_RUN', checks=[], reason='Explicit packaging-only request; no offline tests executed')
     else:
-        from run_golden_eval import run_checks
         offline = run_checks(root)
     if not package_only and offline['status'] != 'PASS':
         for result in offline['checks']:
@@ -296,7 +301,7 @@ def build(root=ROOT, sql_receipt=None, package_only=False):
             raise ValueError('SQL receipt failed; no release emitted')
     if source_hashes(root) != before:
         raise ValueError('Inputs changed during validation; retry after edits settle')
-    skill = {k:v for k,v in payload.items() if k.startswith(SKILL)}
+    skill = {k:v for k,v in payload.items() if k.startswith((SKILL, HTML_SKILL))}
     baseline = json.loads((root / 'tests/fixtures/baseline-v3.1.json').read_text()) if package_only else rollback(root)
     manifest = _manifest(payload, skill, offline, sql_receipt, before,
                          read(root / 'atlas/charts/pastdue.edn'), baseline)

@@ -1,4 +1,4 @@
-# Atlas query playbook — 3.3.16
+# Atlas query playbook — 3.5.0
 
 Retained reads copy the `analyze_result` object and the SQL in
 [result-reader.md](result-reader.md).
@@ -6,7 +6,11 @@ EQL stays `{:entity ... :query ...}` inside `execute_eql.query`.
 
 ## Choose the fact capability
 
-Standard: monitor/history → pinned report-query/rows. Interactive: explore-query/rows.
+Standard: monitor/history → pinned report-query/rows. Interactive: discovered
+explore-v3-query/rows preferred; read [v3 contract](explore-v3.md) and
+[complete EQL](explore-v3-query.eql). v2 and old explore remain compatible. Read
+[interactive planning](interactive-planning.md) and [v2 contract](explore-v2.md)
+for selection sets, source pages and equivalent alternate paths.
 The retained 3.2 long-text endpoints are compatibility-only. Read the active
 section, not all examples. Use live list_entities/list_attributes/tool schemas and
 reuse discovery within the same environment. Dates/Vendors below are examples,
@@ -14,7 +18,9 @@ not run defaults. EQL wrapper is `{:entity ... :query ...}`, never Datalog.
 
 The examples use plain joins accepted by the observed Studio. They are NOT a
 verified paging API. Report3.3 source default/max is1000; compact Top10 bound is221. Other
-collections retain default200/max1000. Older report deployments may default200
+collections retain default200/max1000 except explore-v2/v3, whose SQL pages have
+at most500 non-control rows plus CONTROL with transport default/max1000.
+Older report deployments may default200
 and cut off a221-row report unless supported source paging/limit is supplied.
 MCP source paging/sorting must use its actually supported schema. Do not paste
 parameterized joins into Studio after semantic.studio/query-shape rejection.
@@ -296,9 +302,11 @@ joint check is not failed. Read all applicable checks before Country diagnosis.
 One justified correction retry per logical request; pagination isn't a retry.
 Changing source limit/projection does not fix cancelled aggregation. Preserve
 independent valid facts; nested errors count even if outer isError=false.
-INTERACTIVE: ≤6 different logical fact requests; discovery/result reads/paging
-excluded. Presets have no six-request cap, but optional/history breadth is explicit.
-No per-Vendor fallback storms. Complete rows/checks do not certify final text.
+INTERACTIVE: review cost after six distinct source scopes, not an automatic stop.
+Prefer batches; finite targeted worklists are allowed when batch is unavailable
+and semantics match. Discovery/result reads/paging are separate work, with their
+actual cost still considered. Bound open-ended breadth. No retry/fanout storms.
+Complete rows/checks do not certify final text. See interactive-planning.md.
 
 Capture labels use returned America/Los_Angeles; actual PST/PDT+offset only with
 trusted instant evidence. Date pinning is not a transaction. Compare only common

@@ -1,4 +1,24 @@
-# Real acceptance checklist —3.3.7 (not executed)
+# Real acceptance checklist —3.5.0 (live not executed)
+
+V3 adds graph-side selection/expansion: verify one logical query selects Vendor
+before buckets, preserves candidate FILTERED_POPULATION, separates selection and
+display filters, and partitions Top N per actual date when requested. Empty
+selection must not query all; selected objects without matching expansion keep
+SELECTION with an explicit display gap. Check complete SELECTION/FACT counts and
+identity/ranks independently. One SQL query is not a transaction guarantee.
+All public cases below have informed design; independently withhold additional
+questions from the building/tuning Agent. Actual role/performance tests required.
+
+Public acceptance specification: tests/fixtures/live-question-cases.json. Use actual deployed
+facts, complete original tool traces and delivered answers; keep evaluation
+rubrics outside the tested Agent context. Include unseen condition combinations,
+contextual follow-ups, dependent ranking→buckets→PO, denominator changes, finite
+>6-scope worklists, source paging >1000 rows, local handle failure and real data
+gaps. Repeat fixed scopes to observe variability. Existing standard report and
+optional HTML behavior must pass independently. Synthetic SQL/contract receipts
+are not real-Agent evidence. See docs/COMPOSABLE_ANALYSIS_3_4.md.
+
+## Historical 3.3.7 checklist
 
 First verify a same-host fresh-handle SQL read, then dedicated Country fields,
 one Vendor, one Country Top10, then expand; retain original returned evidence and final output.

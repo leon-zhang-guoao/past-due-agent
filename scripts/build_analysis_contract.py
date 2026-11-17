@@ -414,6 +414,10 @@ def build(graph_path=None):
     add_report_blocks(doc)
     add_monitor_blocks(doc)
     apply_structured_defaults(doc)
+    from build_explore_v2 import add_explore_v2
+    add_explore_v2(doc)
+    from build_explore_v3 import add_explore_v3
+    add_explore_v3(doc)
     write(graph_path,doc)
     return doc
 

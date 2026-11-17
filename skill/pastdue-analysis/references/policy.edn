@@ -1,4 +1,4 @@
-{:policy-version "3.3.16"
+{:policy-version "3.5.0"
   :business-timezone "America/Los_Angeles"
   :business-timezone-iana "America/Los_Angeles"
   :display-timezone {:daylight-saving true
@@ -14,7 +14,9 @@
   :country-trigger {:relative-ratio-change-gte 0.1
     :minimum-percentage-point-change nil
     :use-unrounded-counts true}
-  :interfaces {:flexible :pastdue.explore-query/rows
+  :interfaces {:flexible :pastdue.explore-v3-query/rows
+    :flexible-set-compatible :pastdue.explore-v2-query/rows
+    :flexible-compatible :pastdue.explore-query/rows
     :report :pastdue.report-query/rows
     :monitor :pastdue.monitor-query/countries
     :history :pastdue.history-query/trigger-events
@@ -52,7 +54,10 @@
     :force-drilldown true
     :preserve-real-business-status true
     :include-optional-modules-by-default false}
-  :execution {:maximum-logical-requests-per-interaction 6
+  :execution {:planning-review-after-source-scopes 6
+    :budget-enforcement :agent-guidance-not-host-gate
+    :targeted-worklists :finite-requested-scope-when-equivalent-batch-unavailable
+    :source-concurrency-default 1
     :pagination-excluded true
     :maximum-corrected-retries 1
     :recursive-fanout-fallback false
@@ -61,14 +66,16 @@
     :html-companion-optional-verification-script "skill/pastdue-html-report/scripts/render_ops_shell.py"
     :html-companion-verification-script-is-runtime-service false
     :host-hard-gate-installed false
-    :logical-request-limit-applies-to "INTERACTIVE"
+    :cost-review-applies-to "INTERACTIVE"
     :discovery-excluded true
     :materialization-excluded true
     :retry-same-logical-slot true
-    :counts-different-logical-fact-requests-only true
-    :report-presets-six-request-cap false
+    :cost-review-is-not-completion-cap true
     :presets-attempt-all-mandatory-work true
     :broad-scope-bounds-must-be-explicit true
+    :interactive-planning "interactive-planning.md"
+    :explore-v2-contract "explore-v2.md"
+    :explore-v3-contract "explore-v3.md"
     :result-handle-materialization {:allowed true
       :tool "analyze_result"
       :schema-first :when-column-mapping-unverified

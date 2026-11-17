@@ -1,0 +1,19 @@
+{
+  "kind": "LIVE_AGENT_ACCEPTANCE_CASES_NOT_EXECUTED",
+  "evaluation": "Public design/regression cases, not withheld questions. Use actual deployed facts and original calls; keep rubrics outside the tested agent. Assess correctness, coverage, preserved scope, calls, recovery and delivered answer independently. Prepare separate unseen holdouts.",
+  "cases": [
+    {"id": "vendor_set_current", "request": "US这13家64342、75256、64351、19215、65505、75257、22344、85058、71886、48378、65885、75691、72478，刷新每家Past Due数量和ETA Code、Source分布。", "check": "Exactly the requested set accounted for; no comma-list single-value call; no missing-as-zero; same-scope distributions reconcile where complete."},
+    {"id": "dependent_selection", "request": "CA最近两个完整工作日恶化最多的3家供应商，给出它们全部ETA分布。", "followup": "其中第一家具体有哪些逾期PO？", "check": "Select Vendor before buckets; clarify worsening metric if material; do not rank buckets as Vendors; current PO labeled current, preserve selected identity."},
+    {"id": "contextual_change", "request": "US供应商64342和72478当前ETA分布，占各自逾期的比例。", "followup": "改成占整个US的比例，其他不变。", "check": "Only denominator changes; preserve Vendor set, CURRENT and grouping; never rebase Country denominator to subset."},
+    {"id": "ranking_unit", "request": "US过去一周，每天逾期最多的3家分别是谁？", "check": "Per-date selection, not global RANGE top3; preserve daily stock semantics and actual eligible dates."},
+    {"id": "conditional_source", "request": "CA当前ETA Code为US的行，Source是什么，各占多少？", "check": "Actual joint Code=US facts, denominator stated; CountryCA is not excluded by CodeUS semantics."},
+    {"id": "finite_detail", "request": "查询US这8家供应商的当前逾期PO，每家最多2条。", "setup": "Supply eight actual Vendor IDs within existing per-Country display bounds; batch detail unavailable.", "check": "Finite targeted plan may exceed six business scopes; no premature stop; preserve requested per-Vendor sample and current labels."},
+    {"id": "source_truncation", "request": "列出US当前全部供应商的ETA分布。", "setup": "Use a result larger than the live source page cap.", "check": "Verify source plus retained completeness; continue pages; do not call a successful SELECT on truncated data complete."},
+    {"id": "association_failure", "request": "比较US与CA当前逾期情况。", "setup": "In an authorized test harness, return a mismatched handle for one Country only.", "check": "Quarantine dependent facts; continue independent verified Country; no guessed handle or invented comparison."},
+    {"id": "real_capability_gap", "request": "证明上周逾期增长是哪个人的操作造成的。", "check": "Do not infer historical responsibility from current Owner mappings; identify absent historical evidence and provide only supported analysis."},
+    {"id": "candidate_denominator", "request": "在指定供应商集合中选当前逾期最多的两家，显示各自全部ETA，比例占最初指定集合的逾期总量。", "setup": "Supply actual candidates with at least three positive Vendors.", "check": "FILTERED_POPULATION remains original candidates before Top N; use SELECTION for ranking and FACT for display; never replace denominator with winners."},
+    {"id": "selection_display_filters", "request": "找出当前NR逾期最多的供应商，然后看它全部ETA分布。", "check": "Selection Code NR; expansion Code empty. Rank Vendor NR observation, not NR buckets; display other Codes if present and preserve whole Vendor denominators."},
+    {"id": "empty_selection", "request": "列出指定条件下的供应商及全部ETA。", "setup": "Provide an exact filter known to match no source buckets.", "check": "EMPTY_SELECTION yields no SELECTION or FACT, not a rerun with all Vendors or invented measured zeros."},
+    {"id": "expansion_gap", "request": "先选当前逾期最多的供应商，再只显示指定Source的ETA。", "setup": "Use an authorized exact Source with no rows on the selected Vendor.", "check": "Preserve SELECTION, report no matching expansion buckets, do not call Vendor absent or reselect a different Vendor."}
+  ]
+}

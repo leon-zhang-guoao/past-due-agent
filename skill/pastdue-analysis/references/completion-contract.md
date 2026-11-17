@@ -1,7 +1,14 @@
-# Evidence and completion — 3.3.16
+# Evidence and completion — 3.5.0
 
 This is an Agent procedure, not an installed runtime gate. Query execution,
 retrieval and delivery are separate; none proves independent final-output accuracy.
+Interactive explore-v3 uses [explore-v3.md](explore-v3.md) for selection/FACT
+identity, count and empty/display-gap checks. EMPTY_SELECTION is a valid empty
+path, not an invalid control. Standard report validation below still requires OK.
+Interactive explore-v2 uses [explore-v2.md](explore-v2.md) for source-page and
+Vendor coverage checks. Match FACT and COVERAGE sets to the actual requested
+selection, not report-selected Vendor rules. The standard report checks below
+remain unchanged; apply only the contract of the record type actually returned.
 
 ## A. Source and identity
 
@@ -10,7 +17,7 @@ capture metadata. A handle must originate in that request. Missing linkage is
 UNVERIFIED; a proven wrong attachment is ASSOCIATION_ERROR. Do not repair it by
 matching plausible numbers. Start with serial Country requests.
 
-Require scope-status=OK before interpreting selection. Compare COUNTRY_CONTROL
+For standard reports require scope-status=OK before interpreting selection. Compare COUNTRY_CONTROL
 dedicated previous/target-country-past-due-count, -country-open and -country-ratio
 to the pinned monitor/history. See result-reader.md's exact binding table; Vendor
 count/Open fields on this control are placeholders and MUST NOT be compared as

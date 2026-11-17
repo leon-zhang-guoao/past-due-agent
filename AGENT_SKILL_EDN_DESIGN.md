@@ -1,4 +1,10 @@
-# Responsibilities —3.3.7
+# Responsibilities —3.4.0
+
+Interactive planning: one analysis specification, supported operation composition,
+actual-feedback recovery and bounded cost. Atlas explore-v2 adds Vendor-set
+selection/coverage/source paging using unchanged metric3.1.0; existing paths stay
+compatible. Skill handles planning guidance, not automatic host enforcement.
+See docs/COMPOSABLE_ANALYSIS_3_4.md and the Skill's interactive-planning.md.
 
 | Artifact | Responsibility | Not responsible for |
 |---|---|---|

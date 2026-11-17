@@ -1,0 +1,73 @@
+;; Complete CURRENT Vendor-set joint distribution example, not a fixed scenario.
+;; Replace Country, selection, dates/filters/grain/rank as resolved by the question.
+;; Continuation copies next-after-ordinal; all logical inputs stay identical.
+{:entity {:pastdue.explore-v2-query/country-code "US"
+          :pastdue.explore-v2-query/time-basis "CURRENT"
+          :pastdue.explore-v2-query/target-snapshot-date "1970-01-01"
+          :pastdue.explore-v2-query/previous-snapshot-date "1970-01-01"
+          :pastdue.explore-v2-query/range-start-date "1970-01-01"
+          :pastdue.explore-v2-query/range-end-date "1970-01-01"
+          :pastdue.explore-v2-query/calendar-mode "WEEKDAYS"
+          :pastdue.explore-v2-query/pair-policy "PREVIOUS_AVAILABLE"
+          :pastdue.explore-v2-query/grain "VENDOR_CODE_SOURCE"
+          :pastdue.explore-v2-query/vendor-codes-json "[64342,75256]"
+          :pastdue.explore-v2-query/eta-code-filter ""
+          :pastdue.explore-v2-query/source-filter ""
+          :pastdue.explore-v2-query/department-type-filter ""
+          :pastdue.explore-v2-query/master-primary-filter ""
+          :pastdue.explore-v2-query/master-manager-filter ""
+          :pastdue.explore-v2-query/denominator-scope "WITHIN_VENDOR"
+          :pastdue.explore-v2-query/ranking-metric "NONE"
+          :pastdue.explore-v2-query/sort-direction "ASC"
+          :pastdue.explore-v2-query/change-selection "ALL"
+          :pastdue.explore-v2-query/top-n 0
+          :pastdue.explore-v2-query/page-after-ordinal 0
+          :pastdue.explore-v2-query/page-size 200}
+ :query [{:pastdue.explore-v2-query/rows
+          [:pastdue.explore-v2-fact/scope-key
+           :pastdue.explore-v2-fact/record-type
+           :pastdue.explore-v2-fact/scope-status
+           :pastdue.explore-v2-fact/country-code
+           :pastdue.explore-v2-fact/vendor-code
+           :pastdue.explore-v2-fact/vendor-name
+           :pastdue.explore-v2-fact/target-snapshot-date
+           :pastdue.explore-v2-fact/previous-snapshot-date
+           :pastdue.explore-v2-fact/calendar-mode
+           :pastdue.explore-v2-fact/time-basis
+           :pastdue.explore-v2-fact/grain
+           :pastdue.explore-v2-fact/eta-code
+           :pastdue.explore-v2-fact/eta-source
+           :pastdue.explore-v2-fact/denominator-scope
+           :pastdue.explore-v2-fact/metric-version
+           :pastdue.explore-v2-fact/organization-basis
+           :pastdue.explore-v2-fact/business-timezone
+           :pastdue.explore-v2-fact/queried-at-local
+           :pastdue.explore-v2-fact/target-past-due-count
+           :pastdue.explore-v2-fact/previous-past-due-count
+           :pastdue.explore-v2-fact/target-open-count
+           :pastdue.explore-v2-fact/previous-open-count
+           :pastdue.explore-v2-fact/target-ratio-denominator
+           :pastdue.explore-v2-fact/previous-ratio-denominator
+           :pastdue.explore-v2-fact/target-share-denominator
+           :pastdue.explore-v2-fact/previous-share-denominator
+           :pastdue.explore-v2-fact/target-country-open
+           :pastdue.explore-v2-fact/previous-country-open
+           :pastdue.explore-v2-fact/past-due-count-change
+           :pastdue.explore-v2-fact/target-past-due-ratio
+           :pastdue.explore-v2-fact/previous-past-due-ratio
+           :pastdue.explore-v2-fact/target-past-due-share
+           :pastdue.explore-v2-fact/previous-past-due-share
+           :pastdue.explore-v2-fact/past-due-count-relative-change
+           :pastdue.explore-v2-fact/past-due-ratio-change
+           :pastdue.explore-v2-fact/delta-country-contribution
+           :pastdue.explore-v2-fact/selection-rank
+           :pastdue.explore-v2-fact/expected-record-count
+           :pastdue.explore-v2-fact/row-ordinal
+           :pastdue.explore-v2-fact/requested-vendor-count
+           :pastdue.explore-v2-fact/returned-vendor-count
+           :pastdue.explore-v2-fact/page-after-ordinal
+           :pastdue.explore-v2-fact/page-size
+           :pastdue.explore-v2-fact/page-record-count
+           :pastdue.explore-v2-fact/next-after-ordinal
+           :pastdue.explore-v2-fact/has-more
+           :pastdue.explore-v2-fact/result-fingerprint]}]}

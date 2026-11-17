@@ -1,4 +1,41 @@
-# Deploy / rollback — Agent3.3.7, Atlas3.3.0/revision4
+# Deploy / rollback — Agent3.5.0, Atlas3.5.0/revision6
+
+## Current 3.5 rollout
+
+Use releases/pastdue-agent-v3.5.0.zip. Save the actual deployed Prompt, Skills,
+approved graph/source IDs and settings first. Deploy additive atlas/charts/pastdue.edn,
+verify platform schema, read-only/role access, real SQL/JDBC, page behavior and
+production plans/latency; install agent/SYSTEM_PROMPT.md and the ENTIRE analysis
+Skill. The HTML companion and source credentials are unchanged.
+Verify per-date Top N, empty selection, original candidate denominator and separate
+selection/display filters with actual facts. Do not claim atomic snapshot isolation.
+Public fixture questions already informed design: use separate withheld questions
+for unseen acceptance, and fresh agents with only data-plane access. All live
+stages remain NOT_RUN. Existing38 resolver/SQL bindings remain unchanged.
+Rollback uses the saved deployed set, not repository source placeholders.
+See COMPOSABLE_ANALYSIS_3_5.md and VALIDATION_V3.md.
+
+## Historical 3.4 rollout
+
+Local package/SQL evidence does not certify deployment. Preserve the actually
+deployed Prompt, complete Skills, approved graph IDs/source configuration and
+version as a rollback set. Deploy additive atlas/charts/pastdue.edn with those
+approved bindings; verify live config-check, JSON functions, Decimal/checksum
+serialization, SQL paging and default transport1000. Existing resolvers/bindings
+retain their meaning. Install agent/SYSTEM_PROMPT.md and complete analysis Skill
+plus the unchanged HTML companion. Keep credentials outside these artifacts.
+
+Run actual questions/follow-ups from tests/fixtures/live-question-cases.json
+and record original requests/responses/handles/pages, final output and independent
+assessment. Smaller page-size reduces transport size, not aggregation cost;
+measure production query plans and latency before broad rollout.
+
+Missing v2 permits discovered semantically equivalent old paths for supported
+questions; it does not permit comma lists in old single-value filters. Rollback
+uses the saved actual Prompt/Skill; the additive graph may remain unused, or be
+restored with its saved approved IDs/settings. See COMPOSABLE_ANALYSIS_3_4.md.
+
+## Historical 3.3.7 procedure (not current rollout)
 
 Status: **PENDING_LIVE_PILOT**. No offline tests, platform config-check or real
 Agent acceptance executed for this correction. See RESULT_READER_FIX_3_3_7.md.

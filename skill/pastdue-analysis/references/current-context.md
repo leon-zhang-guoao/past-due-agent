@@ -29,11 +29,12 @@ sending, follow-up, reply tracking or escalation. TEST follows same display-only
 boundary. Only minimal authorized personal fields are requested.
 
 ## Interaction and display contract
-For INTERACTIVE questions, distinct optional fact scopes share the maximum 6
-logical fact requests; discovery/materialization/pagination are excluded and
-retries stay in the same slot. Report presets have no six-request cap; optional
-context never replaces mandatory report facts. Batch targeted lookups, avoid
-per-Vendor storms, and explicitly bound broad optional scope if necessary. State
+For INTERACTIVE questions, review cost after six distinct source scopes without
+automatically stopping a finite requested worklist. Prefer targeted batches;
+bounded per-Vendor lookups are valid when no equivalent batch exists. Discovery,
+materialization and pagination are separate work; their actual cost still matters.
+Optional context never replaces mandatory report facts. Follow
+interactive-planning.md for recovery and cost; explicitly bound open-ended scope. State
 what was not queried, never silently skip or claim unqueried rows are empty.
 Render capture times in America/Los_Angeles with actual PST/PDT and UTC offset;
 label CURRENT_MAPPING explicitly when used for a historical request.

@@ -166,11 +166,11 @@ def add_report(doc):
     add_collection(doc,'pastdue.report-query','rows','pastdue.report-fact',REPORT_FIELDS,QUERY,sql)
 
 
-def explore_sql():
+def explore_source_ctes(*, selection_ctes='', selection_error='',
+                        vendor_predicate='(:vendor_code=0 OR vendor_code=:vendor_code)'):
     # Filter facts only after constructing independent Country / Vendor /
     # organizational denominators. Current and historical inputs share shape.
-    return '''WITH
- mapped AS (SELECT DISTINCT country_code,toInt64(vendor_no) AS vendor_code FROM past_due.vendor_master_mapping_view
+    return 'WITH\n '+(selection_ctes+'\n ' if selection_ctes else '')+'''mapped AS (SELECT DISTINCT country_code,toInt64(vendor_no) AS vendor_code FROM past_due.vendor_master_mapping_view
  WHERE country_code=:country_code
  AND (empty(:department_type_filter) OR upper(trim(department_type))=upper(trim(:department_type_filter)))
  AND (empty(:master_primary_filter) OR trim(ifNull(master_primary,''))=trim(:master_primary_filter))
@@ -180,7 +180,7 @@ def explore_sql():
  pair AS (SELECT toDate(:target_snapshot_date) AS target_date,
  if(:pair_policy='EXPLICIT',toDate(:previous_snapshot_date),ifNull((SELECT maxOrNull(snapshot_date) FROM dates WHERE snapshot_date<toDate(:target_snapshot_date)),toDate('1970-01-01'))) AS previous_date),
  scope AS (SELECT multiIf(
- :time_basis NOT IN ('CURRENT','SNAPSHOT','PAIR','RANGE') OR :calendar_mode NOT IN ('WEEKDAYS','CALENDAR_DAYS')
+ '''+(selection_error+'\n ' if selection_error else '')+''':time_basis NOT IN ('CURRENT','SNAPSHOT','PAIR','RANGE') OR :calendar_mode NOT IN ('WEEKDAYS','CALENDAR_DAYS')
  OR :pair_policy NOT IN ('EXPLICIT','PREVIOUS_AVAILABLE') OR :grain NOT IN ('COUNTRY','VENDOR','VENDOR_CODE','VENDOR_SOURCE','VENDOR_CODE_SOURCE')
  OR :denominator_scope NOT IN ('COUNTRY_ALL','FILTERED_POPULATION','WITHIN_VENDOR')
  OR (:grain='COUNTRY' AND :denominator_scope='WITHIN_VENDOR')
@@ -204,15 +204,19 @@ def explore_sql():
  toInt64(is_pastdue=1) AS pd,toInt64(1) AS op FROM past_due.past_due_detail_view
  WHERE :time_basis='CURRENT' AND country_code=:country_code AND from_acct_no IS NOT NULL),
  country_totals AS (SELECT snapshot_date,sum(pd) AS country_pd,sum(op) AS country_open FROM raw GROUP BY snapshot_date),
- population AS (SELECT * FROM raw WHERE (:vendor_code=0 OR vendor_code=:vendor_code)
+ population AS (SELECT * FROM raw WHERE '''+vendor_predicate+'''
  AND ((empty(:department_type_filter) AND empty(:master_primary_filter) AND empty(:master_manager_filter))
  OR (country_code,vendor_code) IN (SELECT country_code,vendor_code FROM mapped))),
  vendor_totals AS (SELECT snapshot_date,vendor_code,sum(pd) AS vendor_pd,sum(op) AS vendor_open FROM population GROUP BY snapshot_date,vendor_code),
  population_totals AS (SELECT snapshot_date,sum(pd) AS population_pd,sum(op) AS population_open FROM population GROUP BY snapshot_date),
  matched AS (SELECT *,if(empty(raw_code),'UNKNOWN',raw_code) AS code,if(empty(raw_source),'UNKNOWN',raw_source) AS source FROM population
  WHERE (empty(:eta_code_filter) OR if(empty(raw_code),'UNKNOWN',raw_code)=upper(trim(:eta_code_filter)))
- AND (empty(:source_filter) OR if(empty(raw_source),'UNKNOWN',raw_source)=trim(:source_filter))),
- grouped AS (SELECT country_code,if(:grain='COUNTRY',toInt64(0),vendor_code) AS vendor_key,
+ AND (empty(:source_filter) OR if(empty(raw_source),'UNKNOWN',raw_source)=trim(:source_filter)))'''
+
+
+def explore_metric_ctes(grain=':grain', prefix='', matched='matched'):
+    """Shared metric implementation at a declared grouping grain."""
+    text = '''grouped AS (SELECT country_code,if(:grain='COUNTRY',toInt64(0),vendor_code) AS vendor_key,
  if(:grain='COUNTRY','',min(vendor_name)) AS vendor_name,snapshot_date,
  if(:grain IN ('VENDOR_CODE','VENDOR_CODE_SOURCE'),code,'') AS eta_code,
  if(:grain IN ('VENDOR_SOURCE','VENDOR_CODE_SOURCE'),source,'') AS eta_source,
@@ -246,27 +250,52 @@ def explore_sql():
  LEFT JOIN country_totals cp ON p.previous_snapshot_date=cp.snapshot_date
  LEFT JOIN population_totals pp ON p.previous_snapshot_date=pp.snapshot_date
  LEFT JOIN vendor_totals vt ON p.target_snapshot_date=vt.snapshot_date AND p.vendor_code=vt.vendor_code
- LEFT JOIN vendor_totals vp ON p.previous_snapshot_date=vp.snapshot_date AND p.vendor_code=vp.vendor_code),
- filtered AS (SELECT *,multiIf(:ranking_metric='PAST_DUE_COUNT',toDecimal128(target_past_due_count,18),
+ LEFT JOIN vendor_totals vp ON p.previous_snapshot_date=vp.snapshot_date AND p.vendor_code=vp.vendor_code)'''
+    text = text.replace(':grain', grain)
+    text = text.replace('FROM matched GROUP BY', 'FROM '+matched+' GROUP BY')
+    return rename_ctes(text, ['grouped', 'paired', 'metrics'], prefix)
+
+
+def rename_ctes(text, names, prefix):
+    import re
+    return re.sub(r'\b('+'|'.join(names)+r')\b', lambda m: prefix+m[0], text) if prefix else text
+
+
+def explore_selection_ctes(partition='', source='metrics', prefix=''):
+    """Rank grouped observations; default text preserves the existing binding."""
+    text = '''filtered AS (SELECT *,multiIf(:ranking_metric='PAST_DUE_COUNT',toDecimal128(target_past_due_count,18),
  :ranking_metric='PAST_DUE_RATIO',target_past_due_ratio,:ranking_metric='PAST_DUE_SHARE',target_past_due_share,
  :ranking_metric='COUNT_CHANGE',toDecimal128(past_due_count_change,18),:ranking_metric='RATIO_CHANGE',past_due_ratio_change,
  :ranking_metric='CONTRIBUTION_CHANGE',delta_country_contribution,toDecimal128(0,18)) AS rank_value
- FROM metrics WHERE (SELECT scope_status FROM scope)='OK' AND
+ FROM '''+source+''' WHERE (SELECT scope_status FROM scope)='OK' AND
  (:change_selection='ALL' OR (:change_selection='POSITIVE' AND multiIf(:ranking_metric='RATIO_CHANGE',past_due_ratio_change,:ranking_metric='CONTRIBUTION_CHANGE',delta_country_contribution,toDecimal128(past_due_count_change,18))>0)
  OR (:change_selection='NEGATIVE' AND multiIf(:ranking_metric='RATIO_CHANGE',past_due_ratio_change,:ranking_metric='CONTRIBUTION_CHANGE',delta_country_contribution,toDecimal128(past_due_count_change,18))<0)
  OR (:change_selection='ZERO' AND multiIf(:ranking_metric='RATIO_CHANGE',past_due_ratio_change,:ranking_metric='CONTRIBUTION_CHANGE',delta_country_contribution,toDecimal128(past_due_count_change,18))=0))),
- ranked AS (SELECT *,toInt64(row_number() OVER (ORDER BY
+ ranked AS (SELECT *,toInt64(row_number() OVER ('''+partition+'''ORDER BY
  if(:ranking_metric!='NONE' AND :sort_direction='ASC',rank_value,NULL) ASC NULLS LAST,
  if(:ranking_metric!='NONE' AND :sort_direction='DESC',rank_value,NULL) DESC NULLS LAST,
  target_snapshot_date,vendor_code,eta_code,eta_source)) AS selection_rank FROM filtered),
- selected_rows AS (SELECT * FROM ranked WHERE :top_n=0 OR selection_rank<=:top_n),
- output_rows AS ('''+_explore_output()+''') SELECT * EXCEPT(expected_record_count,row_ordinal),
+ selected_rows AS (SELECT * FROM ranked WHERE :top_n=0 OR selection_rank<=:top_n)'''
+    return rename_ctes(text, ['filtered', 'ranked', 'selected_rows'], prefix)
+
+
+def explore_ctes(*, selection_ctes='', selection_error='',
+                 vendor_predicate='(:vendor_code=0 OR vendor_code=:vendor_code)',
+                 inputs=EXPLORE_INPUTS, extra_output=''):
+    return (explore_source_ctes(selection_ctes=selection_ctes, selection_error=selection_error,
+                                vendor_predicate=vendor_predicate)
+            + ',\n ' + explore_metric_ctes() + ',\n ' + explore_selection_ctes()
+            + ',\n output_rows AS (' + _explore_output(inputs) + extra_output + ')')
+
+
+def explore_sql(**kwargs):
+    return explore_ctes(**kwargs)+''' SELECT * EXCEPT(expected_record_count,row_ordinal),
  toInt64(count() OVER ()) AS expected_record_count,
  toInt64(row_number() OVER (ORDER BY record_type,selection_rank,target_snapshot_date,vendor_code,eta_code,eta_source)) AS row_ordinal FROM output_rows'''
 
 
-def _explore_output():
-    core={'scope-key':scope_key([x for x,_ in EXPLORE_INPUTS]),'country-code':':country_code','time-basis':':time_basis','calendar-mode':':calendar_mode','grain':':grain','denominator-scope':':denominator_scope','metric-version':"'3.1.0'",'organization-basis':"if(empty(:department_type_filter) AND empty(:master_primary_filter) AND empty(:master_manager_filter),'NONE','CURRENT_MAPPING')",'business-timezone':"'America/Los_Angeles'",'queried-at-local':NOW_PST}
+def _explore_output(inputs=EXPLORE_INPUTS):
+    core={'scope-key':scope_key([x for x,_ in inputs]),'country-code':':country_code','time-basis':':time_basis','calendar-mode':':calendar_mode','grain':':grain','denominator-scope':':denominator_scope','metric-version':"'3.1.0'",'organization-basis':"if(empty(:department_type_filter) AND empty(:master_primary_filter) AND empty(:master_manager_filter),'NONE','CURRENT_MAPPING')",'business-timezone':"'America/Los_Angeles'",'queried-at-local':NOW_PST}
     vals=dict(core,**{'record-type':"'CONTROL'",'scope-status':"if(scope_status='OK' AND (SELECT count() FROM raw)=0,'NO_DATA',if(scope_status='OK' AND (SELECT count() FROM raw WHERE pd<0 OR op<0 OR pd>op)>0,'DATA_ERROR',scope_status))"})
     control=sparse(EXPLORE_FIELDS,vals)+' FROM scope'
     vals=dict(core,**{n:n.replace('-','_') for n,_ in EXPLORE_FIELDS if n not in core and n not in ('record-type','scope-status','expected-record-count','row-ordinal')})

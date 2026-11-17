@@ -1,7 +1,24 @@
-# Current routing — Agent3.3.7
+# Current routing — Agent3.5.0
+
+Atlas3.5.0/revision6 adds explore-v3-query/rows using the existing scalar EDN
+pattern. It selects Vendors or grouped rows, partitions GLOBAL/TARGET_DATE, and
+expands selected complete date/object identities without rebasing denominators.
+All26 inputs explicit; selection/display filters separate. SELECTION, FACT,
+CONTROL and optional explicit/date VENDOR_COVERAGE are distinct types.
+See skill/pastdue-analysis/references/explore-v3.md and complete explore-v3-query.eql.
+All38 older resolver/SQL bindings are unchanged. No native default/saved-query or
+knowledge-publication capability is claimed. Details: COMPOSABLE_ANALYSIS_3_5.md.
+
+## Compatible 3.4 routing
+
+Atlas3.4.0/revision5 adds explore-v2-query/rows; existing interfaces and metric3.1.0
+retain their original meaning and SQL. This is additive, not a single new scenario.
+See skill/pastdue-analysis/references/explore-v2.md for its 22 inputs and source
+paging, interactive-planning.md for composition and bounded recovery. Old explore
+supports equivalent expressible scopes; do not silently substitute different metrics.
 
 Standard: monitor-query/countries, history-query/comparisons or trigger-events,
-report-query/rows. Flexible: explore-query/rows. Existing typed inputs/outputs and
+report-query/rows. Flexible: discovered explore-v2 preferred, old explore compatible. Existing typed inputs/outputs and
 metric semantics3.1.0 unchanged. Atlas publication3.3.0/revision4 changes report
 source default page200→1000/max1000; calculation SQL unchanged. Long-text3.2
 block interfaces remain compatibility-only, not required or fixed by this release.
@@ -22,7 +39,8 @@ service. Detailed fields and manual EQL examples live in
 
 | Request entity | Collection / row namespace | Inputs |
 |---|---|---|
-| pastdue.explore-query | rows / pastdue.explore-fact | ALL 20 below |
+| pastdue.explore-v2-query | rows / pastdue.explore-v2-fact | Common explore inputs; replace vendor-code with vendor-codes-json; add page-after-ordinal and page-size |
+| pastdue.explore-query (compatible) | rows / pastdue.explore-fact | ALL 20 below |
 | pastdue.report-query | rows / pastdue.report-fact | Same seven as analysis-query below |
 | pastdue.monitor-query | countries / pastdue.monitor-fact | calendar-mode, relative-change-threshold |
 | pastdue.history-query | comparisons or trigger-events / pastdue.history-fact | country-code, calendar-mode, range-start-date, range-end-date, relative-change-threshold |
@@ -121,11 +139,12 @@ hardcode PST. Date pinning/capture timestamps do not imply cross-query transacti
 
 Report3.3 source default/max1000; other collections default200/max1000, row-ordinal ascending. Consume every page and expected
 record counts; compact summaries aren't incomplete raw-bucket retrieval. Standard
-INTERACTIVE question allows ≤6 DIFFERENT LOGICAL FACT REQUESTS; discovery,
-materialization and pagination are excluded, retries/corrections stay in the same
-slot. Report presets have no six-request cap and attempt all mandatory work.
+INTERACTIVE reviews cost after six distinct source scopes, not a completion cap.
+Discovery, materialization and pagination are not new business scopes, but their
+actual cost matters. Finite requested worklists continue when feasible; open-ended
+expansion is explicitly bounded. Report presets attempt all mandatory work.
 Broad history/optional scope can be bounded explicitly, never silently skipped.
-No per-Vendor fanout, unconstrained/source SQL, runtime Python/local CSV, mail
+No unbounded/recursive Vendor fanout, unconstrained/source SQL, runtime Python/local CSV, mail
 or external Kernel. Handle-only execute_eql results can be materialized through analyze_result using
 read-only SELECT of explicit discovered columns FROM data ORDER BY discovered
 row-ordinal, bound to that exact retained request handle. Schema inspection is

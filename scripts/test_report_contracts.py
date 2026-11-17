@@ -45,7 +45,7 @@ import copy
 import json
 import sys
 sys.path.insert(0, str(R / 'tests'))
-from report_fixtures import artifact, report_rows
+from report_fixtures import artifact, report_rows, legacy_display_contract
 from analysis_validation import (validate_atlas_report_rows, validate_report_evidence,
                                  validate_evidence_handles, detect_cross_request_conflicts,
                                  normalize_row, us_rule, validate_display_contract)
@@ -209,8 +209,8 @@ class EvidenceReports(unittest.TestCase):
         monitor['target_past_due_count']=399
         self.assertIn('MONITOR_REPORT_MISMATCH',validate_atlas_report_rows(rows,monitor_facts=[monitor])['errors'])
 
-    def test_actual_contract_compositions_and_vendor_repetition(self):
-        contract=read(R/'skill/pastdue-analysis/references/table-display-contract.edn')
+    def test_legacy_parser_compositions_and_vendor_repetition(self):
+        contract=legacy_display_contract()
         a=artifact();vendor=a['selected_vendors'][0]
         repeat={'vendor_metrics','eta_code_changes','eta_source_changes','us_source_changes','business_diagnosis'}
         a['modules']=[dict(id=str(x).lstrip(':'),status='PASS',**(
@@ -221,7 +221,7 @@ class EvidenceReports(unittest.TestCase):
         self.assertEqual(validate_report_evidence(a,contract)['status'],'PARTIAL')
 
     def test_country_order_and_global_report_sections(self):
-        contract=read(R/'skill/pastdue-analysis/references/table-display-contract.edn')
+        contract=legacy_display_contract()
         a=artifact(); a['modules']=[]; a['selected_vendors']=[]; a['atlas_rows']=[]
         repeat={'vendor_metrics','eta_code_changes','eta_source_changes','us_source_changes','business_diagnosis'}
         for module in ['run_info','country_metrics']:
@@ -242,7 +242,7 @@ class EvidenceReports(unittest.TestCase):
         self.assertEqual(validate_report_evidence(a,contract)['status'],'PARTIAL')
 
     def test_empty_selected_applicable_path(self):
-        contract=read(R/'skill/pastdue-analysis/references/table-display-contract.edn')
+        contract=legacy_display_contract()
         a=artifact();a['selected_vendors']=[]
         control=a['atlas_rows'][0];control.update(selected_vendor_count=0,expected_record_count=1)
         a['atlas_rows']=[control]
@@ -322,7 +322,7 @@ class EvidenceReports(unittest.TestCase):
 
     def test_every_composition_module_resolves_by_exact_edn_keyword(self):
         from edn_io import K
-        contract=read(R/'skill/pastdue-analysis/references/table-display-contract.edn')
+        contract=legacy_display_contract()
         modules=contract[':modules']
         for composition, module_ids in contract[':compositions'].items():
             for module_id in module_ids:
@@ -335,7 +335,7 @@ class EvidenceReports(unittest.TestCase):
 
     def test_injected_string_contract_keys_and_references_rejected(self):
         from edn_io import K
-        original=read(R/'skill/pastdue-analysis/references/table-display-contract.edn')
+        original=legacy_display_contract()
         self.assertEqual(validate_display_contract(original)['status'],'PASS')
         for key in (':business_diagnosis',':country_summary'):
             contract=copy.deepcopy(original)

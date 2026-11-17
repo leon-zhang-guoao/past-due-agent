@@ -1,54 +1,45 @@
-# PastDue Analysis Agent — 3.3.7
+# PastDue Analysis Agent — 3.5.0
 
-**PENDING_LIVE_PILOT** — implementation/package only, not production acceptance.
+Composable questions through Prompt + Skill + Atlas. Daily/history/test remain
+presets; free questions resolve a working specification and combine selection,
+filters, aggregates/comparisons, ranking and requested detail.
 
-Atlas computes structured metrics/rank/Top5+Other/checks; Skill binds typed facts,
-reconciles them and directs complete Vendor delivery. Interactive current,
-snapshot, pair and range questions remain composable, without daily positiveTop10
-restrictions. No new required runtime, service, table or mail capability.
+Atlas3.5.0/revision6 adds explore-v3-query/rows: graph-side Vendor/grouped-row
+selection, GLOBAL/TARGET_DATE ranking and separate ETA expansion. Original candidate
+denominators survive Top N; empty selection never means all. Metric3.1.0 and all38
+older resolver/SQL bindings remain unchanged. All26 scalar inputs stay explicit;
+native defaults/saved queries are not assumed. New questions
+composed of existing operations do not require new scenario-specific APIs.
 
-## What to update
+## What changed
 
-- Replace `agent/SYSTEM_PROMPT.md` and the **entire** `skill/pastdue-analysis/`,
-  or install `releases/pastdue-analysis-skill-v3.3.7.zip`.
-- Full delivery: `releases/pastdue-agent-v3.3.7.zip`.
-- **Atlas EDN unchanged** from publication3.3.0/revision4. If already deployed,
-  do not redeploy it to fix a tool-argument error. Older deployments still need
-  compatible structured capabilities and verified complete source pagination.
-- No scripts, CSV, chat logs, notification folder or Runtime upload is required.
+- Vendor set is declared JSON array text, not a comma list in a single-value input.
+- SQL pages are bounded before transport limits; counts/ordinals/checksum expose
+  ordinary omissions/drift. Continuations are not atomic snapshot transactions.
+- Skill plans by operations and adapts to actual errors with equivalent bounded
+  alternatives. Six scopes is a cost review, not an automatic stop. Existing
+  targeted PO/Owner/contact capabilities remain available.
+- Actual handle binding remains an Agent obligation; no host middleware, required
+  runtime analysis service, arbitrary SQL, new table or mail capability is added.
+- Report format, calendars/trigger thresholds, business metrics and on-demand
+  HTML behavior retain their existing meaning.
 
-## This correction
+## Delivery and validation
 
-- Country Control reads dedicated Country fields; Vendor placeholder zeros no
-  longer create a false Country mismatch or a special reconciliation waiver.
-- Three typed report reads preserve scope, Country/Vendor, P/T and metric version.
-- Real handle provenance, one changed correction maximum, no identical retries.
-- Staged references; one Country captured/read at a time; complete per-Vendor
-  two-period Code/Source tables and signed totals, not a delta-only summary.
-- Execution, retrieval/reconciliation and actual delivery are counted separately.
+Full package: `releases/pastdue-agent-v3.5.0.zip`; Skill package:
+`releases/pastdue-analysis-skill-v3.5.0.zip`. Packaging is local, not deployment.
+Preserve approved graph/source IDs and credentials outside the repository.
 
-**No serialization middleware was added.** If the host injects conflicting
-selectors, Prompt/Skill/EDN cannot guarantee their removal. The component causing
-this remains UNCONFIRMED; same-host real calls must isolate it before rollout.
-Supplied successful discovery calls show discovery is not intrinsically broken.
+Deploy additive Atlas first, verify actual schema/JDBC/page behavior, then install
+the complete Prompt/Skill. Old equivalent paths remain usable when v3 is unavailable;
+do not silently substitute a different metric/population or truncated data.
+See [design and rollout](docs/COMPOSABLE_ANALYSIS_3_5.md),
+[API](docs/API_V3.md), [deployment](docs/DEPLOYMENT_V3.md) and
+[evidence](docs/VALIDATION_V3.md). Actual receipts distinguish offline checks,
+synthetic ClickHouse SQL, platform validation and live Agent acceptance.
 
-See [correction and evidence](docs/RESULT_READER_FIX_3_3_7.md),
-[deployment/rollback](docs/DEPLOYMENT_V3.md), [validation state](docs/VALIDATION_V3.md)
-and [source EQL examples](docs/STRUCTURED_PILOT_3_3.eql).
-The Skill's result-reader.md is the only maintained retained-read recipe;
-report-format.md is the only maintained human-facing layout.
-
-## Semantics preserved
-
-America/Los_Angeles with DST; completed snapshots earlier than local today;
-Monday–Friday, no holidays. US/CA independent, relative Country ratio increase
-≥10%; fixed positive-contribution Top10, 80% coverage reference only. Code/Source
-absolute count change Top5+Other. Conditional Code=US Source applies to any Country
-and informs the Country summary after ranking. Owner/contacts/PO on request,
-current and display-only; PO max5/Vendor and20/Country. No mail drafts/sending.
-
-No deterministic renderer or hard output gate is installed. Same module structure
-and factual meanings are required, not byte-identical model prose. A self-review
-or package hash does not prove final report correctness. No offline test suites,
-platform or live Agent tests executed for this release; staged live pilot pending.
-Historical docs and ZIPs remain history, not verified production fallbacks.
+Historical releases are not production acceptance. Use
+`tests/fixtures/live-question-cases.json` for public combination/follow-up trials;
+it is a specification, not evidence those trials passed. Prepare separate withheld
+questions for unseen acceptance. Live performance, permissions and Agent behavior
+remain unverified; current pages/CTEs do not guarantee atomic snapshots.

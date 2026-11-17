@@ -6,6 +6,26 @@ particular environment is deployed. The development source is
 It is not an Agent runtime dependency. Long-text block collections are retained compatibility-only. Inventory counts are not online acceptance.
 Required new interfaces missing → deployment gap, never silent v3/v2 fallback.
 
+## Additive selection and expansion — 3.5.0
+
+Prefer discovered pastdue.explore-v3-query/rows for graph-side Vendor selection,
+separate selection/display filters and GLOBAL/TARGET_DATE ranking. See
+[v3 contract](explore-v3.md) and its complete EQL. All26 scalar inputs are explicit;
+no native optional/default parameter support is assumed. Old inputs and resolvers
+are unchanged. Source calculations keep metric3.1.0; Top N preserves the original
+candidate denominator. SELECTION and FACT are different scopes, not duplicate
+measurements to sum. EMPTY_SELECTION is an explicit empty path, never all Vendors.
+
+## Compatible composable explore v2 — 3.4.0
+
+For equivalent v2 scopes use discovered pastdue.explore-v2-query/rows; transport and coverage are
+in [explore-v2.md](explore-v2.md), composition/recovery in
+[interactive-planning.md](interactive-planning.md). Shared metric3.1.0 is unchanged.
+Old explore is still supported for expressible equivalent scopes, not repointed.
+V2 replaces numeric vendor-code with explicit vendor-codes-json and adds source
+page inputs/metadata. Do not pass a list into old single-value parameters.
+The old explore section below remains the authority for common metric semantics.
+
 ## Flexible analysis: pastdue.explore-query/rows
 
 All 20 entity inputs are explicit:
