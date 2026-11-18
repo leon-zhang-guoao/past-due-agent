@@ -132,11 +132,14 @@ business-timezone, queried-at-local. Check COUNTRY_CONTROL scope-status=OK befor
 claiming selection validity. Analysis scope errors remain INVALID_PAIR /
 INVALID_SELECTION / INVALID_DENOMINATOR / DATA_ERROR / VENDOR_NOT_FOUND.
 
-Summary fields: dimension, eta-value, row-kind, display-rank,
-expected-bucket-count, other-bucket-count, previous/target-past-due-count,
-past-due-count-change, past-due-count-relative-change,
-delta-country-contribution, increase-total, decrease-total, net-change,
-previous-total, target-total, counts-match, required.
+Summary bucket fields: dimension (literal code/source/us), eta-value, row-kind,
+display-rank, expected-bucket-count, other-bucket-count,
+previous/target-past-due-count, past-due-count-change,
+past-due-count-relative-change and delta-country-contribution.
+Raw SUMMARY rows also repeat dimension previous/target-total, net-change and
+signed check metadata; those are whole-dimension totals, not bucket quantities.
+The retained report-eta-read.sql view masks that repeated metadata on SUMMARY
+rows and masks bucket placeholders on VENDOR_CHECK. Source EQL fields are unchanged.
 `row-kind=BUCKET`, display-rank=1..5 are actual buckets; `row-kind=OTHER`, rank=6
 is the server aggregate remainder, with blank eta-value. Render it as Other/其他;
 never as UNKNOWN, never as an extra raw bucket. Other exists only for a remainder.
@@ -217,7 +220,7 @@ service, required tool or claim of machine enforcement.
 |---|---|---|
 | Country cross-check | COUNTRY_CONTROL | previous/target-country-past-due-count, previous/target-country-open, previous/target-country-ratio; selected-vendor-count, expected-record-count. NOT previous/target-past-due-count or -open-count placeholders |
 | Vendor overview AND detailed metrics | VENDOR_METRICS + exact Country/Vendor/scope | previous/target-past-due-count, previous/target-open-count, previous/target-vendor-ratio, contribution-rank, previous/target-country-contribution, delta-country-contribution, positive-contribution-share |
-| Code table | ETA_CODE_SUMMARY + dimension=code + same Vendor/scope | bucket counts, count change, relative change, delta-country-contribution, row-kind, display-rank |
+| Code table | ETA_CODE_SUMMARY + dimension=code + same Vendor/scope | previous/target-past-due-count, past-due-count-change (bucket), relative change, delta-country-contribution, row-kind, display-rank |
 | Source table | ETA_SOURCE_SUMMARY + dimension=source + same Vendor/scope | independent marginal Source bucket fields |
 | Internal conditional-source evidence (optional detail on request) | US_SOURCE_SUMMARY + dimension=us + same Vendor/scope | Source counts conditioned on Code=US, ANY Country |
 | Signed totals and applicability | VENDOR_CHECK + same Vendor/scope + exact dimension | required, counts-match, previous/target-total, previous/target-expected-total, increase-total, decrease-total, net-change, expected-bucket-count |

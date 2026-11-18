@@ -3,7 +3,7 @@ name: pastdue-analysis
 description: Analyze PastDue current data, snapshots, comparisons and trends through Atlas; generate requested reports with or without alerts, investigate one or several Vendors, and run daily monitoring, historical review or start test / 开始测试.
 ---
 
-# PastDue Analysis — 3.6.2
+# PastDue Analysis — 3.6.3
 
 ## 1. Resolve the analysis specification
 
@@ -94,7 +94,11 @@ the only layout authority, and the applicable [diagnostic rules](references/eta-
 Do not run a report renderer. For EACH selected Vendor in returned rank order,
 deliver one ranking row with metrics, main Code changes (≤5 by |net|), main Source
 changes (≤5 by |net|), VENDOR_CHECK signed totals, or exact local failure. Do not
-omit those ETA cells, invent buckets, or award PASS/PASS. Copy metrics, summaries
+omit those ETA cells, invent buckets, or award PASS/PASS. Main ETA cells use
+SUMMARY previous/target-past-due-count and past-due-count-change; check cells use
+VENDOR_CHECK totals. The reader supplies a tested typed projection; assemble the
+report from its rows using report-format.md rather than inventing a joined
+formatting query. Copy metrics, summaries
 and checks from the same bound Vendor identity; completion-contract.md defines
 the final count/identity check. Report every requested Country, including its
 precise local gaps, before ending the turn.

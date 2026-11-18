@@ -104,19 +104,27 @@ decimal places.
 
 ### Main Code / Main Source cell rules
 
-For **each dimension independently** (Code separate from Source):
+Use ETA_CODE_SUMMARY with dimension=code, ETA_SOURCE_SUMMARY with dimension=source;
+conditional-source interpretation uses US_SOURCE_SUMMARY with dimension=us and
+eta_value as a Source name. Copy rows from the reader's typed projection or already
+verified equivalent fields. For **each dimension independently**:
 
 1. Start from that Vendor's **returned** compact ETA rows for the dimension
    (Top5 BUCKET rows + returned OTHER if present). Do not invent OTHER.
-2. Rank those returned rows by absolute net-change `|净变化|` descending.
+2. Rank those returned rows by `abs(past_due_count_change)` descending, then
+   `target_past_due_count` descending, then `eta_value` ascending. These are
+   bucket fields, including the returned Other as one compact row.
 3. Take at most **5** rows. If fewer than 5 returned rows exist, show only the
    actual returned rows. If zero returned rows after a successful empty read,
    write 无 / None. If the dimension failed or was unread, write the concrete
    failure/unread status — never fabricate values.
-4. Format each kept row as `{ETA value} {P}→{T} ({signed net})`. Join with
+4. Format each kept row as `{eta_value} {previous_past_due_count}→{target_past_due_count}
+   ({signed past_due_count_change})`. These three quantities come from that same
+   SUMMARY row. Join with
    `；` (Chinese) or `; ` (English). Preserve literal ETA identity spelling.
 5. OTHER display name remains 其他（N项）/Other (N items) when that row is kept.
-   Do not re-rank by display-rank for this cell; absolute net-change is the sort.
+   The main-cell ordering uses the bucket delta above; display-rank is the
+   server compact-bucket order, while net_change is the whole dimension total.
 
 Signed net uses the shared formatting rules (+/−/0). Relative change and
 Country contribution pp are **not** required inside these cells.

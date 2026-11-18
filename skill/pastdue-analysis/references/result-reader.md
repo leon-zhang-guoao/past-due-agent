@@ -1,4 +1,4 @@
-# Retained-result reading — 3.6.2
+# Retained-result reading — 3.6.3
 
 ## 1. Call boundary
 
@@ -240,27 +240,29 @@ error or permission to add negative Vendors.
 
 ### C. ETA summaries and checks — complete compact representation
 
-```sql
-SELECT scope_key, record_type, country_code, vendor_code, vendor_name,
-       previous_snapshot_date, target_snapshot_date, calendar_mode,
-       selection_mode, metric_version, scope_status,
-       contribution_rank, selected_vendor_count,
-       dimension, eta_value, row_kind, display_rank, other_bucket_count,
-       previous_past_due_count, target_past_due_count, past_due_count_change,
-       past_due_count_relative_change, delta_country_contribution,
-       expected_bucket_count, increase_total, decrease_total, net_change,
-       previous_total, target_total, previous_expected_total, target_expected_total,
-       counts_match, required, expected_record_count, row_ordinal
-FROM data
-WHERE record_type IN ('ETA_CODE_SUMMARY','ETA_SOURCE_SUMMARY','US_SOURCE_SUMMARY','VENDOR_CHECK')
-ORDER BY row_ordinal
-```
+Use [report-eta-read.sql](report-eta-read.sql) as the maintained C projection on
+the SAME retained handle. It selects the three SUMMARY types and VENDOR_CHECK in
+one read, preserves original identity/ordinal and does no joining or ranking.
+SUMMARY rows expose bucket quantities; their repeated dimension-total fields are
+NULL in this view. VENDOR_CHECK exposes totals; its bucket placeholders are NULL.
+NULL here means not applicable to that record type, not a source zero or failure.
+This is a retained SELECT, not source SQL or a new Atlas resolver.
 
-Summary count fields refer to that bucket/Other, NOT Vendor totals. Read the
-signed dimension totals from VENDOR_CHECK: previous_total, target_total,
-increase_total, decrease_total, net_change and the expected totals. `us` expected
-totals are conditional Code=US, not whole Vendor PD. Unrelated sparse fields on
-check records are not substitute check values. Keep Code and Source separate.
+| Record type | P / T / change to bind | Meaning |
+|---|---|---|
+| ETA_CODE_SUMMARY, dimension=code | previous_past_due_count / target_past_due_count / past_due_count_change | One Code bucket or returned Other |
+| ETA_SOURCE_SUMMARY, dimension=source | same three bucket fields | One Source bucket or returned Other |
+| US_SOURCE_SUMMARY, dimension=us | same three bucket fields | One Source bucket conditioned on Code=US; eta_value is the Source name |
+| VENDOR_CHECK, dimension=code/source/us | previous_total / target_total / net_change, increase_total / decrease_total | Entire dimension, us conditional |
+
+Dimensions are literal lowercase code/source/us. The full raw EQL and optional
+wide reads can contain dimension totals repeated on SUMMARY rows; that repetition
+is expected. It is not evidence that bucket quantities are repeated. Main cells
+follow report-format.md's explicit bucket bindings. Reuse already intact bucket
+fields instead of doing another read just to apply the view. If an intermediate
+summary looks repeated or empty, first compare it to the original SUMMARY bucket
+fields and its literal dimension before diagnosing source data. A confirmed
+source inconsistency needs a contradiction in those actual scoped fields.
 
 ### Paging and completion
 

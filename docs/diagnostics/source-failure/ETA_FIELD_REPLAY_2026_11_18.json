@@ -1,0 +1,38 @@
+{
+  "kind": "EXPORTED_DATA_REPLAY_NOT_LIVE_ATLAS",
+  "results": [
+    {
+      "raw_line": 121,
+      "bad_transform_line": 153,
+      "raw_rows": 169,
+      "vendors": 10,
+      "wrong_main_cells": 20,
+      "exact_bad_sql_reproduced": true,
+      "uppercase_join_reproduced_null": true,
+      "corrected_main_cells_match_bucket_fields": true,
+      "metrics_and_signed_checks_unchanged": true,
+      "example": {
+        "vendor": 64956,
+        "incorrect_code": "Other (4 items) 3450→4298 (+848); DD 3450→4298 (+848); NR 3450→4298 (+848); RQ 3450→4298 (+848); SH 3450→4298 (+848)",
+        "correct_code": "SH 485→908 (+423); US 385→663 (+278); NR 2211→2339 (+128); RQ 41→60 (+19); DD 196→187 (-9)"
+      }
+    },
+    {
+      "raw_line": 125,
+      "bad_transform_line": 157,
+      "raw_rows": 135,
+      "vendors": 10,
+      "wrong_main_cells": 20,
+      "exact_bad_sql_reproduced": true,
+      "uppercase_join_reproduced_null": true,
+      "corrected_main_cells_match_bucket_fields": true,
+      "metrics_and_signed_checks_unchanged": true,
+      "example": {
+        "vendor": 2655,
+        "incorrect_code": "NR 114→243 (+129); NS 114→243 (+129); RQ 114→243 (+129); SC 114→243 (+129); SH 114→243 (+129)",
+        "correct_code": "SH 36→115 (+79); NR 78→128 (+50); NS 0→0 (0); RQ 0→0 (0); SC 0→0 (0)"
+      }
+    }
+  ],
+  "total_wrong_main_cells": 40
+}

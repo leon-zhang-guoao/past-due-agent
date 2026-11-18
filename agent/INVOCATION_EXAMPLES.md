@@ -1,4 +1,4 @@
-# Requests — Agent contract 3.6.2
+# Requests — Agent contract 3.6.3
 
 Examples illustrate operation composition, not a closed list of supported phrases.
 Prefer discovered explore-v3 for composition; old explore remains compatible for scopes it expresses.

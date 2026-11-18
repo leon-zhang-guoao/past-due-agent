@@ -1,4 +1,4 @@
-# Evidence and completion — 3.6.2
+# Evidence and completion — 3.6.3
 
 This is an Agent procedure, not an installed runtime gate. Query execution,
 retrieval and delivery are separate; none proves independent final-output accuracy.
@@ -71,6 +71,10 @@ strip an ellipsis or assume it was part of the original value.
 - Each summary BUCKET has unique identity/display-rank; OTHER is one server
   remainder, not UNKNOWN. BUCKET rows plus Other represented bucket counts must
   match expected-bucket-count. Empty nonzero-total dimensions are not valid empties.
+- Bucket P/T/change are SUMMARY previous/target_past_due_count and
+  past_due_count_change; repeated previous/target_total and net_change on raw
+  SUMMARY rows remain dimension totals. Check main-cell values against the
+  original bucket quantities before classifying a derived display as source error.
 - Never add Code and Source together. Read signed totals from VENDOR_CHECK;
   Other net delta does not expose its internal increase/decrease composition.
 

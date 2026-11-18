@@ -29,7 +29,7 @@ def retained_read(rows, kind=None, sql=None):
         # for this dev adapter instead of weakening production validation.
         for row in result:
             for key in ('counts_match','required','has_more'):
-                if key in row:
+                if key in row and row[key] is not None:
                     row[key]=bool(row[key])
         return result
 
@@ -55,7 +55,8 @@ class PageReads(unittest.TestCase):
         # Execute the deployed instructions, not a test-only projection copy.
         instructions = (REFS/'result-reader.md').read_text().split('### A. Country Control',1)[1]
         projections = re.findall(r'```sql\n(.*?)```', instructions, re.S)
-        self.assertEqual(len(projections),3)
+        self.assertEqual(len(projections),2)
+        projections.append((REFS/'report-eta-read.sql').read_text())
         parts = [retained_read(rows,sql=q) for q in projections]
         original = {int(r['row_ordinal']):r for r in rows}
         merged = {}
@@ -63,7 +64,18 @@ class PageReads(unittest.TestCase):
             for row in part:
                 ordinal = int(row['row_ordinal'])
                 self.assertNotIn(ordinal,merged, 'typed partitions must be disjoint')
-                self.assertTrue(all(original[ordinal][k]==v for k,v in row.items()))
+                expected = {k:original[ordinal][k] for k in row}
+                if row['record_type'] in ('ETA_CODE_SUMMARY','ETA_SOURCE_SUMMARY','US_SOURCE_SUMMARY'):
+                    for field in ('previous_total','target_total','net_change','increase_total',
+                                  'decrease_total','previous_expected_total','target_expected_total',
+                                  'counts_match','required'):
+                        expected[field]=None
+                elif row['record_type']=='VENDOR_CHECK':
+                    for field in ('previous_past_due_count','target_past_due_count',
+                                  'past_due_count_change','past_due_count_relative_change',
+                                  'delta_country_contribution'):
+                        expected[field]=None
+                self.assertEqual(row,expected)
                 merged[ordinal]=row
         self.assertEqual(set(merged),set(original))
         self.assertEqual(len(merged),int(rows[0]['expected_record_count']))

@@ -1,4 +1,4 @@
-# Requested reports and Vendor scope — 3.6.2
+# Requested reports and Vendor scope — 3.6.3
 
 Read for a report request (including `report` / `reprot` / 报告), one or several
 named Vendors, or a follow-up changing report scope. Atlas supplies business facts.

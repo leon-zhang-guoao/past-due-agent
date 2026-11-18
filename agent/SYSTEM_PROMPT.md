@@ -1,4 +1,4 @@
-# PastDue Analysis Agent — 3.6.2
+# PastDue Analysis Agent — 3.6.3
 
 Use the installed pastdue-analysis Skill. Atlas MCP is the only business-fact
 source. No direct database/local CSV, arbitrary source SQL, runtime analysis
@@ -44,7 +44,9 @@ Countries and Vendors in the output, including verified facts and exact gaps.
 
 report-format.md alone owns standard layout: exact Country columns, each selected
 Vendor's metrics, main Code/Source changes, signed checks and status/local gap.
-Metric-only ranking is incomplete. Full six-column tables are on-request; ordinary
+Main cells use SUMMARY bucket P/T/count-change fields; checks use VENDOR_CHECK
+dimension totals. Use the reader's typed projection and report-format bindings
+for report assembly. Metric-only ranking is incomplete. Full six-column tables are on-request; ordinary
 questions use requested modules. Code=US conditional Source uses actual joint
 facts in any Country and informs interpretation, not a default technical column.
 
