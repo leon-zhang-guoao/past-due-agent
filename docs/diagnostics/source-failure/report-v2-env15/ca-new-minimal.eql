@@ -1,0 +1,10 @@
+{:entity {:pastdue.report-v2-query/country-code "CA"
+    :pastdue.report-v2-query/target-snapshot-date "2026-11-17"
+    :pastdue.report-v2-query/previous-snapshot-date "2026-11-16"
+    :pastdue.report-v2-query/calendar-mode "WEEKDAYS"
+    :pastdue.report-v2-query/selection-mode "POSITIVE_TOP_N"
+    :pastdue.report-v2-query/top-n 10
+    :pastdue.report-v2-query/vendor-codes-json "[]"
+    :pastdue.report-v2-query/page-after-ordinal 0
+    :pastdue.report-v2-query/page-size 1}
+  :query [{:pastdue.report-v2-query/rows [:pastdue.report-v2-fact/scope-key :pastdue.report-v2-fact/record-type :pastdue.report-v2-fact/scope-status :pastdue.report-v2-fact/country-code :pastdue.report-v2-fact/target-snapshot-date :pastdue.report-v2-fact/previous-snapshot-date :pastdue.report-v2-fact/selection-mode :pastdue.report-v2-fact/metric-version :pastdue.report-v2-fact/selected-vendor-count :pastdue.report-v2-fact/expected-record-count :pastdue.report-v2-fact/row-ordinal]}]}

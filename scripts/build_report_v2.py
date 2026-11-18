@@ -104,7 +104,7 @@ def sql(doc):
  toInt64(count() OVER ()) AS page_record_count,
  if(expected_record_count-1>:page_after_ordinal+:page_size,toInt64(:page_after_ordinal+:page_size),toInt64(0)) AS next_after_ordinal,
  CAST(expected_record_count-1>:page_after_ordinal+:page_size AS Bool) AS has_more
- FROM paged ORDER BY row_ordinal"""
+ FROM paged"""
 
 
 def add_report_v2(doc):
@@ -127,5 +127,7 @@ def add_report_v2(doc):
         'NO_DATA_IN_PAIR means no readable rows in either date, not a measured zero. '
         'COUNTRY_CONTROL ordinal0 repeats on every page; remaining ordinals are global.')
     doc[':publication'][K(':release/version')] = '3.6.0'
-    doc[':publication'][K(':source/revision')] = 7
+    # Sorting is declared on the resolver. Atlas appends its ORDER BY/LIMIT;
+    # a second outer ORDER BY in the binding makes the executed SQL invalid.
+    doc[':publication'][K(':source/revision')] = 8
     return doc

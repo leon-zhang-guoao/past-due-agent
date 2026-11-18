@@ -17,6 +17,10 @@ class Contracts(unittest.TestCase):
         self.assertEqual(validate(result), [])
         for section in (':resolvers',':bindings',':selection',':sources'):
             for key, value in baseline[':execution'][section].items():
+                if section==':bindings' and key==RID+'-sql':
+                    # The hotfix may replace its own SQL, preserving all metadata.
+                    value=copy.deepcopy(value)
+                    value[':binding/implementation'][':query']=value[':binding/implementation'][':query'].removesuffix(' ORDER BY row_ordinal')
                 self.assertEqual(result[':execution'][section][key], value, key)
         self.assertEqual(add_report_v2(copy.deepcopy(result)), result)
         example = loads((ROOT/'skill/pastdue-analysis/references/report-v2-query.eql').read_text())
@@ -40,6 +44,16 @@ class ReportV2(unittest.TestCase):
 
     def metrics(self, rows):
         return [r for r in rows if r['record_type']=='VENDOR_METRICS']
+
+    def test_atlas_appended_sort_and_limit_first_and_continuation(self):
+        for country in ('US','CA'):
+            for cursor in (0,1):
+                with self.subTest(country=country,cursor=cursor):
+                    rows=self.report(country_code=country,selection_mode='POSITIVE_TOP_N',
+                        vendor_codes_json='[]',top_n=10,page_size=1,
+                        page_after_ordinal=cursor,_atlas_narrow=True)
+                    self.assertEqual([int(r['row_ordinal']) for r in rows],[0,cursor+1])
+                    self.assertEqual(int(rows[0]['page_record_count']),2)
 
     def test_nontrigger_report_and_negative_vendor(self):
         # An unchanged country has NORMAL status; a report is still complete.

@@ -16,6 +16,9 @@ class Contracts(unittest.TestCase):
         self.assertEqual(validate(result),[])
         for section in (':resolvers',':bindings',':sources',':selection'):
             for key,value in baseline[':execution'][section].items():
+                if section==':bindings' and key==RID+'-sql':
+                    value=copy.deepcopy(value)
+                    value[':binding/implementation'][':query']=value[':binding/implementation'][':query'].removesuffix(' ORDER BY row_ordinal')
                 self.assertEqual(result[':execution'][section][key],value)
         self.assertEqual(add_current_v2(copy.deepcopy(result)),result)
         example=loads((ROOT/'skill/pastdue-analysis/references/current-v2-query.eql').read_text())
@@ -34,6 +37,13 @@ class CurrentV2(unittest.TestCase):
         args=dict(vendor_codes_json='[1,2,999]',denominator_scope='WITHIN_VENDOR',page_size=199)
         args.update(overrides)
         return self.sql(RID,**args)
+
+    def test_atlas_appended_sort_and_limit_first_and_continuation(self):
+        for cursor in (0,1):
+            with self.subTest(cursor=cursor):
+                rows=self.current(page_size=1,page_after_ordinal=cursor,_atlas_narrow=True)
+                self.assertEqual([int(r['row_ordinal']) for r in rows],[0,cursor+1])
+                self.assertEqual(int(rows[0]['page_record_count']),2)
 
     def test_denominator_org_parity(self):
         for denominator in ('COUNTRY_ALL','FILTERED_POPULATION','WITHIN_VENDOR'):

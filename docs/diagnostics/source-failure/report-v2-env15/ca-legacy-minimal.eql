@@ -1,0 +1,8 @@
+{:entity {:pastdue.report-query/country-code "CA"
+    :pastdue.report-query/target-snapshot-date "2026-11-17"
+    :pastdue.report-query/previous-snapshot-date "2026-11-16"
+    :pastdue.report-query/calendar-mode "WEEKDAYS"
+    :pastdue.report-query/selection-mode "POSITIVE_TOP_N"
+    :pastdue.report-query/top-n 10
+    :pastdue.report-query/vendor-code 0}
+  :query [{:pastdue.report-query/rows [:pastdue.report-fact/scope-key :pastdue.report-fact/record-type :pastdue.report-fact/scope-status :pastdue.report-fact/country-code :pastdue.report-fact/target-snapshot-date :pastdue.report-fact/previous-snapshot-date :pastdue.report-fact/selection-mode :pastdue.report-fact/metric-version :pastdue.report-fact/selected-vendor-count :pastdue.report-fact/expected-record-count :pastdue.report-fact/row-ordinal]}]}

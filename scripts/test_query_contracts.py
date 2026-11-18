@@ -66,6 +66,10 @@ class QueryContracts(unittest.TestCase):
         baseline=loads(subprocess.check_output(['git','show','HEAD:atlas/charts/pastdue.edn'],cwd=b.ROOT,text=True))
         for section in (':resolvers',':bindings'):
             for name,value in baseline[':execution'][section].items():
+                if section==':bindings' and name in (
+                    'pastdue_v3_report_v2_query_rows-sql','pastdue_v3_current_v2_query_rows-sql'):
+                    value=copy.deepcopy(value)
+                    value[':binding/implementation'][':query']=value[':binding/implementation'][':query'].removesuffix(' ORDER BY row_ordinal')
                 self.assertEqual(self.doc[':execution'][section][name],value,name)
 
     def test_complete_v2_example_matches_actual_contract(self):

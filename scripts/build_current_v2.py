@@ -106,7 +106,7 @@ def sql():
  toInt64(count() OVER ()) AS page_record_count,
  if(expected_record_count-1>:page_after_ordinal+:page_size,toInt64(:page_after_ordinal+:page_size),toInt64(0)) AS next_after_ordinal,
  CAST(expected_record_count-1>:page_after_ordinal+:page_size AS Bool) AS has_more
- FROM paged ORDER BY row_ordinal"""
+ FROM paged"""
 
 
 def add_current_v2(doc):

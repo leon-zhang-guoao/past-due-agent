@@ -59,6 +59,8 @@ class SQLFixtures(unittest.TestCase):
         del cls.db;cls.tmp.cleanup()
     def sql(self,rid,**overrides):
         page=overrides.pop('_page',None)
+        atlas_narrow=overrides.pop('_atlas_narrow',rid in (
+            'pastdue_v3_report_v2_query_rows','pastdue_v3_current_v2_query_rows'))
         b=self.doc[':execution'][':bindings'][rid+'-sql']
         params={'country_code':'CA','calendar_mode':'WEEKDAYS','target_snapshot_date':'2026-10-26','previous_snapshot_date':'2026-10-23','selection_mode':'POSITIVE_TOP_N','top_n':10,'vendor_code':0,'relative_change_threshold':'0.10','range_start_date':'2026-10-23','range_end_date':'2026-10-26','grain':'VENDOR','vendor_code_filter':'','department_type_filter':'','master_primary_filter':'','master_manager_filter':'','denominator_scope':'COUNTRY_ALL','time_basis':'PAIR','pair_policy':'EXPLICIT','eta_code_filter':'','source_filter':'','ranking_metric':'NONE','sort_direction':'DESC','change_selection':'ALL'}
         params.update(vendor_codes_json='[]',page_after_ordinal=0,page_size=500)
@@ -74,6 +76,14 @@ class SQLFixtures(unittest.TestCase):
         # Replace named params only outside quoted literals.
         q=re.sub(r"'(?:''|[^'])*'|:([a-zA-Z_][a-zA-Z0-9_]*)",lambda m:m.group(0) if m.group(1) is None else replace(m),q)
         q=q.replace("toDate(now('America/Los_Angeles'))","toDate('2026-10-27')")
+        if atlas_narrow:
+            # Mirror connector-sql/impl/narrow.clj: append, never wrap/rewrite.
+            # Direct SQL execution alone misses duplicate outer ORDER BY bugs.
+            resolver=self.doc[':execution'][':resolvers'][rid]
+            attr,direction=resolver[':sort'][':default']
+            column=b[':binding/output-map'][attr]
+            limit=resolver[':pagination'][':default']
+            q+=f" ORDER BY {column} {direction.lstrip(':').upper()} LIMIT {limit}"
         if page is not None:
             offset,limit=page
             q=f'SELECT * FROM ({q}) ORDER BY row_ordinal ASC LIMIT {limit} OFFSET {offset}'
