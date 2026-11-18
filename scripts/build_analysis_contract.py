@@ -418,6 +418,10 @@ def build(graph_path=None):
     add_explore_v2(doc)
     from build_explore_v3 import add_explore_v3
     add_explore_v3(doc)
+    from build_report_v2 import add_report_v2
+    add_report_v2(doc)
+    from build_current_v2 import add_current_v2
+    add_current_v2(doc)
     write(graph_path,doc)
     return doc
 

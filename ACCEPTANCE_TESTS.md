@@ -55,3 +55,23 @@ comparison uses dedicated Country PD/Open/ratio, never Vendor placeholder zeros.
 If these dedicated fields genuinely disagree, preserve original values/captures
 and limit cross-capture attribution, not a blanket exception. See
 docs/RESULT_READER_FIX_3_3_7.md for current staged acceptance and actual NOT_RUN state.
+
+## 3.6 requested reports and Vendor sets
+
+Use actual deployed scopes for these pending live cases; local synthetic tests do
+not prove Agent behavior or ClickHouse22.8 performance. Details and deployment
+sequence: docs/ON_DEMAND_REPORTS_3_6.md.
+
+- Nontrigger Country: user explicitly requests a full report; show actual status
+  and pair, Vendor/ETA analysis, no inferred TEST flag.
+- Explicit set includes positive, nonpositive, zero-PD and missing Vendor: every
+  identity accounted for; missing is not zero; default Top10 does not shrink set.
+- One and thirteen Vendors: batch CURRENT and completed-pair paths, source and
+  retained pages complete, repeated control counted once, no truncated-success claim.
+- CURRENT org filters and each share denominator: national share retains whole
+  Country PD; duplicate mappings do not multiply rows; compare prior explore facts.
+- Follow-up adds Vendor or changes denominator/output: retain all other scope.
+- Old automatic thresholds, explicit TEST, ranking/history/selection expansion,
+  Owner/contact/PO and HTML handoff retain their prior semantics.
+- Live Atlas byte/time budgets: capture effective policy, SQL/params, elapsed,
+  page count and bytes. No5-second performance claim until actually measured.

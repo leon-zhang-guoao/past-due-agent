@@ -1,4 +1,11 @@
-# PastDue Analysis Agent — 3.5.1
+# PastDue Analysis Agent — 3.6.0
+
+Requested reports run independently of alert status. One/several Vendor questions
+retain the exact set, including improving and zero-PD Vendors. Graph3.6 adds
+report-v2 for paged completed-pair reports and current-v2 for one-scan CURRENT
+metrics/distributions; all39 existing resolvers and SQL bindings are preserved.
+Atlas implementation is unchanged. See [design, scope and rollout](docs/ON_DEMAND_REPORTS_3_6.md).
+Source changes are local and require Atlas validation before deployment.
 
 Composable questions through Prompt + Skill + Atlas. Daily/history/test remain
 presets; free questions resolve a working specification and combine selection,
@@ -37,8 +44,8 @@ live use. No Atlas update is needed for this presentation patch.
 
 ## Delivery and validation
 
-Full package: `releases/pastdue-agent-v3.5.1.zip`; Skill package:
-`releases/pastdue-analysis-skill-v3.5.1.zip`. Packaging is local, not deployment.
+Full package: `releases/pastdue-agent-v3.6.0.zip`; Skill package:
+`releases/pastdue-analysis-skill-v3.6.0.zip`. Packaging is local, not deployment.
 Preserve approved graph/source IDs and credentials outside the repository.
 
 Deploy additive Atlas first, verify actual schema/JDBC/page behavior, then install

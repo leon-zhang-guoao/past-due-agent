@@ -422,13 +422,37 @@ def validate_atlas_report_rows(rows, selected_vendors=None, expected_scope=None,
             missing.append('ROW_ORDINAL_MISSING')
         elif len(set(ordinals)) != len(ordinals):
             errors.append('DUPLICATE_ROW_ORDINAL')
-        elif expected == {Decimal(len(group))} and set(ordinals) != set(range(1, len(group) + 1)):
+        elif expected == {Decimal(len(group))} and set(ordinals) != set(range(
+                0 if any('page_after_ordinal' in r for r in group) else 1,
+                len(group) if any('page_after_ordinal' in r for r in group) else len(group)+1)):
             errors.append('ROW_ORDINAL_SET_MISMATCH')
         vendors = [r for r in group if r.get('record_type') == 'VENDOR_METRICS']
         all_vendors.extend(vendors)
         vmap = {_identity(v): v for v in vendors}
         if len(vmap) != len(vendors):
             errors.append('DUPLICATE_VENDOR')
+        if any(r.get('selection_mode') == 'VENDOR_SET' for r in group):
+            coverage = [r for r in group if r.get('record_type') == 'VENDOR_COVERAGE']
+            requested = set()
+            try:
+                requested = set(json.loads(json.loads(group[0]['scope_key'])[6]))
+            except (ValueError, TypeError, IndexError):
+                errors.append('VENDOR_SELECTION_INVALID')
+            codes = [_canonical(r.get('vendor_code')) for r in coverage]
+            if len(codes) != len(set(codes)):
+                errors.append('DUPLICATE_VENDOR_COVERAGE')
+            if set(codes) - requested:
+                errors.append('FOREIGN_VENDOR_COVERAGE')
+            if requested - set(codes):
+                missing.append('VENDOR_COVERAGE_INCOMPLETE')
+            matched = {_identity(r) for r in coverage if r.get('scope_status') == 'MATCHED'}
+            absent = {_identity(r) for r in coverage if r.get('scope_status') == 'NO_DATA_IN_PAIR'}
+            if any(r.get('scope_status') not in ('MATCHED','NO_DATA_IN_PAIR') for r in coverage):
+                errors.append('VENDOR_COVERAGE_STATUS_INVALID')
+            if matched - set(vmap):
+                missing.append('MATCHED_VENDOR_METRICS_MISSING')
+            if set(vmap) - matched or absent & set(vmap):
+                errors.append('VENDOR_COVERAGE_METRICS_MISMATCH')
         ranks = [_canonical(v.get('contribution_rank')) for v in vendors]
         if any(r is None for r in ranks):
             missing.append('VENDOR_RANK_MISSING')
@@ -446,6 +470,10 @@ def validate_atlas_report_rows(rows, selected_vendors=None, expected_scope=None,
                 else:
                     missing.append('SELECTED_VENDOR_SET_INCOMPLETE')
             state = row.get('scope_status')
+            if row.get('record_type') == 'VENDOR_COVERAGE':
+                if row.get('selection_mode') != 'VENDOR_SET':
+                    errors.append('UNEXPECTED_VENDOR_COVERAGE')
+                continue  # Identity/status checked above; numeric fields are placeholders.
             if state in ('DATA_ERROR', 'INVALID_SELECTION', 'INVALID_PAIR', 'INVALID_DATE'):
                 errors.append('SCOPE_' + state)
             elif state not in ('OK', 'NO_POSITIVE_VENDORS'):

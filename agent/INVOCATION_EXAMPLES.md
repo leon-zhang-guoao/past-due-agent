@@ -31,6 +31,20 @@ Dates and Vendor codes above are illustrative, never runtime defaults. Exact
 controlled inputs and manual EQL examples are in the Skill's data contract and
 Atlas query playbook. No arbitrary SQL or Python is needed for these requests.
 
+## Requested reports and Vendor questions — 3.6.0
+
+| Request | Route |
+|---|---|
+| 没有触发预警也给我 US、CA 的完整报告 | Actual latest eligible P/T per Country, real status; report-v2 TOP_N across all signs. INTERACTIVE, no TEST label. |
+| US Vendor 64342 当前怎么样 | current-v2 exact set `[64342]`; metrics, ratios with denominator and joint-derived distributions. |
+| 给 US 64342、75256、72478 的报告，包括改善的 | report-v2 VENDOR_SET, top-n=0; every requested identity, pair metrics and ETA checks. |
+| 上面的报告再加 65505，其他不变 | Preserve Country/P/T/calendar/selection semantics and presentation; amend the set, capture and verify the revised scope. |
+| 当前这些 Vendor 按部门筛选，并看占全国逾期比例 | current-v2 org filters, COUNTRY_ALL; national denominator excludes neither unselected nor other-org Vendors. |
+| 把这几家按上周增长排前二，再看全部 ETA | explore-v3 selection/expansion, preserve original candidate denominator and exact time scope. |
+
+Report text alone means Markdown. Current facts and completed-pair comparisons
+remain separately labeled. HTML follows the existing explicit handoff contract.
+
 
 Standard daily/history/test requests use the canonical bilingual skeleton and
 separate Vendor Code/Source tables. English and Chinese differ in labels and

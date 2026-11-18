@@ -1,9 +1,9 @@
 ---
 name: pastdue-analysis
-description: Analyze PastDue current data, snapshots, comparisons and trends through Atlas; run weekday daily monitoring, historical review or start test / 开始测试 with complete Vendor ETA analysis and evidence-based explanations.
+description: Analyze PastDue current data, snapshots, comparisons and trends through Atlas; generate requested reports with or without alerts, investigate one or several Vendors, and run daily monitoring, historical review or start test / 开始测试.
 ---
 
-# PastDue Analysis — 3.5.1
+# PastDue Analysis — 3.6.0
 
 ## 1. Resolve the analysis specification
 
@@ -24,6 +24,12 @@ if instructions are truncated, read that section separately before using it.
 | TEST | Same full report, force applicable analysis for valid pairs; keep actual trigger and TEST_FORCED/THRESHOLD_MET separate. No positive Vendors is a valid empty path, not negative-Vendor substitution. |
 | INTERACTIVE | Query only relevant facts/modules through explore. No implicit daily Top10, positive-only, nearest-date or full-report restriction. |
 
+For an explicit report, a single/set Vendor question or a report follow-up, read
+[report planning](references/report-planning.md). Report delivery is independent
+of alert eligibility. Keep mode and output separate: a requested nontrigger report
+is INTERACTIVE (or HISTORICAL for an explicit past target), never TEST by inference.
+Named Vendors remain the requested set regardless of contribution sign or Top N.
+
 Explicit TEST target: history-query/comparisons with start=end=target, not
 trigger-events or latest monitor. Retain actual previous date. Arbitrary explicit
 P/T: explore PAIR/EXPLICIT. CURRENT is not a completed snapshot; RANGE needs dated
@@ -43,11 +49,16 @@ requirement to load every schema at once. Discover live capabilities once per
 environment and reuse known schema. Missing capabilities are deployment gaps,
 not permission for silent legacy or positive-driver substitution.
 
-Standard: monitor/history → pin Country/P/T → one report-query/rows source request
+Automatic monitoring: monitor/history → pin Country/P/T → report-query/rows source request
 per Country/event. Finish reading and binding one Country before the next. Read
 the SAME result through Country Control, Vendor Metrics, then ETA/Check projections.
 Do not re-execute source SQL per Vendor to fix a result preview limit.
-Interactive: prefer discovered explore-v3-query/rows for selection/expansion and
+Requested reports prefer discovered report-v2-query/rows for all-sign Top N or
+explicit Vendor sets, with source pagination and coverage. See report planning;
+reuse the old report interface where its selection semantics are equivalent.
+CURRENT explicit Vendor metrics/distributions prefer discovered current-v2-query/rows
+within its supported scope; report planning defines coverage and denominators.
+Interactive composition: prefer discovered explore-v3-query/rows for selection/expansion and
 per-date ranking; read [v3 contract](references/explore-v3.md). Keep selection and
 display filters independent, retain candidate denominators and distinguish empty
 selection from all Vendors. [v2](references/explore-v2.md) supports sets and paging;
@@ -97,7 +108,8 @@ main Code, main Source and check cells for every selected Vendor. Do not stop
 after metric-only ranking. There is no report renderer. Its absence is not a
 reason to omit the ETA cells. Write them from the rows already read. Source
 success is not report success. Report actual scope/gaps, not a self-awarded
-overall PASS. Interactive answers compose only relevant modules.
+overall PASS. Interactive questions compose only relevant modules; an explicit
+full report uses the complete applicable layout even when no alert was triggered.
 
 ### HTML presentation sub-agent (on-demand)
 

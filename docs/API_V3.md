@@ -169,3 +169,12 @@ new queried-at-local field never repurposes an old UTC attribute. DATA_CONFLICT
 compares COMMON semantic fact fields in paired raw same-scope responses, not whole
 payload shape: projection-only fields, handles or timestamps differing aren't a
 conflict, and an unprojected field is unknown, not contradictory.
+
+## 3.6 additive report and CURRENT sets
+
+`pastdue.report-v2-query/rows` supports TOP_N across signs, POSITIVE_TOP_N and
+explicit VENDOR_SET, with coverage and source pages. `pastdue.current-v2-query/rows`
+supports CURRENT explicit Vendor sets, organization filters and three declared
+share denominators with one detail reference. Existing interfaces retain their
+schema/SQL. Contracts, full EQL examples and deployment limitations are in
+docs/ON_DEMAND_REPORTS_3_6.md and the Skill's references/report-planning.md.

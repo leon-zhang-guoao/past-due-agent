@@ -1,0 +1,9 @@
+{:entity {:pastdue.current-v2-query/country-code "US"
+    :pastdue.current-v2-query/vendor-codes-json "[64342,75256]"
+    :pastdue.current-v2-query/department-type-filter ""
+    :pastdue.current-v2-query/master-primary-filter ""
+    :pastdue.current-v2-query/master-manager-filter ""
+    :pastdue.current-v2-query/denominator-scope "WITHIN_VENDOR"
+    :pastdue.current-v2-query/page-after-ordinal 0
+    :pastdue.current-v2-query/page-size 100}
+  :query [{:pastdue.current-v2-query/rows [:pastdue.current-v2-fact/scope-key :pastdue.current-v2-fact/record-type :pastdue.current-v2-fact/scope-status :pastdue.current-v2-fact/country-code :pastdue.current-v2-fact/vendor-code :pastdue.current-v2-fact/vendor-name :pastdue.current-v2-fact/eta-code :pastdue.current-v2-fact/eta-source :pastdue.current-v2-fact/open-line-count :pastdue.current-v2-fact/past-due-count :pastdue.current-v2-fact/vendor-open-count :pastdue.current-v2-fact/vendor-past-due-count :pastdue.current-v2-fact/ratio-denominator :pastdue.current-v2-fact/share-denominator :pastdue.current-v2-fact/past-due-ratio :pastdue.current-v2-fact/past-due-share :pastdue.current-v2-fact/vendor-past-due-ratio :pastdue.current-v2-fact/vendor-past-due-share :pastdue.current-v2-fact/denominator-scope :pastdue.current-v2-fact/organization-basis :pastdue.current-v2-fact/metric-version :pastdue.current-v2-fact/time-basis :pastdue.current-v2-fact/business-timezone :pastdue.current-v2-fact/queried-at-local :pastdue.current-v2-fact/requested-vendor-count :pastdue.current-v2-fact/expected-record-count :pastdue.current-v2-fact/expected-bucket-count :pastdue.current-v2-fact/row-ordinal :pastdue.current-v2-fact/page-after-ordinal :pastdue.current-v2-fact/page-size :pastdue.current-v2-fact/page-record-count :pastdue.current-v2-fact/next-after-ordinal :pastdue.current-v2-fact/has-more :pastdue.current-v2-fact/result-fingerprint]}]}

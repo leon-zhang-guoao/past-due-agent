@@ -2,6 +2,10 @@
 
 This is an Agent procedure, not an installed runtime gate. Query execution,
 retrieval and delivery are separate; none proves independent final-output accuracy.
+Requested report-v2 uses [report planning](report-planning.md): repeated control
+ordinal0, disjoint noncontrol source pages, matching fingerprints and explicit
+Vendor coverage. Reconcile each complete report capture under the standard
+metric/check rules below. Coverage status/identity is not a Vendor measurement.
 Interactive explore-v3 uses [explore-v3.md](explore-v3.md) for selection/FACT
 identity, count and empty/display-gap checks. EMPTY_SELECTION is a valid empty
 path, not an invalid control. Standard report validation below still requires OK.

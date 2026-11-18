@@ -2,6 +2,8 @@
 
 Read for free questions, contextual follow-ups, or a failed interactive plan.
 Daily/history/test presets retain their existing metric and report paths.
+Requested reports and exact Vendor selections follow [report planning](report-planning.md);
+alert eligibility does not restrict user-requested analysis.
 This guidance does not install a host executor or a handle interceptor.
 
 ## Specification and composition

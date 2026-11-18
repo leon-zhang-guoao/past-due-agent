@@ -45,7 +45,7 @@ class QueryContracts(unittest.TestCase):
             self.assertEqual({a.rsplit('/',1)[1] for a in b.flatten_output(r[':output']) if not a.endswith('/rows')},{n for n,_ in fields})
             entity=self.doc[':vocabulary'][':entities']['pastdue.'+prefix+'-fact']
             self.assertIn(':pastdue.'+prefix+'-fact/scope-key',entity[':entity/identity'])
-        self.assertEqual(self.doc[':publication'][':release/version'],'3.5.0')
+        self.assertEqual(self.doc[':publication'][':release/version'],'3.6.0')
 
     def test_additive_explore_preserves_existing_interfaces(self):
         from build_explore_v2 import add_explore_v2, INPUTS, FIELDS

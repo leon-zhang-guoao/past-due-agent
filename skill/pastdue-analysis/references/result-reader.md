@@ -68,6 +68,12 @@ not a blanket small-table assumption. Do not add report-only fields to monitor.
 
 ## 3. Report typed reads, one captured result
 
+For report-v2, project its page metadata and VENDOR_COVERAGE separately as defined
+in report-planning.md. The projections below apply to each actual page handle;
+combine disjoint noncontrol ordinals after scope/count/fingerprint checks. Read
+coverage identity/status, not numeric placeholders. Count repeated control once.
+A successful retained read covers that page, not automatically the whole report.
+
 Use the full report EQL projection in structured-queries.eql before retaining the
 result. Below are disjoint projections of the SAME handle, not new source SQL.
 Country Control is separate from Vendor Metrics to avoid placeholder ambiguity.

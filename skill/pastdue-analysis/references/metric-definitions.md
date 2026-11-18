@@ -44,6 +44,11 @@ All signed contributions reconcile to Country point change; positive Top-10 need
 not sum to it and can exceed net rise. SINGLE_VENDOR includes zero/negative delta.
 Vendor ratio=Vendor PD/Vendor Open, not Country Open or past-due-only row count.
 
+Requested report-v2 retains these formulas. TOP_N ranks all signs (top-n=1..100);
+VENDOR_SET selects every requested readable Vendor (top-n=0) after computing
+national denominators and global ranks. Alert eligibility is independent of
+report selection. See report-planning.md for scope/coverage and source paging.
+
 ## Flexible metrics, denominators and ranking
 `pastdue.explore-fact` uses target/previous-past-due-count and -open-count for all
 bases, plus explicitly returned ratio/share denominators. At COUNTRY grain,

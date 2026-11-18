@@ -2,7 +2,7 @@ interface:
   display_name: "PastDue Analysis"
   short_description: "PastDue analysis and on-demand delegated HTML reports"
   brand_color: "#B45309"
-  default_prompt: "Use $pastdue-analysis for flexible current/snapshot/pair/range analysis or a US/CA weekday report; start test / 开始测试 forces applicable diagnostics in the request language. After standard DAILY/TEST Markdown, ask once about HTML; on explicit request or confirmation, delegate verified bindings to business-storyteller via the sub-agent contract."
+  default_prompt: "Use $pastdue-analysis for current/snapshot/pair/range questions, requested reports regardless of alert status, or one/several Vendors. Keep exact scope and actual business status; start test / 开始测试 is explicit. After standard DAILY/TEST Markdown, ask once about HTML; explicit HTML requests delegate verified bindings to business-storyteller."
 
 dependencies:
   tools:

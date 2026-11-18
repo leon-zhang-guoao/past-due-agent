@@ -21,7 +21,7 @@ Use 无数据/No data only for verified successful empty results; 未查询/Not 
 
 ## Standard section order
 
-1. **运行信息与结论 / Run information and conclusion**: DAILY/HISTORICAL/TEST,
+1. **运行信息与结论 / Run information and conclusion**: actual DAILY/HISTORICAL/TEST/INTERACTIVE,
    resolved language, America/Los_Angeles, actual P/T per Country. Show actual
    PST/PDT+offset only with trusted instant evidence. TEST title [TEST]/[测试],
    preserve actual trigger and show TEST_FORCED/THRESHOLD_MET separately.
@@ -36,9 +36,23 @@ Use 无数据/No data only for verified successful empty results; 未查询/Not 
    vs selected, exact missing scope. A complete split read still renders every
    selected Vendor's ranking row with main Code/Source cells and signed-total check.
 
-No-trigger Countries still appear in metrics; ordinary drilldown is not required.
+Automatic monitoring includes no-trigger Countries in metrics without requiring
+drilldown. A requested report includes applicable Vendor analysis regardless of
+trigger, with the requested selection scope and actual business status.
+Requested reports retain the actual analysis mode rather than TEST_FORCED.
 Valid zero-positive selection shows explicit empty selection, not fabricated rows.
 History events-only stops at event listing. No current monitor mislabeled historical.
+
+### CURRENT reports and Vendor questions
+
+CURRENT has capture time and current measurements, without an observed previous
+snapshot. Show Vendor code/name, Past Due, Open, ratio with its declared
+denominator, requested share and ETA Code/Source distributions. Account for each
+requested identity and coverage status. Use joint facts for conditional Source.
+Comparison dates/deltas and signed change checks apply only to actual pair facts.
+When current status and comparison are both requested, label separate captures
+and render verified modules from each. CURRENT alone cannot fill the existing
+comparison HTML payload.
 
 ## Country metrics columns (exact order)
 

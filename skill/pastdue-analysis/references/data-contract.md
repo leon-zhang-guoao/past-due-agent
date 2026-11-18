@@ -6,6 +6,18 @@ particular environment is deployed. The development source is
 It is not an Agent runtime dependency. Long-text block collections are retained compatibility-only. Inventory counts are not online acceptance.
 Required new interfaces missing → deployment gap, never silent v3/v2 fallback.
 
+## Requested report sets — 3.6.0
+
+`pastdue.report-v2-query/rows` adds paged TOP_N/POSITIVE_TOP_N/VENDOR_SET selection
+without changing old report fields or bindings. Read [report planning](report-planning.md)
+for nine inputs, coverage, paging and equivalent legacy paths. Trigger remains a
+separate Country fact; report execution does not require a trigger.
+
+`pastdue.current-v2-query/rows` adds one-scan explicit-set CURRENT joint quantities,
+org filters, declared ratios/shares, coverage and paging. Its field names are not
+report-v2 or explore field aliases; follow [report planning](report-planning.md)
+and [the full EQL](current-v2-query.eql). Use explore for unsupported operations.
+
 ## Additive selection and expansion — 3.5.0
 
 Prefer discovered pastdue.explore-v3-query/rows for graph-side Vendor selection,

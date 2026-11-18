@@ -6,6 +6,9 @@ EQL stays `{:entity ... :query ...}` inside `execute_eql.query`.
 
 ## Choose the fact capability
 
+Requested reports, including nontrigger dates and Vendor sets: read
+[report planning](report-planning.md) and prefer discovered report-v2-query/rows.
+Report requests bypass alert selection; data and pair validity still apply.
 Standard: monitor/history → pinned report-query/rows. Interactive: discovered
 explore-v3-query/rows preferred; read [v3 contract](explore-v3.md) and
 [complete EQL](explore-v3-query.eql). v2 and old explore remain compatible. Read

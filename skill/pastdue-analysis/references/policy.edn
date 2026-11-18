@@ -1,4 +1,4 @@
-{:policy-version "3.5.1"
+{:policy-version "3.6.0"
   :business-timezone "America/Los_Angeles"
   :business-timezone-iana "America/Los_Angeles"
   :display-timezone {:daylight-saving true
@@ -18,6 +18,8 @@
     :flexible-set-compatible :pastdue.explore-v2-query/rows
     :flexible-compatible :pastdue.explore-query/rows
     :report :pastdue.report-query/rows
+    :requested-report :pastdue.report-v2-query/rows
+    :targeted-current :pastdue.current-v2-query/rows
     :monitor :pastdue.monitor-query/countries
     :history :pastdue.history-query/trigger-events
     :missing-required :deployment-gap
@@ -39,6 +41,14 @@
     :tie-breaker :vendor-code-ascending
     :coverage-reference 0.8
     :stop-at-coverage false}
+  :requested-report {:requires-trigger false
+    :mode "INTERACTIVE"
+    :default-time-basis "PAIR"
+    :default-selection-mode "TOP_N"
+    :explicit-vendors "VENDOR_SET"
+    :explicit-vendor-top-n 0
+    :source-page-size 50
+    :preserve-actual-business-status true}
   :eta-selection {:maximum-values 5
     :include-other true
     :computed-by :shared-server-facts
