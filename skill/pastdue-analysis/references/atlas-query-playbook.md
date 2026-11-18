@@ -7,7 +7,9 @@ EQL stays `{:entity ... :query ...}` inside `execute_eql.query`.
 ## Choose the fact capability
 
 Requested reports, including nontrigger dates and Vendor sets: read
-[report planning](report-planning.md) and prefer discovered report-v2-query/rows.
+[report planning](report-planning.md) and select the semantically equivalent
+interface: original report for positive Top N/single Vendor, v2 for added selection
+or coverage requirements. No-alert is independent of interface choice.
 Report requests bypass alert selection; data and pair validity still apply.
 Standard: monitor/history → pinned report-query/rows. Interactive: discovered
 explore-v3-query/rows preferred; read [v3 contract](explore-v3.md) and
@@ -283,8 +285,11 @@ procedure are in [result-reader.md](result-reader.md). Read its active section,
 not every query example. Known-schema reads can skip redundant discovery;
 unknown columns need actual schema, never guessed aliases.
 
-Report order is Country Control → Vendor Metrics → ETA summaries/checks from
-one captured source result. Keep scope-key, Country, Vendor, P/T, metric version,
+Interpret report rows as Country Control → Vendor Metrics → ETA summaries/checks;
+this does not mandate three tool calls if the required fields are already read.
+Original report keeps its typed read baseline; paged interfaces choose needed
+typed fields or an optional full read based on actual size and truncation. Keep scope-key,
+Country, Vendor, P/T, metric version,
 record type and ordinal in every applicable projection. Source expected count is
 validated against the union of retained partitions, not each partition separately.
 Do not read Vendor placeholder zeros on COUNTRY_CONTROL as Country totals. Missing
@@ -302,10 +307,12 @@ for ANY Country, not only Country US; joint summaries never come from stitching
 marginal Code/Source rows. Other stays a mixed remainder. A required=false zero
 joint check is not failed. Read all applicable checks before Country diagnosis.
 
-One justified correction retry per logical request; pagination isn't a retry.
+Use result-reader.md for page/fact progress and local recovery. One justified
+changed correction per logical request; pagination isn't a retry, but it and
+retained reads count toward execution cost in DAILY/HISTORICAL/TEST/INTERACTIVE.
 Changing source limit/projection does not fix cancelled aggregation. Preserve
 independent valid facts; nested errors count even if outer isError=false.
-INTERACTIVE: review cost after six distinct source scopes, not an automatic stop.
+All modes: review plans after six distinct source scopes, not an automatic stop.
 Prefer batches; finite targeted worklists are allowed when batch is unavailable
 and semantics match. Discovery/result reads/paging are separate work, with their
 actual cost still considered. Bound open-ended breadth. No retry/fanout storms.

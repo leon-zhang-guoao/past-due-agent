@@ -29,10 +29,11 @@ sending, follow-up, reply tracking or escalation. TEST follows same display-only
 boundary. Only minimal authorized personal fields are requested.
 
 ## Interaction and display contract
-For INTERACTIVE questions, review cost after six distinct source scopes without
+Review plans after six distinct source scopes without
 automatically stopping a finite requested worklist. Prefer targeted batches;
 bounded per-Vendor lookups are valid when no equivalent batch exists. Discovery,
-materialization and pagination are separate work; their actual cost still matters.
+materialization and pagination are separate work; result-reader.md counts their
+cost and progress in every mode.
 Optional context never replaces mandatory report facts. Follow
 interactive-planning.md for recovery and cost; explicitly bound open-ended scope. State
 what was not queried, never silently skip or claim unqueried rows are empty.

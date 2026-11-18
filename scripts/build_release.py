@@ -16,7 +16,7 @@ from edn_io import read, loads, dumps, K
 from run_golden_eval import run_checks
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = '3.6.0'
+VERSION = '3.6.2'
 SKILL = 'skill/pastdue-analysis/'
 HTML_SKILL = 'skill/pastdue-html-report/'
 MANIFEST_PATH = SKILL + 'references/release-manifest.edn'
@@ -34,6 +34,7 @@ ROOT_FILES = {'agent/SYSTEM_PROMPT.md', 'agent/INVOCATION_EXAMPLES.md',
               'docs/RESULT_READER_FIX_3_3_7.md', 'docs/COMPOSABLE_ANALYSIS_3_4.md',
               'tests/fixtures/live-question-cases.json', 'docs/PASTDUE_AGENT_REDESIGN.md',
               'docs/ON_DEMAND_REPORTS_3_6.md',
+              'docs/STABLE_REPORT_ROLLOUT_3_6_2.md',
               'docs/COMPOSABLE_ANALYSIS_3_5.md', 'docs/HTML_SUB_AGENT_3_5_1.md'}
 REF_NAMES = {'atlas-query-playbook.md', 'completion-contract.md', 'current-context.md',
              'data-contract.md', 'eta-diagnostic-rules.edn', 'metric-definitions.md',
@@ -41,7 +42,8 @@ REF_NAMES = {'atlas-query-playbook.md', 'completion-contract.md', 'current-conte
              'table-display-contract.md', 'structured-queries.eql', 'result-reader.md',
              'mcp-tool-arguments.md', 'interactive-planning.md', 'explore-v2.md',
              'explore-v2-query.eql', 'explore-v3.md', 'explore-v3-query.eql',
-             'report-planning.md', 'report-v2-query.eql', 'current-v2-query.eql'}
+             'report-planning.md', 'report-v2-query.eql', 'current-v2-query.eql',
+             'report-page-read.sql', 'current-page-read.sql'}
 HTML_REF_NAMES = {'payload-contract.md', 'html-shell.md', 'acceptance-checklist.md',
                   'sample-payload.json', 'sub-agent-contract.md', 'business-storyteller.md'}
 HTML_SCRIPT_NAMES = {'payload_gate.py', 'render_ops_shell.py', 'verify_artifact.py'}
@@ -51,8 +53,7 @@ REQUIRED_RESOLVERS = {
     'pastdue_v3_history_query_trigger_events',
     'pastdue_v3_report_query_rows',
     'pastdue_v3_explore_query_rows',
-    'pastdue_v3_report_v2_query_rows',
-    'pastdue_v3_current_v2_query_rows',
+    'pastdue_v3_explore_v3_query_rows',
 }
 SECRET = re.compile(r'oat_v1\.|Authorization\s*:\s*Bearer\s+\S+|'
                     r'jdbc:clickhouse://(?!\$)|-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY|'
@@ -225,7 +226,7 @@ def _manifest(full, skill, offline, sql, inputs, doc, baseline):
         ':artifact-input-sha256': inputs,
         ':agent-contract-version': VERSION,
         ':recommended-atlas-publication': doc[':publication'][':release/version'],
-        ':atlas-compatibility': 'Graph3.6 adds report-v2 and current-v2; all39 older resolver and SQL bindings preserved. Atlas implementation unchanged. Existing scalar EDN patterns; verify deployed schema, ClickHouse22.8/JDBC, source policy, paging and latency before rollout.',
+        ':atlas-compatibility': 'Graph3.6.0/revision8 unchanged. Original report positive TopN and SINGLE_VENDOR paths preserved; all-sign/set/coverage reports use additive report-v2. CURRENT defaults to explore-v3; current-v2 and wide reads remain candidates. Verify deployed schema/JDBC, source policy and same-scope Agent behavior before promotion.',
         ':source-report-page-default': 1000,
         ':compatible-metric-version': '3.1.0',
         ':manifest-self-hash': 'excluded-to-avoid-recursion',

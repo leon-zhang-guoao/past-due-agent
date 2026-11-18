@@ -53,7 +53,9 @@ Complete ordinary finite requested sets when feasible, using an explicit worklis
 deduplication and shared source concurrency one by default. A finite user-requested
 set does not need repeated permission just because it exceeds six scopes.
 Discovery, retained reads and continuation pages are not new business scopes,
-but their actual cost matters. Bound open-ended expansions explicitly. Material
+but all count toward execution cost in every mode. Use result-reader.md's
+page/fact progress notes and local recovery rather than a separate retry loop.
+Bound open-ended expansions explicitly. Material
 scope/cost increases beyond the request require direction; repeated unchanged
 failures and unbounded work are stopping conditions.
 

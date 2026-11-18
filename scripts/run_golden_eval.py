@@ -9,7 +9,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 CHECKS = ['validate_bundle.py', 'test_query_contracts.py', 'test_top10_changes.py',
-          'test_report_contracts.py', 'test_report_v2.py', 'test_current_v2.py']
+          'test_report_contracts.py', 'test_report_v2.py', 'test_current_v2.py',
+          'test_page_reads.py']
 
 
 def run_checks(root=ROOT):

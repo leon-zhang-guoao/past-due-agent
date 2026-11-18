@@ -1,7 +1,7 @@
-# Requests — Agent contract 3.5.1
+# Requests — Agent contract 3.6.2
 
 Examples illustrate operation composition, not a closed list of supported phrases.
-Prefer discovered explore-v2; old explore remains compatible for scopes it expresses.
+Prefer discovered explore-v3 for composition; old explore remains compatible for scopes it expresses.
 Vendor sets use vendor-codes-json, detail stays on its own targeted APIs. Follow-ups
 modify only changed scope fields. See interactive-planning.md and explore-v2.md.
 
@@ -36,10 +36,10 @@ Atlas query playbook. No arbitrary SQL or Python is needed for these requests.
 | Request | Route |
 |---|---|
 | 没有触发预警也给我 US、CA 的完整报告 | Actual latest eligible P/T per Country, real status; report-v2 TOP_N across all signs. INTERACTIVE, no TEST label. |
-| US Vendor 64342 当前怎么样 | current-v2 exact set `[64342]`; metrics, ratios with denominator and joint-derived distributions. |
+| US Vendor 64342 当前怎么样 | Existing explore-v3 CURRENT exact set `[64342]`; metrics, ratios with denominator and joint-derived distributions. |
 | 给 US 64342、75256、72478 的报告，包括改善的 | report-v2 VENDOR_SET, top-n=0; every requested identity, pair metrics and ETA checks. |
 | 上面的报告再加 65505，其他不变 | Preserve Country/P/T/calendar/selection semantics and presentation; amend the set, capture and verify the revised scope. |
-| 当前这些 Vendor 按部门筛选，并看占全国逾期比例 | current-v2 org filters, COUNTRY_ALL; national denominator excludes neither unselected nor other-org Vendors. |
+| 当前这些 Vendor 按部门筛选，并看占全国逾期比例 | Existing explore-v3 CURRENT org filters, COUNTRY_ALL; national denominator excludes neither unselected nor other-org Vendors. |
 | 把这几家按上周增长排前二，再看全部 ETA | explore-v3 selection/expansion, preserve original candidate denominator and exact time scope. |
 
 Report text alone means Markdown. Current facts and completed-pair comparisons
@@ -47,7 +47,8 @@ remain separately labeled. HTML follows the existing explicit handoff contract.
 
 
 Standard daily/history/test requests use the canonical bilingual skeleton and
-separate Vendor Code/Source tables. English and Chinese differ in labels and
+per-Vendor main Code/Source cells in the ranking table. Expanded separate tables
+remain on request. English and Chinese differ in labels and
 interpretation language, not field order or fact definitions. Interactive requests
 use only relevant modules. Explicit brief/custom-column output is allowed with
 CUSTOM display scope; it does not claim full-report test PASS.

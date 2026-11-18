@@ -1,8 +1,8 @@
-# Evidence and completion — 3.5.0
+# Evidence and completion — 3.6.2
 
 This is an Agent procedure, not an installed runtime gate. Query execution,
 retrieval and delivery are separate; none proves independent final-output accuracy.
-Requested report-v2 uses [report planning](report-planning.md): repeated control
+When report-v2 is selected, it uses [report planning](report-planning.md): repeated control
 ordinal0, disjoint noncontrol source pages, matching fingerprints and explicit
 Vendor coverage. Reconcile each complete report capture under the standard
 metric/check rules below. Coverage status/identity is not a Vendor measurement.
@@ -36,16 +36,21 @@ handle provenance limits ALL facts dependent on that handle, even if totals matc
 
 ## B. Retrieval
 
-Use the playbook's two-layer reading procedure. Track separately:
+Use result-reader.md's paged or legacy read path. Track separately:
 - source expected records and actual unique rows from all EQL pages;
 - retained-result rows actually read, across all reading partitions/pages;
 - cell truncation affecting each field, not only top-level truncated?.
 
 A statement is complete when `truncation.rows?` is false, `cells?` is false, and
-`rows-shown` equals `rows-total`. `row-count` is the retained table. One
+`rows-shown` equals `rows-total`. This validates only fields in that SELECT:
+identity-only rows do not establish metrics/check quantities. Reuse previous
+intact fields under the same verified provenance; fill only the missing cells.
+`row-count` is the retained table. One
 statement's `rows-total` may be lower than `expected_record_count` because the
 other statement holds the remaining record types. Add the disjoint `rows-total`
-values. Equality with `expected_record_count` means the compact report was read.
+values. For paged interfaces, count repeated control once and reused fields once;
+sum only disjoint ordinal coverage. Equality with `expected_record_count` plus
+required field coverage means the compact report was read.
 Render Code, Source, signed totals and diagnosis from those rows. Exactly
 expected rows with cut-off cells is not complete retrieval. A successful
 SELECT over an incomplete retained result is not source completeness. A truncated
@@ -69,6 +74,12 @@ strip an ellipsis or assume it was part of the original value.
 - Never add Code and Source together. Read signed totals from VENDOR_CHECK;
   Other net delta does not expose its internal increase/decrease composition.
 
+Bind each check to the same full scope and Vendor identity as its metric row.
+For code/source, previous_total and target_total must equal that Vendor's two
+period PD; net_change must equal target PD minus previous PD, and signed increase
+plus decrease must equal net_change. A returned counts-match=true does not
+authorize copying another Vendor's check. us remains conditional as above.
+
 These support server full-population reconciliation and compact-summary coverage,
 NOT client independent raw-bucket audit. Generic source-completeness UNKNOWN alone
 neither proves failure nor overrides valid identities/counts/checks. Record the
@@ -83,11 +94,21 @@ selected Vendor codes/ranks → metrics → main Code (≤5 by |net| from return
 rows) → main Source (≤5 by |net|) → both signed totals → analysis status or
 precise local failure. Count a ranking row as delivered only when all these
 applicable cells are actually present, not merely planned or available in a handle.
+A compact Country draft can help retain completed work; it is optional and
+does not require another Atlas call or add a scheduling barrier. At final
+assembly compare the original requested Country list
+to the delivered sections, and include each Country's verified facts or local
+failure. Known gaps are not permission to drop a Country already queried.
 Main cells use returned bucket identities and both-period counts in P→T form;
 do not invent buckets. Full six-column tables are on-request only and are not
 required for standard delivery. Check language, dates, signs and delta-vs-level
 field binding against original rows. This self-review is not independent
 validation and cannot guarantee final accuracy.
+For each printed Vendor row, compare its two-period metrics and code/source
+signed totals to its own bindings; check totals must reconcile to that printed
+Vendor delta. An inconsistency is REPORT_ERROR: correct the copied fields from
+the same identity or withhold those cells with a precise error. It cannot be
+marked verified even when both Vendors happen to share a delta.
 
 Report the actual analysis scope as complete/partial/unavailable/not required.
 Keep actual business trigger and freshness separate. At the end report selected

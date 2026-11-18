@@ -1,4 +1,4 @@
-{:policy-version "3.6.0"
+{:policy-version "3.6.2"
   :business-timezone "America/Los_Angeles"
   :business-timezone-iana "America/Los_Angeles"
   :display-timezone {:daylight-saving true
@@ -18,8 +18,12 @@
     :flexible-set-compatible :pastdue.explore-v2-query/rows
     :flexible-compatible :pastdue.explore-query/rows
     :report :pastdue.report-query/rows
-    :requested-report :pastdue.report-v2-query/rows
-    :targeted-current :pastdue.current-v2-query/rows
+    :requested-report :select-by-report-planning-semantics
+    :requested-report-added-selection :pastdue.report-v2-query/rows
+    :equivalent-positive-or-single-report :pastdue.report-query/rows
+    :targeted-current :pastdue.explore-v3-query/rows
+    :candidate-targeted-current :pastdue.current-v2-query/rows
+    :candidate-promotion :same-scope-live-comparison-required
     :monitor :pastdue.monitor-query/countries
     :history :pastdue.history-query/trigger-events
     :missing-required :deployment-gap
@@ -68,7 +72,14 @@
     :budget-enforcement :agent-guidance-not-host-gate
     :targeted-worklists :finite-requested-scope-when-equivalent-batch-unavailable
     :source-concurrency-default 1
-    :pagination-excluded true
+    :pagination-excluded-from-distinct-scopes true
+    :execution-progress {:applies-to :all-modes
+      :procedure "result-reader.md"
+      :cost-counts [:source-execute :source-page :retained-read :discovery :correction :elapsed-time]
+      :next-call-requires :named-evidence-gap-or-supported-changed-correction
+      :complete-fields :reuse-under-verified-identity
+      :no-supported-progress :stop-local-path-and-deliver-verified-scope
+      :fixed-call-count-cap false}
     :maximum-corrected-retries 1
     :recursive-fanout-fallback false
     :arbitrary-sql false
@@ -76,9 +87,9 @@
     :html-companion-optional-verification-script "skill/pastdue-html-report/scripts/render_ops_shell.py"
     :html-companion-verification-script-is-runtime-service false
     :host-hard-gate-installed false
-    :cost-review-applies-to "INTERACTIVE"
-    :discovery-excluded true
-    :materialization-excluded true
+    :planning-review-applies-to :all-modes
+    :discovery-excluded-from-distinct-scopes true
+    :materialization-excluded-from-distinct-scopes true
     :retry-same-logical-slot true
     :cost-review-is-not-completion-cap true
     :presets-attempt-all-mandatory-work true
@@ -90,7 +101,7 @@
       :tool "analyze_result"
       :schema-first :when-column-mapping-unverified
       :scope "retained result for this turn"
-      :sql-shape "monitor: small Country rows; report: three typed projections in result-reader.md"
+      :sql-shape "monitor: small Country rows; original report: existing typed reads; paged: needed typed fields or optional full projection within actual output limits; reuse complete fields; see result-reader.md"
       :source-pages-and-result-pages-distinct true
       :row-and-cell-truncation-separate true
       :partition-union-must-cover-source true
@@ -105,7 +116,7 @@
       :selector-error-component-cause "UNCONFIRMED until actual call evidence isolates it"
       :execute-arguments ["query" "retain_result"]
       :handle-only-discovery :optional-when-supported
-      :read-sequence ["execute_eql and bind actual handle" "read monitor/history and pin scope" "report Control then Vendor Metrics then ETA/Check on one captured result"]
+      :read-sequence ["execute_eql and bind actual handle" "read monitor/history and pin scope" "original report: typed projections; paged: adaptive required fields, validate association/control, fill actual gaps, advance only has-more"]
       :country-control-fields ["previous_country_past_due_count" "target_country_past_due_count" "previous_country_open" "target_country_open" "previous_country_ratio" "target_country_ratio"]
       :unprojected-fields :unknown-not-zero
       :country-control-zero-exemption false

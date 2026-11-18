@@ -106,6 +106,18 @@ class EvidenceReports(unittest.TestCase):
         c.update(previous_total=9,previous_expected_total=9)
         self.assertIn('VENDOR_TOTAL_MISMATCH', validate_atlas_report_rows(rows)['errors'])
 
+    def test_counts_match_true_cannot_validate_foreign_vendor_totals(self):
+        # Observed failure pattern: intact metric but another Vendor's check,
+        # with counts_match=true. A source flag cannot validate the copied row.
+        rows=report_rows()
+        metric=next(r for r in rows if r['record_type']=='VENDOR_METRICS')
+        self.assertEqual((metric['previous_past_due_count'],metric['target_past_due_count']),(275,319))
+        check=next(r for r in rows if r.get('dimension')=='code' and r['record_type']=='VENDOR_CHECK')
+        check.update(previous_total=300,target_total=381,previous_expected_total=300,
+                     target_expected_total=381,increase_total=84,decrease_total=-3,
+                     net_change=81,counts_match=True)
+        self.assertIn('VENDOR_TOTAL_MISMATCH',validate_atlas_report_rows(rows)['errors'])
+
     def test_duplicates_and_controls(self):
         rows=report_rows();rows[2]['row_ordinal']=1
         self.assertIn('DUPLICATE_ROW_ORDINAL',validate_atlas_report_rows(rows)['errors'])

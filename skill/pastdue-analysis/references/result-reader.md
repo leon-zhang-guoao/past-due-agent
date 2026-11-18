@@ -1,4 +1,4 @@
-# Retained-result reading — 3.4.0
+# Retained-result reading — 3.6.2
 
 ## 1. Call boundary
 
@@ -66,13 +66,111 @@ allowlist. Inspect row AND cell truncation; SELECT * does not guarantee coverage
 History results use their discovered explicit columns and supported pagination,
 not a blanket small-table assumption. Do not add report-only fields to monitor.
 
-## 3. Report typed reads, one captured result
+## 3. Paged results: report-v2 and current-v2
 
-For report-v2, project its page metadata and VENDOR_COVERAGE separately as defined
-in report-planning.md. The projections below apply to each actual page handle;
-combine disjoint noncontrol ordinals after scope/count/fingerprint checks. Read
-coverage identity/status, not numeric placeholders. Count repeated control once.
-A successful retained read covers that page, not automatically the whole report.
+Use these interfaces when report-planning.md selects their semantics. Original
+single-handle report keeps the typed read baseline in section4. This section
+adds source-page handling; it does not mandate a new full-wide read for all modes.
+Explore retains its SELECTION/FACT and coverage rules from its own reference.
+
+### Choose the read, bind, continue
+
+1. Use the complete EQL projection for the selected interface. First cursor0;
+   report-v2 starts page-size50. Candidate current-v2 starts100. Discover only an
+   unresolved schema/input gap; reuse compatible mappings in this environment.
+2. Retain the execute's actual handle. Select required fields and record types
+   according to the report modules. Report typed projections in section4 can be
+   adapted to v2 by also reading its page metadata and VENDOR_COVERAGE. These
+   extra rows must be accounted for; they are not legacy metrics or summaries.
+   If response size permits, [report-page-read.sql](report-page-read.sql) and
+   [current-page-read.sql](current-page-read.sql) are optional full-projection
+   examples. They are candidate optimizations, not mandatory defaults. A page
+   under200 rows can still exceed cell/text/context limits. Choose by actual
+   tool limits and prior same-scope results, not row cap alone. Do not perform
+   both a full read and typed re-reads of already complete fields.
+3. Validate the response handle, environment, Country/scope, dates/filters and
+   returned cursor/size against the originating request. Repeated controls agree
+   on expected count, scope and fingerprint. Unexplained capture/cursor mismatch
+   needs association review; plausible numeric totals cannot repair provenance.
+   Use available raw call correlation; if unavailable, keep dependent facts
+   UNVERIFIED and preserve independent scopes. Do not guess replacement handles.
+4. Bind returned rows and fields before re-reading. Control-first interpretation
+   does not require another call if control is already present. A typed WHERE
+   excluding VENDOR_METRICS proves nothing about their presence in the source.
+   Read only actual missing ordinals/fields from the SAME handle with identity.
+5. When has-more=true, advance to exactly next-after-ordinal, strictly greater
+   than the request cursor. No new noncontrol ordinals means no progress.
+   has-more=false ends source pagination; next-after-ordinal=0 is a sentinel.
+   Count repeated control once; union ordinals and reconcile expected-record-count.
+   Keep existing serial source flow and each page's own handle. A Vendor can
+   span pages; complete its required records before calling it verified.
+
+For adapted typed reads, include cursor/size/page count/has-more/next cursor and
+fingerprint from the page control (see the full SQL example for exact names).
+Read VENDOR_COVERAGE identity/status/ordinal separately or in an existing read;
+include it in the ordinal union without treating it as a measured record.
+Control or coverage already available in an intact response needs no extra call.
+
+### Working evidence and progress
+
+For multi-page/multi-Vendor work, keep working notes sized to the task (a workspace
+file if useful and available, otherwise task notes), with these two records. They are not a new host
+service, mandatory output format, business data source or installed hard gate.
+Never describe a note you did not actually save as persistent state.
+
+- Page: request scope/cursor/size → actual execute call/handle/capture/environment
+  → actual read call/returned handle → expected count, fingerprint, unique ordinals,
+  intact fields, truncation and precise remaining gaps. Keep actual rows/cells or
+  their available original response reference; an identifier list is not the data.
+- Vendor: full scope + Country/P/T/calendar (or CURRENT filters/denominator/capture),
+  Vendor code and metric version → actual metrics, Code/Source/us rows/checks,
+  coverage, per-record provenance, validation and delivery state. Preserve
+  record_type, dimension, eta_value/row_kind and ordinal when partitioning.
+  Bind by this identity, never rank position or Vendor name. Repeated counts on
+  other record types do not override the metric row.
+
+Before each Atlas call name the gap it will close: next source page, missing
+ordinal/field, unresolved schema item or one diagnosed correction. After it,
+record the new facts or the exact blocker. Reuse already complete row×field
+coverage; a different SELECT is useful only if it supplies missing evidence.
+Reuse bound Country facts when composing its section; deliver the requested
+Countries when their finite worklists are done
+or locally blocked. A local failure does not erase another Country's work.
+
+All modes count source executions, retained reads, discovery, continuations,
+corrections and elapsed time toward cost. After first-page metadata, estimate
+remaining source pages as ceil(remaining_noncontrol_rows/page_size), plus actual
+retained reads. For example expected170/page50 needs4 source pages, expected136
+needs3; this is a planning estimate, not a hard cap. Compare actual work to remaining
+gaps. When calls add no new rows/fields and there is no supported changed action,
+end that path with verified facts and exact gaps instead of an unchanged loop.
+Continue large finite requests while making progress; preserve their scope.
+
+### Local recovery
+
+| Evidence | Action |
+|---|---|
+| rows?/cells? true, or host explicitly reports omitted tool content | Read only missing ordinal windows/fields from the same handle, with identity. A complete tool read already available in context needs no replay. |
+| Result reference unavailable | Use the actual response already present; if essential content truly is unavailable, recover that exact gap with the originating retained handle once and record the recovery. Repeated schema/source requests do not repair the reference. |
+| Unknown EQL attribute | Correct that name from the declared EQL schema once; SQL underscores are not EQL hyphens. Keep business scope. |
+| Selector/argument rejection | Follow section1's one changed correction; keep the handle. |
+| DuckDB configuration failure such as locked memory_limit | Mark this retained read unavailable, retain prior complete reads. Retry only after evidence the condition changed or a supported different read closes the gap; identical SQL/projection/version switches and new source queries do not fix configuration. |
+| Confirmed handle expiry | One exact-scope recapture, with new capture and completeness checks. |
+| Source byte refusal | One evidenced size/projection correction; account for newly omitted fields. Smaller pages do not fix source aggregation time. |
+| Fingerprint drift | One consistent recapture of the affected page union; then disclose instability if still inconsistent. |
+| Read handle/cursor differs from request | Isolate dependent facts; inspect available raw correlation or report ASSOCIATION_ERROR/UNVERIFIED. Preserve independent scopes; never repair by similar values. |
+
+At most one evidence-based changed correction per failed work item. An unchanged
+rejected call or duplicate successful source page is not recovery. Completion
+rules for typed business facts and final copy accuracy live in
+[completion-contract.md](completion-contract.md).
+
+## 4. Original single-handle report: typed projections
+
+This is the default existing read procedure for report-query/rows. It also
+supplies lossless typed partitions when another reader result needs them. On paged report-v2, reuse any already-read fields and
+include its page metadata/coverage as well. This is not a second checklist after
+an already complete read.
 
 Use the full report EQL projection in structured-queries.eql before retaining the
 result. Below are disjoint projections of the SAME handle, not new source SQL.
@@ -146,6 +244,7 @@ error or permission to add negative Vendors.
 SELECT scope_key, record_type, country_code, vendor_code, vendor_name,
        previous_snapshot_date, target_snapshot_date, calendar_mode,
        selection_mode, metric_version, scope_status,
+       contribution_rank, selected_vendor_count,
        dimension, eta_value, row_kind, display_rank, other_bucket_count,
        previous_past_due_count, target_past_due_count, past_due_count_change,
        past_due_count_relative_change, delta_country_contribution,

@@ -1,4 +1,4 @@
-# Requested reports and Vendor scope — 3.6.0
+# Requested reports and Vendor scope — 3.6.2
 
 Read for a report request (including `report` / `reprot` / 报告), one or several
 named Vendors, or a follow-up changing report scope. Atlas supplies business facts.
@@ -31,16 +31,30 @@ on follow-ups, including “改成报告”, “加一家”, and “不要预�
    start=end=target for an explicit target; this includes nontrigger dates. Reuse
    verified same-scope Country facts. Arbitrary explicit P/T uses explore
    PAIR/EXPLICIT: report-v2 requires the nearest previous eligible snapshot.
-2. Discover report-v2-query/rows and read [its EQL](report-v2-query.eql). All nine
-   inputs are explicit. Supply the inactive Vendor set as the string `[]`.
-3. Bind Country Control, Vendor metrics, ETA summaries/checks and Vendor coverage
-   from the same result. Read source pages and retained projections through
-   result-reader.md. Continue at returned next-after-ordinal; count repeated
-   control once. Scope, expected count and fingerprint must agree across pages.
+2. Choose by the requested selection and required evidence, not alert status:
+
+   | Semantics | Default interface |
+   |---|---|
+   | DAILY/TEST/historical alert preset, or explicit POSITIVE_TOP_N with N=1..10 | Existing report-query/rows, selection-mode=POSITIVE_TOP_N, vendor-code=0 |
+   | One explicit Vendor, any contribution sign, without extra coverage requirements | Existing report-query/rows, selection-mode=SINGLE_VENDOR, top-n=1, actual vendor-code |
+   | TOP_N across all signs, exact multiple-Vendor set, positive N=11..100, or explicit set-coverage evidence | report-v2-query/rows |
+   | Arbitrary explicit P/T, ranking/filtering beyond report semantics | Compose explore operations; preserve scope, denominators and requested modules |
+
+   For the original interface use the complete projection in
+   [structured-queries.eql](structured-queries.eql), retaining its seven scalar
+   inputs. For v2 use [report-v2-query.eql](report-v2-query.eql), all nine inputs
+   explicit; inactive vendor-codes-json is the string `[]`. Legacy report cannot
+   supply v2 coverage statuses: choose v2 when those distinctions are required.
+3. Read result-reader.md for the chosen interface. Original report uses its
+   existing Control/Metrics/ETA typed reads; reuse fields already read. Paged v2
+   uses needed typed projections or an optional full projection when output size
+   permits. Include v2 metadata and coverage, follow real source cursors and fill
+   only actual gaps. No mandatory full-wide-page or extra draft-before-next step.
 4. Deliver report-format.md with actual trigger and selection scope. Account for
-   each requested Vendor as matched, no readable data, failed or unfinished.
-   Coverage rows are identity/status, never measurements. Completion requires
-   the original set to be accounted for, not merely some ranking rows returned.
+   every requested identity as matched, no readable data, failed or unfinished,
+   using only the statuses the chosen interface actually returns. Coverage rows
+   are identity/status, never measurements. No-alert never disables a valid
+   report; all-sign TOP_N must never silently become POSITIVE_TOP_N.
 
 ### report-v2 inputs and semantics
 
@@ -68,15 +82,17 @@ data, denominator, Vendor selection or page yields control without usable Vendor
 facts. Positive-only empty selection is a valid empty report.
 
 Source default200 bounds rows (control + at most199), not serialized bytes.
-For a result-size refusal, one smaller-page/projection correction is appropriate.
+For a result-size refusal, one evidence-based smaller-page/projection correction
+is appropriate. A diagnostic page-size=1 is a one-page probe: restore the planned
+production size before starting a full report, with its own capture/coverage.
 Smaller pages alone do not reduce SQL aggregation cost for a timeout. Each source
 continuation reruns the query; fingerprints detect ordinary drift, not transaction
 isolation. Follow existing bounded recapture rules before combining pages.
 
-### Existing deployments
+### Equivalent alternatives when a capability is absent
 
-If report-v2 is absent, POSITIVE_TOP_N and a one-element set can use discovered
-report-query/rows (SINGLE_VENDOR, top-n=1). A finite set can use a deduped worklist
+The old interface is the normal default for the equivalent modes above, not just
+a fallback after trying v2. If report-v2 is absent, a finite set can use a deduped worklist
 of SINGLE_VENDOR calls when feasible. Preserve common P/T and Country denominators,
 reconcile Country controls and disclose separate captures. Six scopes is a cost
 review. Comma lists are invalid for vendor-code; a known source timeout is not a
@@ -86,33 +102,40 @@ or name the exact deployment gap.
 
 ## CURRENT and free-form Vendor questions
 
-For an explicit Vendor set needing CURRENT counts, ratios and distributions with
-optional org filters, prefer discovered current-v2-query/rows; read
-[its complete EQL](current-v2-query.eql). Eight inputs: Country, nonempty numeric
-vendor-codes-json, three org filters, denominator-scope, page-after-ordinal and
-page-size. Empty org strings mean unrestricted; scopes are COUNTRY_ALL,
-FILTERED_POPULATION, WITHIN_VENDOR. Source page rules match report-v2, with CONTROL
-instead of COUNTRY_CONTROL; start CURRENT at100 (fewer fields), adapt to actual
-bytes. FACT is joint Code×Source, VENDOR_COVERAGE carries
-MATCHED / NO_READABLE_ROWS / EXCLUDED_BY_ORG. Only FACT has measured counts.
-Vendor totals repeat on FACT: read one consistent value per Vendor, never sum the
-repeated totals. Sum disjoint bucket counts to reconcile Vendor PD/Open. Ratio is
-bucket PD / scoped Vendor Open; share uses the declared returned denominator.
-Use vendor-past-due-ratio and vendor-past-due-share for Vendor-level percentages;
-past-due-ratio/share belong to the joint bucket on that FACT row.
-Country share preserves nationwide PD before Vendor/org filters. Zero denominator
-returns null, not zero. Derive totals/marginals only from complete disjoint facts.
-This route has one detail-view reference; its real latency still needs Atlas
-validation. It supports neither history nor ranking/selection filters.
-
-For a scope outside that capability, use discovered explore-v3-query/rows:
-exact vendor-codes-json, selection-unit=VENDOR,
+Use discovered explore-v3-query/rows by default, preserving the existing CURRENT
+path: exact vendor-codes-json, time-basis=CURRENT, selection-unit=VENDOR,
 grain=VENDOR_CODE_SOURCE, ranking-metric=NONE, change-selection=ALL, top-n=0,
-selection/expansion filters empty unless requested. This returns Vendor SELECTION
-totals and joint FACT distribution in one logical query per Country. Read pages
-and coverage. Derive marginal distributions only from complete disjoint joint
-facts. Use documented denominators; legacy current-analysis and explore ratio semantics
-differ. CURRENT has no observed previous period unless separately queried.
+selection/expansion filters empty unless requested. Use the complete example in
+[explore-v3-query.eql](explore-v3-query.eql), with every scalar input explicit.
+SELECTION supplies Vendor totals; FACT supplies joint distributions. Read pages
+and coverage under [explore-v3.md](explore-v3.md). Derive marginals only from
+complete disjoint facts. Preserve the requested denominator and org filters.
+Existing explore-v2/older explore remain usable only within equivalent scopes;
+legacy current-analysis ratios and explore ratios have different semantics.
+CURRENT has no observed previous period unless separately queried.
+
+### Candidate current-v2 route
+
+Keep current-v2-query/rows available for explicit-set CURRENT counts, ratios and
+distributions, but do not switch ordinary requests to it solely because it is
+newer or described as one scan. Evaluate it as an explicitly selected candidate
+plan; promote it independently only after a same-scope live comparison. It
+supports neither history nor ranking/selection filters. Use
+[current-v2-query.eql](current-v2-query.eql): eight explicit inputs, nonempty
+numeric vendor-codes-json, three org filters, denominator-scope and source paging.
+Empty org strings mean unrestricted. COUNTRY_ALL, FILTERED_POPULATION and
+WITHIN_VENDOR must match the requested semantics, not just the denominator name.
+Start candidate pages at100 and adapt to actual bytes.
+
+CONTROL describes scope; VENDOR_COVERAGE carries MATCHED / NO_READABLE_ROWS /
+EXCLUDED_BY_ORG. Only FACT has measured counts. Vendor totals repeat on FACT:
+read one consistent value per Vendor, never sum repeated totals. Sum disjoint
+bucket counts to reconcile Vendor PD/Open. Ratio is bucket PD / scoped Vendor
+Open; share uses the declared returned denominator. Use vendor-past-due-ratio and
+vendor-past-due-share for Vendor percentages; past-due-ratio/share are bucket
+percentages. Country share preserves nationwide PD before Vendor/org filters.
+Zero denominator is null, not zero. Explore uses target-prefixed measurement
+fields; bind each route's declared fields instead of mixing their schemas.
 
 An explicit rank/filter changes those operations, not membership by accident.
 Keep candidate denominators before Top N. PO/Owner/contact modules remain on

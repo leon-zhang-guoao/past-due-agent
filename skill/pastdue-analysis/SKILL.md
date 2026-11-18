@@ -3,7 +3,7 @@ name: pastdue-analysis
 description: Analyze PastDue current data, snapshots, comparisons and trends through Atlas; generate requested reports with or without alerts, investigate one or several Vendors, and run daily monitoring, historical review or start test / 开始测试.
 ---
 
-# PastDue Analysis — 3.6.0
+# PastDue Analysis — 3.6.2
 
 ## 1. Resolve the analysis specification
 
@@ -41,23 +41,24 @@ plan from actual feedback. Presets are conveniences, not a closed scenario list.
 
 ## 2. Fetch and bind facts
 
-Read [result reader](references/result-reader.md) before the first retained read.
-For the active mode only, use the relevant [query playbook](references/atlas-query-playbook.md)
-section or [structured EQL example](references/structured-queries.eql). Consult
+Read [result reader](references/result-reader.md) for handle association, page
+progress and fact reuse. Choose one route's query example; use the
+[query playbook](references/atlas-query-playbook.md) only for that route's
+unresolved parameters or older-interface fallback. Consult
 [data contract](references/data-contract.md) for field/enum meaning, not as a
 requirement to load every schema at once. Discover live capabilities once per
 environment and reuse known schema. Missing capabilities are deployment gaps,
 not permission for silent legacy or positive-driver substitution.
 
-Automatic monitoring: monitor/history → pin Country/P/T → report-query/rows source request
-per Country/event. Finish reading and binding one Country before the next. Read
-the SAME result through Country Control, Vendor Metrics, then ETA/Check projections.
-Do not re-execute source SQL per Vendor to fix a result preview limit.
-Requested reports prefer discovered report-v2-query/rows for all-sign Top N or
-explicit Vendor sets, with source pagination and coverage. See report planning;
-reuse the old report interface where its selection semantics are equivalent.
-CURRENT explicit Vendor metrics/distributions prefer discovered current-v2-query/rows
-within its supported scope; report planning defines coverage and denominators.
+Automatic monitoring: monitor/history → pin Country/P/T → report-query/rows source
+request per Country/event, preserving its positive-only selection and existing
+serial report flow. Keep report-query for explicit POSITIVE_TOP_N (1..10) and
+SINGLE_VENDOR pair reports when equivalent, including nontrigger dates.
+Requested all-sign Top N, multiple-Vendor sets or explicit coverage requirements
+use discovered report-v2-query/rows. See report planning for semantic routing.
+Use existing explore for CURRENT by default. current-v2 and wide full-page reads
+remain candidate strategies requiring their own live comparison before default
+promotion; they are not prerequisites for an ordinary report.
 Interactive composition: prefer discovered explore-v3-query/rows for selection/expansion and
 per-date ranking; read [v3 contract](references/explore-v3.md). Keep selection and
 display filters independent, retain candidate denominators and distinguish empty
@@ -80,14 +81,11 @@ Source pages, retained pages and cells are separate completeness checks.
 Code/Source reconcile separately to Vendor PD; conditional us reconciles to Code=US.
 `required=false` is not failure. Server summary checks are not independent raw-bucket audit.
 
-Each logical request permits at most one evidence-based changed correction;
-never repeat identical rejected arguments. A fresh source execution is justified
-only for confirmed expiry or an explicitly diagnosed source issue, not as a way
-around selector/association errors. Prefer batch; permit finite targeted worklists
-when equivalent batch is unavailable. Review cost after six distinct source scopes,
-not an automatic stop. Bound open-ended expansion; avoid duplicate work and unchanged
-failures. See interactive-planning.md for equivalence and recovery. Presets attempt
-all applicable mandatory work. Keep failures local to the evidence they affect.
+For every mode, the reader tracks calls, rows/fields gained and remaining work;
+pagination and retained reads count toward cost. Continue finite requests while
+making progress; finish or disclose the exact local blocker when progress stops.
+Six distinct source scopes remains a planning review, not a completion cap.
+Use interactive-planning.md when the original plan needs semantic replanning.
 
 ## 4. Deliver the requested analysis
 
@@ -96,7 +94,10 @@ the only layout authority, and the applicable [diagnostic rules](references/eta-
 Do not run a report renderer. For EACH selected Vendor in returned rank order,
 deliver one ranking row with metrics, main Code changes (≤5 by |net|), main Source
 changes (≤5 by |net|), VENDOR_CHECK signed totals, or exact local failure. Do not
-omit those ETA cells, invent buckets, or award PASS/PASS.
+omit those ETA cells, invent buckets, or award PASS/PASS. Copy metrics, summaries
+and checks from the same bound Vendor identity; completion-contract.md defines
+the final count/identity check. Report every requested Country, including its
+precise local gaps, before ending the turn.
 Use verified Code=US Source in Country interpretation after ranking, not a default
 technical column/table. Do not infer Other constituents, PO migration or causality.
 Full six-column Code/Source tables are on-request only.

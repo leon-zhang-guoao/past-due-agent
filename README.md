@@ -1,4 +1,11 @@
-# PastDue Analysis Agent — 3.6.0
+# PastDue Analysis Agent — 3.6.2
+
+3.6.2 narrows the unpublished 3.6.1 proposal: keep original positive Top N and
+single-Vendor report paths, existing CURRENT explore routing and adaptive typed
+reads. Keep handle/identity checks and fact reuse. current-v2 preference and wide
+full-page reads remain candidates, pending independent same-scope live comparison.
+Graph3.6.0/revision8 is unchanged. Offline validation is not live acceptance.
+See [plan, update scope and live comparison](docs/STABLE_REPORT_ROLLOUT_3_6_2.md).
 
 Requested reports run independently of alert status. One/several Vendor questions
 retain the exact set, including improving and zero-PD Vendors. Graph3.6 adds
@@ -44,12 +51,14 @@ live use. No Atlas update is needed for this presentation patch.
 
 ## Delivery and validation
 
-Full package: `releases/pastdue-agent-v3.6.0.zip`; Skill package:
-`releases/pastdue-analysis-skill-v3.6.0.zip`. Packaging is local, not deployment.
+Full package: `releases/pastdue-agent-v3.6.2.zip`; Skill package:
+`releases/pastdue-analysis-skill-v3.6.2.zip`. Packaging is local, not deployment.
 Preserve approved graph/source IDs and credentials outside the repository.
 
-Deploy additive Atlas first, verify actual schema/JDBC/page behavior, then install
-the complete Prompt/Skill. Old equivalent paths remain usable when v3 is unavailable;
+For this 3.6.2 patch on graph3.6.0/revision8, update the Prompt and complete
+pastdue-analysis Skill only; do not republish the unchanged graph. If the live
+graph is older or differs, compare schema/revision first; do not overwrite it
+with a historical full package. Existing equivalent paths remain usable;
 do not silently substitute a different metric/population or truncated data.
 See [design and rollout](docs/COMPOSABLE_ANALYSIS_3_5.md),
 [API](docs/API_V3.md), [deployment](docs/DEPLOYMENT_V3.md) and

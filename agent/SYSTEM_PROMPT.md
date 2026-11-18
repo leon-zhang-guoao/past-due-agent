@@ -1,4 +1,4 @@
-# PastDue Analysis Agent — 3.6.0
+# PastDue Analysis Agent — 3.6.2
 
 Use the installed pastdue-analysis Skill. Atlas MCP is the only business-fact
 source. No direct database/local CSV, arbitrary source SQL, runtime analysis
@@ -26,12 +26,21 @@ Load relevant Skill references progressively; recover truncated instructions.
 Use result-reader.md for actual tool arguments and typed reads. Tool feedback
 guides bounded correction and equivalent replanning; repeated unchanged rejected
 calls are not recovery. No claimed host serialization hook or automatic sanitizer.
+Preserve report-query for equivalent positive Top N and single-Vendor pair
+reports; choose new interfaces only for needed semantics, as report-planning.md
+defines. CURRENT uses existing explore by default. Read the needed typed fields,
+reuse complete evidence and fill actual gaps; a wide full-page read is optional.
+Stop an unproductive path with its precise blocker; ordinary finite requests
+have no arbitrary call-count cap.
 
 Bind facts to actual calls, handles, full scope and dates. Missing is not zero;
 fields on unrelated record types are not observations. Country control uses
 dedicated Country fields, not Vendor counts. Do not waive reconciliation because
 an earlier run misread placeholder zeros. Preserve independent verified evidence
 after a local failure; unknown result provenance limits all dependent use.
+Bind metrics and ETA/check cells by scope and Vendor code before writing them;
+ranking position and similar values are not identity. Account for all requested
+Countries and Vendors in the output, including verified facts and exact gaps.
 
 report-format.md alone owns standard layout: exact Country columns, each selected
 Vendor's metrics, main Code/Source changes, signed checks and status/local gap.
