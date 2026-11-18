@@ -1,0 +1,100 @@
+{:contract {:contract/family "atlas-semantic" :contract/version "2.0.0"}
+ :workspace {:workspace/id "REPLACE-WITH-WORKSPACE-ID"}
+ :graph {:graph/id "REPLACE-WITH-GRAPH-ID"
+         :graph/label "Users and posts"
+         :graph/usage-guide {:guide/purpose "Explore users and their posts"
+                             :guide/asset-scope "User and post fixture entities with read resolvers"
+                             :guide/applicability "Illustrative fixture; verify identity assumptions before reuse"
+                             :guide/limitations ["No production acceptance evidence" "This minimal fixture does not register query examples"]
+                             :guide/composition "Reuse declared assets; exact dependencies and equivalence require review"
+                             :guide/examples []}
+         :graph/exposure :restricted
+         :graph/entities ["example.user" "example.post"]
+         :graph/resolvers ["user-by-id" "posts-for-user"]
+         :graph/operations []
+         :graph/dependencies []
+         :graph/terms []}
+ :vocabulary
+ {:entities
+  {"example.user" {:entity/label "User"
+                   :entity/description "A user identified by users.id."
+                   :entity/identity [:example.user/id]
+                   :entity/attributes [:example.user/id :example.user/name :example.user/posts]}
+   "example.post" {:entity/label "Post"
+                   :entity/description "A post identified by posts.id."
+                   :entity/identity [:example.post/id]
+                   :entity/attributes [:example.post/id :example.post/user_id :example.post/title]}}
+  :attributes
+  {:example.user/id {:attribute/label "User ID" :attribute/type :integer :attribute/nullable? false}
+   :example.user/name {:attribute/label "User name" :attribute/type :string :attribute/nullable? false}
+   :example.user/posts {:attribute/label "Posts" :attribute/type :ref :attribute/nullable? false
+                        :attribute/target "example.post" :attribute/cardinality :many}
+   :example.post/id {:attribute/label "Post ID" :attribute/type :integer :attribute/nullable? false}
+   :example.post/user_id {:attribute/label "Author user ID" :attribute/type :integer :attribute/nullable? false}
+   :example.post/title {:attribute/label "Title" :attribute/type :string :attribute/nullable? false}}
+  :terms {}
+  :units {}
+  :aliases [{:alias/from :example.post/user_id
+             :alias/to :example.user/id
+             :alias/direction :one-way
+             :alias/description "A post's user_id can satisfy the canonical user identity."}]
+  :equivalences []
+  :references []}
+ :execution
+ {:resolvers
+  {"user-by-id" {:label "User by ID"
+                 :description "Read one user from a known identity."
+                 :effect :read
+                 :input [:example.user/id]
+                 :output [:example.user/name]
+                 :result/cardinality :one}
+   "posts-for-user" {:label "Posts for user"
+                     :description "Read a bounded page of posts for a known user."
+                     :effect :read
+                     :input [:example.user/id]
+                     :output [{:example.user/posts [:example.post/id
+                                                    :example.post/user_id
+                                                    :example.post/title]}]
+                     :result/cardinality :many
+                     :pagination {:default 50 :max 500}
+                     :sort {:allowed [:example.post/id]
+                            :default [:example.post/id :asc]}}}
+  :operations {}
+  :sources {"user-store" {:source/kind "sql" :source/effects #{:read}}
+            "post-store" {:source/kind "sql" :source/effects #{:read}}}
+  :bindings
+  {"user-by-id-sql" {:binding/for [:resolver "user-by-id"]
+                     :binding/source "user-store"
+                     :binding/effect :read
+                     :binding/implementation {:query "SELECT name FROM users WHERE id = :id"}
+                     :binding/input-map {:example.user/id "id"}
+                     :binding/output-map {:example.user/name "name"}}
+   "posts-for-user-sql" {:binding/for [:resolver "posts-for-user"]
+                         :binding/source "post-store"
+                         :binding/effect :read
+                         :binding/implementation {:query "SELECT id, user_id, title FROM posts WHERE user_id = :user_id"}
+                         :binding/input-map {:example.user/id "user_id"}
+                         :binding/output-map {:example.user/posts "posts"
+                                              :example.post/id "id"
+                                              :example.post/user_id "user_id"
+                                              :example.post/title "title"}}}
+  :selection {[:resolver "user-by-id"] "user-by-id-sql"
+              [:resolver "posts-for-user"] "posts-for-user-sql"}}
+ :ownership
+ {:entities {"example.user" "REPLACE-WITH-GRAPH-ID"
+             "example.post" "REPLACE-WITH-GRAPH-ID"}
+  :resolvers {"user-by-id" "REPLACE-WITH-GRAPH-ID"
+              "posts-for-user" "REPLACE-WITH-GRAPH-ID"}
+  :operations {}
+  :terms {}}
+ :publication
+ {:release/version "1.0.0"
+  :source/revision 0
+  :required-capabilities #{:semantic/core-v1
+                           :graph/single-owner-v1
+                           :deployment/source-slot-v1
+                           :artifact/embedded-closure-v1
+                           :connector/sql
+                           :semantic/alias-v1
+                           :query/pagination-v1
+                           :query/sort-v1}}}

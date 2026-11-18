@@ -1,0 +1,41 @@
+;; open.atlas.runtime.graph —— 一台 instance 上 graph 的生命周期：制品架、serving
+;; 指针、五个命令。
+;;
+;; **本仓库第一个 `runtime` 根模块**（D1.8 的第五根，owner 裁定 2026-08-25）。它原本
+;; 叫 `server/control`，搬过来是因为 D1.13：studio 不是「建模的那个」，它是 Builder
+;; 加**一台内嵌的 runtime instance**，走的必须是与独立 Server **完全相同**的
+;; load/activate 命令边界。留在 `server` 下，studio 要用就得依赖 server（违反 D1.8）;
+;; 各写一份，就正好是 D1.8 在防的第二套语义。
+;;
+;; 依赖方向在 classpath 上可验证：这里只依赖 common，而 common 的每一份 deps.edn 里
+;; 都没有 runtime，`modules/studio/**` 与 `modules/server/**` 也一份都不在下面——
+;; 于是「两个 app 装的是同一份运行时」不是编码约定。
+;;
+;; **与 `studio/graph` 不是一回事**：那一个是**池里**图的登记与治理（菜谱、成员、
+;; 引用授权），这一个是图**在一台机器上**的生命周期。根名是它们的区分。
+;;
+;; **没有 ring/jetty**：D3.16 说「判定是纯函数，传输是壳」。壳在 `server/http`
+;; （独立部署那一份）。写成一个模块，那句话就只是注释；拆开之后它是 classpath 事实
+;; ——谁也没法在核心里偷偷起个端点，核心的测试也永远不用起进程。
+;;
+;; 模块内部只有 `impl/store.clj` 碰 IO（同池、同 artifact 的分工）：命令是纯的,
+;; 吃一组注入的读函数、产出「要落哪些字节」的描述。
+{:paths ["src"]
+ :deps  {org.clojure/clojure          {:mvn/version "1.12.0"}
+         ;; 信封形状与两个签名的输入——**与调用方共用那一份**（D1.12 同则）。
+         open.atlas/control-protocol  {:local/root "../../common/control-protocol"}
+         ;; 制品的读写、digest、以及引用图的可达性（D1.12）。runtime 不认识
+         ;; studio 的 resolve-closure，闭包按 content.edn 的引用链自己走。
+         open.atlas/artifact          {:local/root "../../common/artifact"}
+         open.atlas/dialect           {:local/root "../../common/dialect"}
+         ;; 整台 instance 的租约、poisoned、原子写与锁注册。token 台账写在同一个
+         ;; root 下，所以这些必须是**同一份**（③-1）。
+         open.atlas/runtime-store     {:local/root "../store"}
+         ;; 生命周期动作要在审计流水里看得见——**引用而不复制**：权威记录仍是本
+         ;; 模块自己的链式 event，obs 那条只带 event-id 指过去（8.10 P6 裁定 a）。
+         open.atlas/runtime-obs       {:local/root "../obs"}}
+ :aliases
+ {:test {:extra-paths ["test"]
+         :extra-deps  {io.github.cognitect-labs/test-runner
+                       {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
+         :main-opts   ["-m" "cognitect.test-runner"]}}}

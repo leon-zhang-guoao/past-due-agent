@@ -1,0 +1,49 @@
+name: open-atlas-builder
+services:
+  builder:
+    image: ${BUILDER_IMAGE:-open-atlas-builder:local}
+    platform: linux/amd64
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      args:
+        VERSION: ${BUILDER_VERSION:-dev}
+        REVISION: ${BUILDER_REVISION:-unknown}
+    init: true
+    restart: unless-stopped
+    logging:
+      driver: local
+      options:
+        max-size: "50m"
+        max-file: "3"
+        compress: "true"
+    stop_grace_period: 60s
+    ports:
+      - "${BIND_IP:-127.0.0.1}:9631:9631"
+      - "${BIND_IP:-127.0.0.1}:9632:9632"
+    volumes:
+      - builder-data:/data/studio
+  # Optional TLS-terminating proxy. STUDIO_TLS=internal (default) uses Caddy's own CA;
+  # STUDIO_TLS=<your e-mail> gets a Let's Encrypt certificate for a public STUDIO_DOMAIN:
+  #   STUDIO_DOMAIN=studio.example.com docker compose --profile proxy up -d
+  # Builder → https://STUDIO_DOMAIN, data plane → https://STUDIO_DOMAIN:9443.
+  proxy:
+    image: caddy:2
+    profiles: [proxy]
+    restart: unless-stopped
+    depends_on: [builder]
+    environment:
+      STUDIO_DOMAIN: ${STUDIO_DOMAIN:-localhost}
+      STUDIO_TLS: ${STUDIO_TLS:-internal}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "9443:9443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+volumes:
+  caddy-data:
+    name: ${BUILDER_VOLUME:-open-atlas-builder-data}-caddy
+  builder-data:
+    name: ${BUILDER_VOLUME:-open-atlas-builder-data}

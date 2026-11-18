@@ -1,0 +1,33 @@
+;; open.atlas.common.control-protocol —— 控制面协议的**两侧共用**部分。
+;;
+;; **为什么在 common 而不是 server**：studio 要构造并签名同一份信封，server 要
+;; 校验它，而 D1.8 禁止 studio 依赖 server。协议若只住 server，studio 只能再写
+;; 一份——两份信封形状或两份签名输入分家的那天，症状是「签名验不过」，而没有人
+;; 会想到去查是不是有两套定义。归属判据是 D1.8 自己那句：「凡是 studio 与 server
+;; 必须表现一致的行为，实现就属于 common」（同 D1.12 对引用图的裁定）。
+;;
+;; 密码学原语（hex / SHA-256 / HMAC / 恒时比较）在 `common/crypto`，本模块只定义
+;; **签什么**。
+;;
+;; **本模块不认识制品架、不认识池、不碰 IO、也不认识 HTTP**：它只回答「一份合法
+;; 的控制信封长什么样」与「签名算在哪串字节上」。命令的判定在 runtime/graph，
+;; 编排在 studio/deploy，传输在 server/http。
+{:paths ["src"]
+ :deps  {org.clojure/clojure {:mvn/version "1.12.0"}
+         ;; 规范 EDN 是**签名输入**的定义（D3.16）：两侧必须算出同一串字节，
+         ;; 所以复用 B0 那一个 writer（dialect/canonical-str），不自己钉一遍
+         ;; print var。HMAC 用 JDK 自带的 javax.crypto，不引依赖。
+         open.atlas/dialect  {:local/root "../dialect"}
+         ;; hex / SHA-256 / HMAC / **恒时比较**。此前是 impl.signature 的私有函数,
+         ;; 抽出去是因为数据面 token 的 keyed digest（S5.9）要的是同一套——
+         ;; 两份恒时比较，改一处忘另一处那天只会有一处悄悄退回短路比较。
+         open.atlas/crypto   {:local/root "../crypto"}
+         ;; `:stage` 的 `:files` 键集合必须**严格等于**制品的三份文件，而
+         ;; 「哪三份、什么顺序」是 artifact-v1 定死的（`artifact/artifact-files`）。
+         ;; 在这里硬写一遍就是第二份定义——digest 正是按那个顺序算的（D4.3）。
+         open.atlas/artifact {:local/root "../artifact"}}
+ :aliases
+ {:test {:extra-paths ["test"]
+         :extra-deps  {io.github.cognitect-labs/test-runner
+                       {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
+         :main-opts   ["-m" "cognitect.test-runner"]}}}

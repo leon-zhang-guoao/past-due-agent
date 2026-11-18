@@ -1,0 +1,9 @@
+;; The graphs a Studio seeded from this model starts with (doc 104 §8.17.6,
+;; OQ-STUDIO-SEED). One graph over the whole DVD store: it is the example a
+;; person meets first, and splitting it would make the first screen an exercise
+;; in navigation rather than a business.
+;;
+;; `:package-name` is the RELEASE name its cut versions are sealed under
+;; (doc 104 §8.17.7 D) — the qualified name is `<login workspace>/dvd`, which on
+;; a personal workspace is an email address and cannot be a package name.
+[{:name "dvd" :selectors ["dvd.*"] :package-name "open-atlas/dvd"}]

@@ -1,0 +1,22 @@
+;; 制品：`content.edn` v1 信封、`encode_content` / `seal_graph` 两个纯函数、
+;; 三种身份（graph 版本身份 / content-hash / artifact-digest，D4.3）与 artifact reader。
+;;
+;; **不依赖 engine**：制品是模型内容契约，与执行无关（D4.6——artifact reader
+;; 不解析模型内容，只拆信封，`:objects` 原样交给同一个方言 reader）。
+;; 「经 encode → seal → 装载后编译的 env 与直接编译的 env 等价」那条
+;; 编码 conformance（D4.10）因此放在 modules/integration，那里才允许同时
+;; 见到 artifact 与 engine。
+{:paths ["src"]
+ :deps  {org.clojure/clojure {:mvn/version "1.11.4"}
+         open.atlas/dialect  {:local/root "../dialect"}
+         open.atlas/connector-spi {:local/root "../connector-spi"}
+         ;; 档位（`:up-to`）随 owner 裁定 2026-08-27 整套退役，security 模块
+         ;; 一并删除——制品不再声称任何上限。
+         }
+ :aliases
+ ;; fixtures/b1 进 :test classpath（与 engine/connector-sql 同一份 fixture）：
+ ;; 黄金向量密封的是它——一个过 B0 零 findings 的真模型，不是为测试造的玩具。
+ {:test {:extra-paths ["test" "fixtures" "../../../fixtures/b1" "../dialect/fixtures"]
+         :extra-deps  {io.github.cognitect-labs/test-runner
+                       {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
+         :main-opts   ["-m" "cognitect.test-runner"]}}}

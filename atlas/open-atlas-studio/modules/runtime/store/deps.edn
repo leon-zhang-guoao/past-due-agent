@@ -1,0 +1,26 @@
+;; open.atlas.runtime.store —— 一台 instance 的**共享持久化底座**。
+;;
+;; 一个 instance 由一个 root 目录定义，而那个 root 上**只有一把租约**
+;; （`control.lock`，`FileChannel/tryLock`，终身持有）。graph 生命周期与 token
+;; 台账都写在同一个 root 下，所以租约、poisoned 状态、原子写原语与子系统锁
+;; 必须是**同一份**：
+;;
+;;   - 各开一次 `control.lock`：第二次 tryLock 在同进程内会拿到同一把锁而不是
+;;     被拒（JVM 的 FileLock 是**按进程**的），于是「单写进程」这条保证在最需要
+;;     它的那一刻悄悄失效；
+;;   - 各写一份原子落盘：D4.12 的「原子移动不可用即拒绝」要在两处各判一次,
+;;     漏一处就是一台机器悄悄没有了原子性；
+;;   - 各有一份 poisoned：一个子系统写失败停了写，另一个照写不误。
+;;
+;; 所以 `runtime/graph` 与 `runtime/token` 拿的是**同一个已打开的 instance**
+;; （owner 裁定 2026-08-25，③-1）。本模块不认识 graph、不认识 token、不认识
+;; 制品与信封——它只管「这台机器的盘」。
+{:paths ["src"]
+ :deps  {org.clojure/clojure {:mvn/version "1.12.0"}
+         ;; 规范 EDN 是落盘形式：同一份内容任何时候写出来逐字节相同（D2.12）。
+         open.atlas/dialect  {:local/root "../../common/dialect"}}
+ :aliases
+ {:test {:extra-paths ["test"]
+         :extra-deps  {io.github.cognitect-labs/test-runner
+                       {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
+         :main-opts   ["-m" "cognitect.test-runner"]}}}

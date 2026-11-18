@@ -1,0 +1,33 @@
+;; open.atlas.studio.version —— B5b：闭包解析、切版本体检、差异报告、密封。
+;;
+;; **为什么与 graph 分开**：graph 回答「这些对象构成哪张图」（投影，纯函数）；
+;; 本模块回答「这张图**切得出版本吗**，切出来长什么样」——体检、差异、密封。
+;; 前者的契约是 scope-projection-v1，后者的是 D2.11 + E6.2 + artifact-v1，
+;; 混在一起会让两份契约的边界看不出来（与 graph/pool 分家同则）。
+;;
+;; **密封不自己写**：`encode_content` 与 `seal_graph` 是 B3 已交付的两个纯函数
+;; （[D4.10-a](../../../docs/design/40-artifacts.md#d410-a-编码与密封是两个纯函数b3-与-b5-共用)
+;; 明说「B3 与 B5 共用」）。本模块调它们，**一行序列化都不重写**——重写等于给
+;; content-hash 造第二个来源，而它是制品身份本身。
+{:paths ["src"]
+ :deps  {org.clojure/clojure   {:mvn/version "1.12.0"}
+         open.atlas/dialect    {:local/root "../../common/dialect"}
+         open.atlas/artifact   {:local/root "../../common/artifact"}
+         ;; E1 / D5.14：切版本体检要核对 `:row-security` 声明与 resolver 语句的
+         ;; 接线，「这条语句绑了哪些名字」只有连接器答得出——问的是 SPI 的
+         ;; `bound-attributes` 分派点，不是某个具体连接器。studio → common 是
+         ;; 允许方向（D1.8）；具体连接器由**宿主**决定 require（见 connector-sql
+         ;; 的 ns docstring），本模块不依赖任何一个，未注册的 type 由缺省方法
+         ;; 返回 nil，体检据此产出 `:rowsec.wiring/unverifiable`。
+         open.atlas/connector-spi {:local/root "../../common/connector-spi"}
+         open.atlas/pool       {:local/root "../pool"}
+         open.atlas/studio-graph {:local/root "../graph"}}
+ :aliases
+ {:test {:extra-paths ["test" "../../../fixtures/demo"]
+         ;; connector-sql 只在**测试**里：E1 的接线核对要有一个真的连接器
+         ;; 注册了 `bound-attributes`，否则每张图都只能得到 no-connector。
+         ;; 生产里由 app 层 require（apps/studio 已经 require 了它）。
+         :extra-deps  {open.atlas/connector-sql {:local/root "../../common/connector-sql"}
+                       io.github.cognitect-labs/test-runner
+                       {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
+         :main-opts   ["-m" "cognitect.test-runner"]}}}

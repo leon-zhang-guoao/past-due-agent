@@ -1,0 +1,24 @@
+;; open.atlas.common.oidc —— 企业 SSO 的**协议实现**，全系统只此一份（doc 8.16.5）。
+;;
+;; **为什么在 common**：studio 与 server 都是同一个 IdP 的 relying party，
+;; discovery、PKCE、state/nonce 一次性事务、换码、id_token 校验、claim 映射、
+;; 域白名单这些判定在两处**逐字节相同**——CLAUDE.md 点名的「redact 出现过两份」
+;; 那类事故，在这里的后果是某一处的 `aud` 校验悄悄退化。
+;;
+;; **不下沉的是身份存储**：studio 在 Datahike、server 在 SQLite，各自留在 app 内。
+;; 本模块只负责「从浏览器回调到一个已验证的 (issuer, subject, claims)」，
+;; 以及 §8.16.4 第 4 条那张链接/开户判定表（`resolve-identity`，纯函数）。
+;;
+;; **不引第三方 JOSE 库**（8.16.5）：RS256/ES256 用 java.security 就够，
+;; 少一个依赖就少一处供应链面。JSON 用 cheshire，HTTP 用 JDK java.net.http。
+{:paths ["src"]
+ :deps  {org.clojure/clojure {:mvn/version "1.12.0"}
+         cheshire/cheshire   {:mvn/version "5.13.0"}
+         ;; 恒时比较（state 查表之外的比对）与 hex；同 control-protocol / token 的
+         ;; 那一份原语，不另写。
+         open.atlas/crypto   {:local/root "../crypto"}}
+ :aliases
+ {:test {:extra-paths ["test"]
+         :extra-deps  {io.github.cognitect-labs/test-runner
+                       {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
+         :main-opts   ["-m" "cognitect.test-runner"]}}}

@@ -1,0 +1,25 @@
+;; open.atlas.server.http —— 控制面的**传输壳**（D3.16：判定是纯函数，传输是壳）。
+;;
+;; 本模块只做四件事：读原始 body（带上限）、验 service 请求签名、把信封交给
+;; `runtime/graph` 的判定、把应答写成规范 EDN。**一条业务判断都不在这里**——
+;; 它连信封长什么样都不认识，那是 common/control-protocol 的事。
+;;
+;; 「核心不依赖传输」因此是 classpath 事实：ring/jetty 只出现在这一份 deps.edn 里,
+;; `runtime/graph` 那边一个都没有，它的测试也永远不用起进程。
+{:paths ["src"]
+ :deps  {org.clojure/clojure   {:mvn/version "1.12.0"}
+         open.atlas/runtime-store   {:local/root "../../runtime/store"}
+         open.atlas/runtime-graph   {:local/root "../../runtime/graph"}
+         open.atlas/control-protocol {:local/root "../../common/control-protocol"}
+         open.atlas/dialect          {:local/root "../../common/dialect"}
+
+         ;; HTTP 栈与 CVE 钉法**在 server/http-stack**：数据面壳跑在同一棵
+         ;; Jetty 树上，把那几个扛 CVE 的版本号抄两份，迟早一处被改一处不动。
+         open.atlas/http-stack   {:local/root "../http-stack"}}
+         ;; **没有 cheshire**：控制协议走规范 EDN（D3.16）——信封携带期望 digest,
+         ;; 在那条路径上引入第二套序列化就多一处规范化差异可以藏东西。
+ :aliases
+ {:test {:extra-paths ["test"]
+         :extra-deps  {io.github.cognitect-labs/test-runner
+                       {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
+         :main-opts   ["-m" "cognitect.test-runner"]}}}

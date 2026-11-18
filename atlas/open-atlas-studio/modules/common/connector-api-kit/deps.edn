@@ -1,0 +1,20 @@
+;; api connector onboarding kit: fixture recorder, replay stub, conformance
+;; generator. It is a TOOL for the api connector, so it depends on the
+;; connector and the SPI and nothing upstairs — a kit that reached into
+;; runtime/studio/server would stop being usable from a source repo that only
+;; holds a graph (D1.8: common may not depend on the other three roots).
+{:paths ["src"]
+ :deps  {org.clojure/clojure       {:mvn/version "1.11.4"}
+         open.atlas/connector-api  {:local/root "../connector-api"}
+         open.atlas/connector-spi  {:local/root "../connector-spi"}
+         open.atlas/dialect        {:local/root "../dialect"}
+         clj-http/clj-http         {:mvn/version "3.12.3"}
+         cheshire/cheshire         {:mvn/version "5.13.0"}}
+ :aliases
+ {:test {:extra-paths ["test" "fixtures"]
+         :extra-deps  {io.github.cognitect-labs/test-runner
+                       {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
+         :main-opts   ["-m" "cognitect.test-runner"]}
+  ;; The CLI face: record / verify / redaction-check.
+  :kit  {:extra-paths ["fixtures"]
+         :main-opts   ["-m" "open.atlas.common.connector.api-kit"]}}}

@@ -1,0 +1,25 @@
+;; open.atlas.common.mcp-transport —— MCP 的**线**，两个端点共用的那一半
+;; （[8.4 P1a](../../../docs/design/84-builder-mcp.md)）。
+;;
+;; 这个仓库里有两个说 MCP 的端点：数据面的（`server/mcp`，graph token，八个读
+;; 工具）与 Builder 的（workspace token，建模 registry）。它们**相同**的那一半
+;; 全是协议——JSON-RPC 信封、版本协商、批量、两代传输、SSE 会话簿记；**不同**
+;; 的那一半全是判定。
+;;
+;; 判定各归各家，协议只能有一份：第二份会在下一次 spec 修订那天开始漂移，而
+;; 漂移要等到客户端撞上没更新的那一个才看得见。server 与 studio 不得互相依赖
+;; （D1.8），所以共用的那一半只能住 common——与 `common/toolkit` 同一条理由。
+;;
+;; **依赖面刻意小**：cheshire（JSON 信封）与 compojure（四条路由）。没有 ring
+;; 适配器——流式响应体的形状属于宿主的 HTTP 适配器，由 `:sse-writer` 注入；也
+;; 没有任何 token / graph / workspace 模块，那些是判定，从注入的函数进来。
+;; 这份 deps 短，是本模块「不认识业务」这句话的构建期证据。
+{:paths ["src"]
+ :deps  {org.clojure/clojure {:mvn/version "1.12.0"}
+         cheshire/cheshire   {:mvn/version "5.13.0"}
+         compojure/compojure {:mvn/version "1.7.2"}}
+ :aliases
+ {:test {:extra-paths ["test"]
+         :extra-deps  {io.github.cognitect-labs/test-runner
+                       {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
+         :main-opts   ["-m" "cognitect.test-runner"]}}}

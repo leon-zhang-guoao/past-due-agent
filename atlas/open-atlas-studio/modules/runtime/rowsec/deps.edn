@@ -1,0 +1,20 @@
+;; open.atlas.runtime.rowsec —— S5.7 的行级安全门禁，逐 instance。
+;;
+;; D5.6 把行级安全延后了，而**延后期间的默认是禁止发牌，不是确认后放行**。
+;; 一个声明了 `:row-security` 却没有执法者的 graph，一旦被激活或被发牌,
+;; 放出去的是**全部租户的全部行**——作者写下那个键这个动作本身就是风险声明。
+;;
+;; 本模块只做两件事：**判**（这一版能不能过门）与**记**（豁免台账）。闭包事实
+;; 由装配方注入（`runtime/graph` 的 `closure-facts`），所以它不认识制品架、
+;; 也不解析限定名。
+{:paths ["src"]
+ :deps  {org.clojure/clojure      {:mvn/version "1.12.0"}
+         open.atlas/runtime-store {:local/root "../store"}
+         ;; 豁免的身份要算 hash（绑 instance/版本/内容/体检清单）。
+         open.atlas/crypto        {:local/root "../../common/crypto"}
+         open.atlas/dialect       {:local/root "../../common/dialect"}}
+ :aliases
+ {:test {:extra-paths ["test"]
+         :extra-deps  {io.github.cognitect-labs/test-runner
+                       {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
+         :main-opts   ["-m" "cognitect.test-runner"]}}}

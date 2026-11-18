@@ -1,0 +1,22 @@
+;; open.atlas.runtime.retention —— R3.5 的**完整**回收判定，逐 instance。
+;;
+;; 它是一个**聚合器**：四样输入分属四个子系统，谁都不该单独成为回收系统的 owner
+;; （owner 裁定 2026-08-25，③-3：不得让 runtime/token 反向去读制品架）。
+;;
+;;   本机架上的制品与它们的引用清单   ← runtime/graph
+;;   serving 指针                     ← runtime/graph
+;;   active、未过期的钉版本 grants     ← runtime/token
+;;   env / 缓存保留                   ← runtime/env
+;;
+;; 四样都以**注入的读**进来，所以本模块不依赖那三个子系统中的任何一个——
+;; 它可以单独被测，装配点负责把线接上。
+;;
+;; **推导，不累加**（R3.5）：一个会漂移的计数器在 remove-grant、revoke、过期、
+;; 制品作废任意一条路径上都可能漏减，而漏了没人知道。
+{:paths ["src"]
+ :deps  {org.clojure/clojure {:mvn/version "1.12.0"}}
+ :aliases
+ {:test {:extra-paths ["test"]
+         :extra-deps  {io.github.cognitect-labs/test-runner
+                       {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
+         :main-opts   ["-m" "cognitect.test-runner"]}}}

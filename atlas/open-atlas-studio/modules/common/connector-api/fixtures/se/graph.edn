@@ -1,0 +1,206 @@
+{:attributes
+ {:vendor.schneider.product/changes
+  {:label "自某日期起 Schneider 目录的增改删"
+   :target "vendor.schneider.product"}
+  :vendor.schneider.product/index
+  {:label "Schneider 目录全集（仅商用编号）"
+   :target "vendor.schneider.product"}
+  :vendor.schneider.product/brand
+  {:description "Schneider sub-brand the product is sold under (e.g. APC, Square D)."
+   :label "Brand"
+   :type :string}
+  :vendor.schneider.product/change_type
+  {:description "How this reference changed since the queried date. Only present on the changes navigation."
+   :label "Delta change type"
+   :type :string
+   :values {"DELETE" {:label "Withdrawn from the catalog"}
+            "NEW" {:label "Added to the catalog"}
+            "UPDATE" {:label "Existing reference changed"}}}
+  :vendor.schneider.product/commercial_status
+  {:description "Lifecycle status at Schneider (e.g. \"Commercialised\") — whether the vendor still sells this reference."
+   :label "Commercial status"
+   :type :string}
+  :vendor.schneider.product/customs_number
+  {:description "HS/customs tariff code declared by the manufacturer."
+   :format :code
+   :label "Customs tariff number"
+   :type :string}
+  :vendor.schneider.product/detail_raw
+  {:description "The entire product object as Schneider returned it (~8 KB, 12 sections). An escape hatch for fields this graph does not model; expensive to read."
+   :label "Full vendor payload"
+   :type :json}
+  :vendor.schneider.product/documents
+  {:description "The vendor's mimeInfos array — catalogs, datasheets, environmental disclosures, images. Each entry carries the type, the source URLs, a file name and a publication date."
+   :label "Documents & media"
+   :type :json}
+  :vendor.schneider.product/etim_class
+  {:description "ETIM classification code (e.g. \"EC000213\")."
+   :format :code
+   :label "ETIM class"
+   :type :string}
+  :vendor.schneider.product/etim_class_name
+  {:description "Human-readable ETIM class (e.g. \"Mounting plate for distribution board\")."
+   :label "ETIM class name"
+   :type :string}
+  :vendor.schneider.product/gtin
+  {:description "Global Trade Item Number (barcode) of the base product."
+   :format :code
+   :label "GTIN"
+   :type :string}
+  :vendor.schneider.product/list_price
+  {:description "Schneider's published net list price for the lowest quantity break. This is the VENDOR's list price, not our cost and not our sell price."
+   :format :currency
+   :label "Vendor list price"
+   :type :decimal}
+  :vendor.schneider.product/long_desc
+  {:description "Full marketing/technical description (English, plain text)."
+   :label "Long description"
+   :type :string}
+  :vendor.schneider.product/pack_weight
+  {:description "Weight of the base packing unit, as the vendor formats it — a string carrying both units, e.g. \"17.637 lb(US) (8.000 kg)\". Parse before doing arithmetic."
+   :label "Packing unit weight"
+   :type :string}
+  :vendor.schneider.product/price_currency
+  {:description "ISO currency of the list price (USD for the TD SYNNEX US pairing)."
+   :format :code
+   :label "Price currency"
+   :type :string}
+  :vendor.schneider.product/price_type
+  {:description "Which price this is, in Schneider's terms — e.g. \"Net_list\"."
+   :label "Price type"
+   :type :string}
+  :vendor.schneider.product/product_reference
+  {:description "Schneider's commercial reference — their manufacturer part number (e.g. \"NSYMM86\"). The identifier for every call in this domain; the vendor spells it commercialReference, productReference or manufacturerPID depending on the endpoint."
+   :format :id
+   :identity? true
+   :label "Commercial reference"
+   :type :string}
+  :vendor.schneider.product/reach_status
+  {:description "REACH (EU chemical regulation) declaration text."
+   :label "REACH status"
+   :type :string}
+  :vendor.schneider.product/rohs_status
+  {:description "RoHS EU compliance status (e.g. \"Compliant\")."
+   :label "RoHS status"
+   :type :string}
+  :vendor.schneider.product/short_desc
+  {:description "One-line product description as published by Schneider (English)."
+   :label "Short description"
+   :type :string}
+  :vendor.schneider.product/unspsc
+  {:description "UNSPSC classification, version 23."
+   :format :code
+   :label "UNSPSC code"
+   :type :string}}
+ :namespaces
+ {"vendor.schneider.product"
+  {:description "A product as Schneider Electric publishes it to TD SYNNEX US in their Product Catalog V2 API — vendor master data, NOT our own catalog. Authoritative for what Schneider sells and how they describe it; says nothing about our SKUs, cost or stock."
+   :kind :master
+   :label "Schneider Electric catalog product"
+   :synonyms ["施耐德产品" "Schneider product"]}}
+ :resolvers
+ [{:description "Look up Schneider products by commercial reference and return the vendor's own master data. Batched: the vendor accepts a comma-separated reference list and answers one entry per reference, so N lookups collapse into one call per chunk."
+   :id "se_product_detail"
+   :input [:vendor.schneider.product/product_reference]
+   :label "Schneider product detail"
+   :output [:vendor.schneider.product/gtin
+            :vendor.schneider.product/short_desc
+            :vendor.schneider.product/long_desc
+            :vendor.schneider.product/brand
+            :vendor.schneider.product/etim_class
+            :vendor.schneider.product/etim_class_name
+            :vendor.schneider.product/unspsc
+            :vendor.schneider.product/commercial_status
+            :vendor.schneider.product/list_price
+            :vendor.schneider.product/price_currency
+            :vendor.schneider.product/price_type
+            :vendor.schneider.product/customs_number
+            :vendor.schneider.product/pack_weight
+            :vendor.schneider.product/reach_status
+            :vendor.schneider.product/rohs_status
+            :vendor.schneider.product/documents
+            :vendor.schneider.product/detail_raw]
+   :result_type "single"
+   :source
+   {:batch {:child-fk "identifiers.manufacturerPID"
+            :chunk-size 25
+            :parent-key :vendor.schneider.product/product_reference
+            :placeholder "refs"
+            :separator ","}
+    :data_path "$.products"
+    :endpoint "/v2/reference-data/product/product-catalog/products?supplierid=Schneider_US&supplierid-type=specific&customerid=TDSYNNEX_US&customerid-type=specific&product-reference={refs}"
+    :field_mapping {:vendor.schneider.product/brand "manufacturer.brand"
+                    :vendor.schneider.product/commercial_status "status.commercialStatus.0.value"
+                    :vendor.schneider.product/customs_number "logistics.customsTariff.0.customsNumber"
+                    :vendor.schneider.product/detail_raw "$[*]"
+                    :vendor.schneider.product/documents "mimeInfos"
+                    :vendor.schneider.product/etim_class "etim.0.class"
+                    :vendor.schneider.product/etim_class_name "etim.0.className.0.value"
+                    :vendor.schneider.product/gtin "identifiers.gtin"
+                    :vendor.schneider.product/list_price "pricing.pricesDetails.0.price.0.amount"
+                    :vendor.schneider.product/long_desc "descriptions.0.long"
+                    :vendor.schneider.product/pack_weight "logistics.packingUnits.0.weight"
+                    :vendor.schneider.product/price_currency "pricing.pricesDetails.0.price.0.currency"
+                    :vendor.schneider.product/price_type "pricing.pricesDetails.0.price.0.type"
+                    :vendor.schneider.product/reach_status "sustainability.0.reachRegulation"
+                    :vendor.schneider.product/rohs_status "sustainability.0.rohsEurStatus"
+                    :vendor.schneider.product/short_desc "descriptions.0.short"
+                    :vendor.schneider.product/unspsc "unspsc.0.unspscClassificationV23"}
+    :method "GET"
+    :type "api"}
+   :source-ref "se-partner-api"}
+  {:description "Every commercial reference Schneider publishes to TD SYNNEX US — reference numbers only, no descriptions or prices. The upstream answers the whole catalog in one unpaginated response; ask for it once, not in a loop."
+   :id "se_product_index"
+   :input []
+   :label "Schneider catalog index"
+   :limit {:default 500 :max 5000}
+   :output [{:vendor.schneider.product/index [:vendor.schneider.product/product_reference]}]
+   :result_type "list"
+   :source
+   {:data_path "$.products"
+    :endpoint "/v2/reference-data/product/product-catalog/products?supplierid=Schneider_US&supplierid-type=specific&customerid=TDSYNNEX_US&customerid-type=specific"
+    :field_mapping {:vendor.schneider.product/product_reference "identifiers.commercialReference"}
+    :method "GET"
+    :type "api"}
+   :source-ref "se-partner-api"}
+  {:description "What Schneider added, changed or withdrew in their catalog since a given date — reference, GTIN and change type. Volume grows with how far back the date reaches."
+   :eql-params {:since {:description "Start date, YYYY-MM-DD. Changes are returned from this date forward; the further back it reaches the larger the answer."
+                        :field "date-of-reference"
+                        :param_location "query"
+                        :type :date}}
+   :id "se_product_delta"
+   :input []
+   :label "Schneider catalog changes since a date"
+   :limit {:default 500 :max 5000}
+   :output [{:vendor.schneider.product/changes [:vendor.schneider.product/product_reference
+                                                :vendor.schneider.product/gtin
+                                                :vendor.schneider.product/change_type]}]
+   :result_type "list"
+   :source
+   {:data_path "$.products"
+    :endpoint "/v2/reference-data/product/product-catalog/products?supplierid=Schneider_US&supplierid-type=specific&customerid=TDSYNNEX_US&customerid-type=specific"
+    :field_mapping {:vendor.schneider.product/change_type "delta"
+                    :vendor.schneider.product/gtin "identifiers.gtin"
+                    :vendor.schneider.product/product_reference "identifiers.productReference"}
+    :method "GET"
+    :type "api"}
+   :source-ref "se-partner-api"}]
+ :sources
+ {"se-partner-api"
+  {:auth {:client_auth "basic"
+          :client_id "${SE_CLIENT_ID}"
+          :client_secret "${SE_CLIENT_SECRET}"
+          :expiry_skew_s 120
+          :grant_type "client_credentials"
+          :timeout_ms 15000
+          :token_url "https://api.se.com/token"
+          :type "oauth2"}
+   :base_url "https://api.se.com"
+   :description "Schneider Electric Partner APIs — product catalog (V2), delta feed and digital assets (V1). OAuth2 client_credentials."
+   :headers {"Accept" "application/json"
+             "appID" "TD SYNNEX US"}
+   :health_endpoint "https://api.se.com/v2/reference-data/product/product-catalog/products?supplierid=Schneider_US&supplierid-type=specific&customerid=TDSYNNEX_US&customerid-type=specific&product-reference=NSYMM86"
+   :label "Schneider Electric Partner API"
+   :resilience {:timeout_ms 120000}
+   :type "api"}}
+ :units {}}

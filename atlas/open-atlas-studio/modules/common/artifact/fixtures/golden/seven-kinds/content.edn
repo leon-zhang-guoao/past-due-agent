@@ -1,0 +1,155 @@
+{:artifact/format-version 1
+ :objects {:attributes {:cis.master.part/all_parts {:label "SKU 目录全集" :target "cis.master.part"}
+                        :cis.master.part/ave_cost {:description "Average unit cost."
+                                                   :format :currency
+                                                   :label "Average Cost"
+                                                   :type :decimal
+                                                   :unit "currency.usd"}
+                        :cis.master.part/part_no {:description "Manufacturer part number."
+                                                  :format :id
+                                                  :label "Part No"
+                                                  :type :string}
+                        :cis.master.part/prod_code {:description "Product code."
+                                                    :format :code
+                                                    :label "Product Code"
+                                                    :type :string
+                                                    :values {"A" {:label "Assembly"}
+                                                             "R" {:label "Raw"}}}
+                        :cis.master.part/short_desc {:description "Short description."
+                                                     :format :text
+                                                     :label "Description"
+                                                     :type :string}
+                        :cis.master.part/sku_no {:description "Unique SKU number."
+                                                 :format :id
+                                                 :identity? true
+                                                 :label "SKU No"
+                                                 :type :integer}
+                        :cis.master.part/vend_no {:description "Vendor number that supplies this part."
+                                                  :format :id
+                                                  :label "Vendor No"
+                                                  :type :integer}
+                        :cis.master.vendor/contact_email {:description "Primary contact email."
+                                                          :format :text
+                                                          :label "Contact Email"
+                                                          :type :string}
+                        :cis.master.vendor/discontinued {:description "Whether the vendor is discontinued."
+                                                         :format :code
+                                                         :label "Discontinued"
+                                                         :type :string
+                                                         :values {"N" {:label "在用"}
+                                                                  "Y" {:label "已停用"}}}
+                        :cis.master.vendor/entry_by {:description "Who created the record."
+                                                     :format :text
+                                                     :label "Entry By"
+                                                     :type :string}
+                        :cis.master.vendor/entry_date {:description "When the record was created."
+                                                       :format :date
+                                                       :label "Entry Date"
+                                                       :type :date}
+                        :cis.master.vendor/parts {:cardinality :one-to-many
+                                                  :label "该供应商供货的 part"
+                                                  :target "cis.master.part"}
+                        :cis.master.vendor/vend_name {:description "Vendor display name."
+                                                      :format :text
+                                                      :label "Vendor Name"
+                                                      :type :string}
+                        :cis.master.vendor/vend_no {:description "Unique vendor number."
+                                                    :format :id
+                                                    :identity? true
+                                                    :label "Vendor No"
+                                                    :type :integer}}
+           :links [{:cardinality :one-to-many
+                    :description "A vendor supplies many parts."
+                    :from :cis.master.vendor/vend_no
+                    :to :cis.master.part/vend_no}]
+           :metrics {"cis.master.part/avg_cost" {:dimensions [:cis.master.part/prod_code]
+                                                 :entity "cis.master.part"
+                                                 :expression {:contract :duckdb-spill/v1
+                                                              :text "SELECT avg(ave_cost) FROM parts"}
+                                                 :grain :month
+                                                 :label "Average part cost"}}
+           :mutations [{:id "deactivate_part"
+                        :label "Deactivate a part"
+                        :params {:cis.master.part/sku_no {:required? true}}
+                        :result_type "single"
+                        :returns [:cis.master.part/sku_no]
+                        :source {:query "UPDATE parts SET active = 0 WHERE sku_no = :sku_no"
+                                 :type "sql"}
+                        :source-ref "cis-demo-db"}]
+           :namespaces {"cis.master.part" {:kind :master
+                                           :label "Part — catalog item (SKU)"
+                                           :synonyms ["零件" "物料"]}
+                        "cis.master.vendor" {:kind :master
+                                             :label "Vendor — supplier on a purchase order"
+                                             :synonyms ["供应商" "supplier"]}}
+           :resolvers [{:curated? true
+                        :description "SKU 目录全集——小型主档，量级由作者签字；可按 :prod_code 收窄。"
+                        :eql-params {:prod_code {:attribute :cis.master.part/prod_code
+                                                 :description "只取该产品码的 part。"
+                                                 :op :eq}}
+                        :id "demo_all_parts"
+                        :input []
+                        :label "All parts (SKU catalog)"
+                        :limit {:default 50 :max 500}
+                        :order {:allowed [:cis.master.part/sku_no :cis.master.part/part_no]
+                                :default [:cis.master.part/sku_no :asc]}
+                        :output [{:cis.master.part/all_parts [:cis.master.part/sku_no
+                                                              :cis.master.part/part_no
+                                                              :cis.master.part/short_desc
+                                                              :cis.master.part/ave_cost
+                                                              :cis.master.part/prod_code]}]
+                        :result_type "list"
+                        :source {:query "SELECT sku_no, part_no, short_desc, ave_cost, prod_code FROM parts"
+                                 :type "sql"}
+                        :source-ref "cis-demo-db"}
+                       {:description "Catalog part by SKU；batch：一条 WHERE sku_no IN (...) 消 N+1。"
+                        :id "demo_part_by_id"
+                        :input [:cis.master.part/sku_no]
+                        :label "Part by sku_no"
+                        :output [:cis.master.part/part_no :cis.master.part/short_desc
+                                 :cis.master.part/ave_cost :cis.master.part/prod_code
+                                 :cis.master.part/vend_no]
+                        :result_type "single"
+                        :source {:batch {:child-fk "sku_no"
+                                         :parent-key :cis.master.part/sku_no
+                                         :placeholder "sku_nos"}
+                                 :query "SELECT sku_no, part_no, short_desc, ave_cost, prod_code, vend_no FROM parts WHERE sku_no IN (:sku_nos)"
+                                 :type "sql"}
+                        :source-ref "cis-demo-db"}
+                       {:description "该供应商供货的 part（navigation 的解析器）；batch 消 N+1，分页是 per-parent 窗口。"
+                        :id "demo_parts_by_vendor"
+                        :input [:cis.master.vendor/vend_no]
+                        :label "Parts by vendor"
+                        :limit {:default 2 :max 5}
+                        :order {:allowed [:cis.master.part/sku_no :cis.master.part/part_no]
+                                :default [:cis.master.part/sku_no :asc]}
+                        :output [{:cis.master.vendor/parts [:cis.master.part/sku_no
+                                                            :cis.master.part/part_no
+                                                            :cis.master.part/ave_cost]}]
+                        :result_type "list"
+                        :source {:batch {:child-fk "vend_no"
+                                         :parent-key :cis.master.vendor/vend_no
+                                         :placeholder "vend_nos"}
+                                 :query "SELECT vend_no, sku_no, part_no, ave_cost FROM parts WHERE vend_no IN (:vend_nos)"
+                                 :type "sql"}
+                        :source-ref "cis-demo-db"}
+                       {:description "Vendor master record by vendor number."
+                        :id "demo_vendor_by_id"
+                        :input [:cis.master.vendor/vend_no]
+                        :label "Vendor by vend_no"
+                        :output [:cis.master.vendor/vend_name :cis.master.vendor/discontinued
+                                 :cis.master.vendor/contact_email :cis.master.vendor/entry_by
+                                 :cis.master.vendor/entry_date]
+                        :result_type "single"
+                        :source {:query "SELECT vend_no, vend_name, discontinued, contact_email, entry_by, entry_date FROM vendors WHERE vend_no = :vend_no"
+                                 :type "sql"}
+                        :source-ref "cis-demo-db"}]
+           :sources {"cis-demo-db" {:description "B1 竖切用的内存 SQLite。"
+                                    :jdbc_url "${B1_JDBC_URL}"
+                                    :label "CIS demo DB"
+                                    :type "sql"}}
+           :terms {"common.status/active" {:description "In the current catalogue."
+                                           :label "Active"
+                                           :synonyms ["在用"]}}
+           :units {"currency.usd" {:description "United States dollar." :label "USD"}}}
+ :references []}

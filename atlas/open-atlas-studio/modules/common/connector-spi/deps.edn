@@ -1,0 +1,11 @@
+;; 连接器 SPI：分派骨架 + 故障契约 + batch 对齐，不含任何具体连接器。
+;; 只依赖 dialect（操作块形状与 finding），不依赖 engine——SPI 是 engine
+;; 与连接器之间的接缝，向上依赖会让接缝失去意义。
+{:paths ["src"]
+ :deps  {org.clojure/clojure     {:mvn/version "1.11.4"}
+         open.atlas/dialect      {:local/root "../dialect"}}
+ :aliases
+ {:test {:extra-paths ["test"]
+         :extra-deps  {io.github.cognitect-labs/test-runner
+                       {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
+         :main-opts   ["-m" "cognitect.test-runner"]}}}

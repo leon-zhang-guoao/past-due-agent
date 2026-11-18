@@ -1,0 +1,21 @@
+;; Semantic contract 2.0 test fixture (task book «contract-upgrade-and-retirement» PR1, 2026-09-19).
+{:contract {:contract/family "atlas-semantic" :contract/version "2.0.0"}
+ :workspace {:workspace/id "support-dev"}
+ :graph {:graph/id "support" :graph/label "Support" :graph/exposure :restricted
+         :graph/entities ["support.case"] :graph/resolvers ["lookup"] :graph/operations [] :graph/dependencies []
+         :graph/terms []}
+ :vocabulary {:entities {"support.case" {:entity/label "Case" :entity/identity [:support.case/id]
+                                         :entity/attributes [:support.case/id :support.case/title]}}
+              :attributes {:support.case/id {:attribute/label "ID" :attribute/type :integer :attribute/nullable? false}
+                           :support.case/title {:attribute/label "Title" :attribute/type :string :attribute/nullable? false}}}
+ :execution {:resolvers {"lookup" {:label "Lookup" :effect :read :result/cardinality :one
+                                   :input [:support.case/id] :output [:support.case/title]}}
+             :operations {} :sources {"db" {:source/kind "sql" :source/effects #{:read}}}
+             :bindings {"lookup-sql" {:binding/for [:resolver "lookup"] :binding/source "db" :binding/effect :read
+                                      :binding/implementation {:query "SELECT title FROM cases WHERE id = :id"}
+                                      :binding/input-map {:support.case/id "id"} :binding/output-map {:support.case/title "title"}}}
+             :selection {[:resolver "lookup"] "lookup-sql"}}
+ :ownership {:entities {"support.case" "support"} :resolvers {"lookup" "support"} :operations {} :terms {}}
+ :publication {:release/version "1.0.0" :source/revision 1
+               :required-capabilities #{:semantic/core-v1 :connector/sql :graph/single-owner-v1
+                                        :deployment/source-slot-v1 :artifact/embedded-closure-v1}}}

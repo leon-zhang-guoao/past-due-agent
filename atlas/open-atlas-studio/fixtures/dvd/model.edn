@@ -1,0 +1,527 @@
+{:attributes {:dvd.catalog.actor/actor_id {:format :id
+                                           :identity? true
+                                           :label "演员号"
+                                           :synonyms ["actor id"]
+                                           :type :integer}
+              :dvd.catalog.actor/first_name {:format :text
+                                             :label "名"
+                                             :synonyms ["first name"]
+                                             :type :string}
+              :dvd.catalog.actor/last_name {:format :text
+                                            :label "姓"
+                                            :synonyms ["last name"]
+                                            :type :string}
+              :dvd.catalog.category/category_id {:format :id
+                                                 :identity? true
+                                                 :label "分类号"
+                                                 :synonyms ["类型编号" "category id"]
+                                                 :type :integer}
+              :dvd.catalog.category/name {:description "影片类型，如 Drama、Comedy。"
+                                          :format :text
+                                          :label "分类名"
+                                          :synonyms ["类型" "category" "genre"]
+                                          :type :string}
+              :dvd.catalog.film/actors {:cardinality :one-to-many :target "dvd.catalog.actor"}
+              :dvd.catalog.film/all_films {:cardinality :one-to-many :target "dvd.catalog.film"}
+              :dvd.catalog.film/cast_credits {:cardinality :one-to-many
+                                              :target "dvd.catalog.film_actor"}
+              :dvd.catalog.film/category {:cardinality :one-to-one :target "dvd.catalog.category"}
+              :dvd.catalog.film/category_id {:description "这部片归入的分类。"
+                                             :format :id
+                                             :label "分类号"
+                                             :synonyms ["类型编号" "category id"]
+                                             :type :integer}
+              :dvd.catalog.film/copies {:cardinality :one-to-many :target "dvd.store.inventory"}
+              :dvd.catalog.film/description {:format :text
+                                             :label "简介"
+                                             :synonyms ["剧情简介" "synopsis"]
+                                             :type :string}
+              :dvd.catalog.film/film_id {:identity? true :term "dvd.catalog/film_id" :type :integer}
+              :dvd.catalog.film/length {:format :number
+                                        :label "片长"
+                                        :synonyms ["时长" "length" "runtime"]
+                                        :type :integer
+                                        :unit "minutes"}
+              :dvd.catalog.film/rating {:format :code
+                                        :label "分级"
+                                        :synonyms ["评级" "rating"]
+                                        :type :string
+                                        :values {"G" {:label "普通级"}
+                                                 "PG" {:label "辅导级"}
+                                                 "PG-13" {:label "13 岁以下需辅导"}
+                                                 "R" {:label "限制级"}}}
+              :dvd.catalog.film/release_year {:format :number
+                                              :label "上映年份"
+                                              :synonyms ["年份" "release year"]
+                                              :type :integer}
+              :dvd.catalog.film/rental_duration {:format :number
+                                                 :label "标准租期"
+                                                 :synonyms ["租期" "借期" "rental duration"]
+                                                 :type :integer
+                                                 :unit "days"}
+              :dvd.catalog.film/rental_rate {:description "挂牌的日租金。**不等于实际收到的钱**——续租、滞纳金、店员改价都会让 `payment.amount` 与它分开。"
+                                             :format :currency
+                                             :label "日租金"
+                                             :synonyms ["挂牌租金" "租金" "rental rate" "daily rate"]
+                                             :type :decimal
+                                             :unit "EUR"}
+              :dvd.catalog.film/title {:format :text
+                                       :label "片名"
+                                       :synonyms ["标题" "title" "film name"]
+                                       :type :string}
+              :dvd.catalog.film_actor/actor_id {:format :id
+                                                :identity? true
+                                                :label "演员号"
+                                                :synonyms ["actor id"]
+                                                :type :integer}
+              :dvd.catalog.film_actor/billing_order {:description "1 = 主演。"
+                                                     :format :number
+                                                     :label "番位"
+                                                     :synonyms ["排位" "billing order"]
+                                                     :type :integer}
+              :dvd.catalog.film_actor/film_id {:identity? true
+                                               :term "dvd.catalog/film_id"
+                                               :type :integer}
+              :dvd.party.customer/active {:format :code
+                                          :label "卡状态"
+                                          :synonyms ["是否有效" "active"]
+                                          :type :integer
+                                          :values {0 {:label "已停用"} 1 {:label "有效"}}}
+              :dvd.party.customer/all_customers {:cardinality :one-to-many
+                                                 :target "dvd.party.customer"}
+              :dvd.party.customer/created_on {:format :date
+                                              :label "开卡日期"
+                                              :synonyms ["注册日期" "created on"]
+                                              :type :date}
+              :dvd.party.customer/customer_id {:identity? true
+                                               :term "dvd.party/customer_id"
+                                               :type :integer}
+              :dvd.party.customer/email {:format :text
+                                         :label "邮箱"
+                                         :synonyms ["电子邮件" "email"]
+                                         :type :string}
+              :dvd.party.customer/first_name {:format :text
+                                              :label "名"
+                                              :synonyms ["first name"]
+                                              :type :string}
+              :dvd.party.customer/last_name {:format :text
+                                             :label "姓"
+                                             :synonyms ["last name"]
+                                             :type :string}
+              :dvd.party.customer/rentals {:cardinality :one-to-many :target "dvd.rental.rental"}
+              :dvd.party.customer/store_id {:format :id
+                                            :label "开卡门店"
+                                            :synonyms ["store id"]
+                                            :type :integer}
+              :dvd.rental.payment/amount {:description "这次借出实际收到的钱，含可能的滞纳金。与影片的挂牌日租金不是一回事。"
+                                          :format :currency
+                                          :label "收款金额"
+                                          :synonyms ["实收" "金额" "amount"]
+                                          :type :decimal
+                                          :unit "EUR"}
+              :dvd.rental.payment/customer_id {:term "dvd.party/customer_id" :type :integer}
+              :dvd.rental.payment/payment_date {:format :date
+                                                :label "收款日期"
+                                                :synonyms ["payment date"]
+                                                :type :date}
+              :dvd.rental.payment/payment_id {:format :id
+                                              :identity? true
+                                              :label "收款号"
+                                              :synonyms ["payment id"]
+                                              :type :integer}
+              :dvd.rental.payment/rental_id {:format :id
+                                             :label "借出号"
+                                             :synonyms ["rental id"]
+                                             :type :integer}
+              :dvd.rental.payment/staff_id {:format :id
+                                            :label "经手店员"
+                                            :synonyms ["staff id"]
+                                            :type :integer}
+              :dvd.rental.rental/customer_id {:term "dvd.party/customer_id" :type :integer}
+              :dvd.rental.rental/film {:cardinality :one-to-one :target "dvd.catalog.film"}
+              :dvd.rental.rental/inventory_id {:format :id
+                                               :label "碟号"
+                                               :synonyms ["inventory id"]
+                                               :type :integer}
+              :dvd.rental.rental/outstanding {:cardinality :one-to-many :target "dvd.rental.rental"}
+              :dvd.rental.rental/payments {:cardinality :one-to-many :target "dvd.rental.payment"}
+              :dvd.rental.rental/rental_date {:format :date
+                                              :label "借出日期"
+                                              :synonyms ["借期" "rental date"]
+                                              :type :date}
+              :dvd.rental.rental/rental_id {:format :id
+                                            :identity? true
+                                            :label "借出号"
+                                            :synonyms ["rental id"]
+                                            :type :integer}
+              :dvd.rental.rental/return_date {:description "**空是答案，不是缺数据**：碟还在客户手里。"
+                                              :format :date
+                                              :label "归还日期"
+                                              :synonyms ["还碟日期" "return date"]
+                                              :type :date}
+              :dvd.rental.rental/staff_id {:format :id
+                                           :label "经手店员"
+                                           :synonyms ["staff id"]
+                                           :type :integer}
+              :dvd.store.inventory/acquired_on {:format :date
+                                                :label "入库日期"
+                                                :synonyms ["acquired on"]
+                                                :type :date}
+              :dvd.store.inventory/film_id {:term "dvd.catalog/film_id" :type :integer}
+              :dvd.store.inventory/inventory_id {:description "一张实体碟。借出的是它，不是影片。"
+                                                 :format :id
+                                                 :identity? true
+                                                 :label "碟号"
+                                                 :synonyms ["库存号" "inventory id" "copy id"]
+                                                 :type :integer}
+              :dvd.store.inventory/store_id {:format :id
+                                             :label "门店号"
+                                             :synonyms ["store id"]
+                                             :type :integer}
+              :dvd.store.staff/active {:format :code
+                                       :label "在职"
+                                       :synonyms ["在职标志" "active"]
+                                       :type :integer
+                                       :values {0 {:label "离职"} 1 {:label "在职"}}}
+              :dvd.store.staff/first_name {:format :text
+                                           :label "名"
+                                           :synonyms ["first name"]
+                                           :type :string}
+              :dvd.store.staff/last_name {:format :text
+                                          :label "姓"
+                                          :synonyms ["last name"]
+                                          :type :string}
+              :dvd.store.staff/staff_id {:format :id
+                                         :identity? true
+                                         :label "店员号"
+                                         :synonyms ["staff id"]
+                                         :type :integer}
+              :dvd.store.staff/store_id {:format :id
+                                         :label "门店号"
+                                         :synonyms ["store id"]
+                                         :type :integer}
+              :dvd.store.store/all_stores {:cardinality :one-to-many :target "dvd.store.store"}
+              :dvd.store.store/city {:format :text :label "城市" :synonyms ["city"] :type :string}
+              :dvd.store.store/name {:format :text
+                                     :label "门店名"
+                                     :synonyms ["store name"]
+                                     :type :string}
+              :dvd.store.store/opened_on {:format :date
+                                          :label "开业日期"
+                                          :synonyms ["opened on"]
+                                          :type :date}
+              :dvd.store.store/staff {:cardinality :one-to-many :target "dvd.store.staff"}
+              :dvd.store.store/store_id {:format :id
+                                         :identity? true
+                                         :label "门店号"
+                                         :synonyms ["store id"]
+                                         :type :integer}}
+ :links [{:description "影片归入哪个分类。"
+          :direction :one-way
+          :from :dvd.catalog.film/category_id
+          :to :dvd.catalog.category/category_id}
+         {:description "出演记录属于哪部片。"
+          :direction :one-way
+          :from :dvd.catalog.film_actor/film_id
+          :to :dvd.catalog.film/film_id}
+         {:description "出演记录属于哪位演员。"
+          :direction :one-way
+          :from :dvd.catalog.film_actor/actor_id
+          :to :dvd.catalog.actor/actor_id}
+         {:description "这张碟是哪部片。"
+          :direction :one-way
+          :from :dvd.store.inventory/film_id
+          :to :dvd.catalog.film/film_id}
+         {:description "这张碟在哪家店。"
+          :direction :one-way
+          :from :dvd.store.inventory/store_id
+          :to :dvd.store.store/store_id}
+         {:description "店员属于哪家店。"
+          :direction :one-way
+          :from :dvd.store.staff/store_id
+          :to :dvd.store.store/store_id}
+         {:description "客户在哪家店开的卡。"
+          :direction :one-way
+          :from :dvd.party.customer/store_id
+          :to :dvd.store.store/store_id}
+         {:description "这次借出借走的是哪张碟。"
+          :direction :one-way
+          :from :dvd.rental.rental/inventory_id
+          :to :dvd.store.inventory/inventory_id}
+         {:description "借给哪位客户。"
+          :direction :one-way
+          :from :dvd.rental.rental/customer_id
+          :to :dvd.party.customer/customer_id}
+         {:description "哪位店员经手。"
+          :direction :one-way
+          :from :dvd.rental.rental/staff_id
+          :to :dvd.store.staff/staff_id}
+         {:description "这笔钱收在哪次借出上。"
+          :direction :one-way
+          :from :dvd.rental.payment/rental_id
+          :to :dvd.rental.rental/rental_id}
+         {:description "谁付的钱。"
+          :direction :one-way
+          :from :dvd.rental.payment/customer_id
+          :to :dvd.party.customer/customer_id}]
+ :metrics {"rentals_by_store_month" {:description "按门店、按月数借出的次数。**计的是借出这件事**，未归还的一样计入——它已经发生了。"
+                                     :dimensions [:dvd.rental.rental/rental_date]
+                                     :entity "dvd.rental.rental"
+                                     :expression {:contract :duckdb-spill/v1 :text "count(*)"}
+                                     :grain :month
+                                     :label "门店月度借出次数"
+                                     :synonyms ["借出次数" "月度借出" "rentals by store"]}
+           "revenue_by_category_month" {:description "实收口径：按影片分类、按月汇总 `payment.amount`。**用实收而不是挂牌租金**——滞纳金与改价都在实收里，拿 `rental_rate` 乘天数会算少。"
+                                        :dimensions [:dvd.rental.payment/payment_date]
+                                        :entity "dvd.rental.payment"
+                                        :expression {:contract :duckdb-spill/v1 :text "sum(amount)"}
+                                        :grain :month
+                                        :label "分类月度收入"
+                                        :synonyms ["月度收入" "分类收入" "revenue by category"]}}
+ :namespaces {"dvd.catalog.actor" {:kind :master :label "演员"}
+              "dvd.catalog.category" {:kind :reference :label "分类 — 一部片归入的类型"}
+              "dvd.catalog.film" {:kind :master :label "影片 — 片库里的一部片"}
+              "dvd.catalog.film_actor" {:kind :bridge :label "出演 — 哪位演员演了哪部片"}
+              "dvd.party.customer" {:kind :master :label "客户 — 办了卡的人"}
+              "dvd.rental.payment" {:kind :transaction :label "收款 — 一次借出上收到的钱"}
+              "dvd.rental.rental" {:kind :transaction :label "借出 — 一次把碟交给客户"}
+              "dvd.store.inventory" {:kind :master :label "碟 — 某部片在某家店的一份实体拷贝"}
+              "dvd.store.staff" {:kind :master :label "店员"}
+              "dvd.store.store" {:kind :master :label "门店"}}
+ :resolvers [{:description "一部片的全部字段。查询：{:entity {:dvd.catalog.film/film_id 7} :query [...]}。"
+              :id "dvd_film_by_id"
+              :input [:dvd.catalog.film/film_id]
+              :label "按片号取影片"
+              :output [:dvd.catalog.film/title :dvd.catalog.film/description
+                       :dvd.catalog.film/release_year :dvd.catalog.film/category_id
+                       :dvd.catalog.film/rental_rate :dvd.catalog.film/rental_duration
+                       :dvd.catalog.film/length :dvd.catalog.film/rating]
+              :result_type "single"
+              :source {:query "SELECT title, description, release_year, category_id, rental_rate, rental_duration, length, rating FROM film WHERE film_id = :film_id"
+                       :type "sql"}
+              :source-ref "dvd-demo-db"}
+             {:id "dvd_category_by_id"
+              :input [:dvd.catalog.category/category_id]
+              :label "按分类号取分类"
+              :output [:dvd.catalog.category/name]
+              :result_type "single"
+              :source {:query "SELECT name FROM category WHERE category_id = :category_id"
+                       :type "sql"}
+              :source-ref "dvd-demo-db"}
+             {:description "这部片归入的分类。"
+              :id "dvd_film_category"
+              :input [:dvd.catalog.film/category_id]
+              :label "影片 → 分类"
+              :output [{:dvd.catalog.film/category [:dvd.catalog.category/category_id
+                                                    :dvd.catalog.category/name]}]
+              :result_type "single"
+              :source {:query "SELECT category_id, name FROM category WHERE category_id = :category_id"
+                       :type "sql"}
+              :source-ref "dvd-demo-db"}
+             {:description "这部片的演员，**按番位排序**（主演在前）。番位本身是出演关系上的属性，不在这一跳的输出里——这一跳给的是演员。"
+              :id "dvd_film_actors"
+              :input [:dvd.catalog.film/film_id]
+              :label "影片 → 演员"
+              :limit {:default 20 :max 100}
+              :output [{:dvd.catalog.film/actors [:dvd.catalog.actor/actor_id
+                                                  :dvd.catalog.actor/first_name
+                                                  :dvd.catalog.actor/last_name]}]
+              :result_type "list"
+              :source {:query "SELECT a.actor_id, a.first_name, a.last_name, fa.billing_order FROM film_actor fa JOIN actor a ON a.actor_id = fa.actor_id WHERE fa.film_id = :film_id ORDER BY fa.billing_order"
+                       :type "sql"}
+              :source-ref "dvd-demo-db"}
+             {:description "这部片在各店的实体拷贝。"
+              :id "dvd_film_copies"
+              :input [:dvd.catalog.film/film_id]
+              :label "影片 → 店里的碟"
+              :limit {:default 20 :max 200}
+              :output [{:dvd.catalog.film/copies [:dvd.store.inventory/inventory_id
+                                                  :dvd.store.inventory/film_id
+                                                  :dvd.store.inventory/store_id
+                                                  :dvd.store.inventory/acquired_on]}]
+              :result_type "list"
+              :source {:query "SELECT inventory_id, film_id, store_id, acquired_on FROM inventory WHERE film_id = :film_id ORDER BY inventory_id"
+                       :type "sql"}
+              :source-ref "dvd-demo-db"}
+             {:id "dvd_customer_by_id"
+              :input [:dvd.party.customer/customer_id]
+              :label "按客户号取客户"
+              :output [:dvd.party.customer/first_name :dvd.party.customer/last_name
+                       :dvd.party.customer/email :dvd.party.customer/store_id
+                       :dvd.party.customer/active :dvd.party.customer/created_on]
+              :result_type "single"
+              :source {:query "SELECT first_name, last_name, email, store_id, active, created_on FROM customer WHERE customer_id = :customer_id"
+                       :type "sql"}
+              :source-ref "dvd-demo-db"}
+             {:description "这位客户借过什么，还没还的排在最前（`return_date` 为空）。"
+              :id "dvd_customer_rentals"
+              :input [:dvd.party.customer/customer_id]
+              :label "客户 → 借阅记录"
+              :limit {:default 20 :max 200}
+              :order {:allowed [:dvd.rental.rental/rental_date :dvd.rental.rental/rental_id]
+                      :default [:dvd.rental.rental/rental_date :desc]}
+              :output [{:dvd.party.customer/rentals [:dvd.rental.rental/rental_id
+                                                     :dvd.rental.rental/rental_date
+                                                     :dvd.rental.rental/return_date
+                                                     :dvd.rental.rental/inventory_id
+                                                     :dvd.rental.rental/staff_id]}]
+              :result_type "list"
+              :source {:query "SELECT rental_id, rental_date, return_date, inventory_id, staff_id FROM rental WHERE customer_id = :customer_id"
+                       :type "sql"}
+              :source-ref "dvd-demo-db"}
+             {:description "借出记录挂的是碟，这一跳把碟解析成片。"
+              :id "dvd_rental_film"
+              :input [:dvd.rental.rental/inventory_id]
+              :label "借出 → 借的是哪部片"
+              :output [{:dvd.rental.rental/film [:dvd.catalog.film/film_id :dvd.catalog.film/title
+                                                 :dvd.catalog.film/rental_rate]}]
+              :result_type "single"
+              :source {:query "SELECT f.film_id, f.title, f.rental_rate FROM inventory i JOIN film f ON f.film_id = i.film_id WHERE i.inventory_id = :inventory_id"
+                       :type "sql"}
+              :source-ref "dvd-demo-db"}
+             {:id "dvd_rental_payments"
+              :input [:dvd.rental.rental/rental_id]
+              :label "借出 → 收款"
+              :limit {:default 10 :max 100}
+              :output [{:dvd.rental.rental/payments [:dvd.rental.payment/payment_id
+                                                     :dvd.rental.payment/rental_id
+                                                     :dvd.rental.payment/customer_id
+                                                     :dvd.rental.payment/staff_id
+                                                     :dvd.rental.payment/amount
+                                                     :dvd.rental.payment/payment_date]}]
+              :result_type "list"
+              :source {:query "SELECT payment_id, rental_id, customer_id, staff_id, amount, payment_date FROM payment WHERE rental_id = :rental_id ORDER BY payment_id"
+                       :type "sql"}
+              :source-ref "dvd-demo-db"}
+             {:curated? true
+              :description "片库清单。可按分类或分级收窄：{:entity {} :query [({:dvd.catalog.film/all_films [...]} {:category_id 4})]}。"
+              :eql-params {:category_id {:attribute :dvd.catalog.film/category_id
+                                         :description "只看这个分类的片。"
+                                         :op :eq}
+                           :rating {:attribute :dvd.catalog.film/rating
+                                    :description "只看这个分级的片（G / PG / PG-13 / R）。"
+                                    :op :eq}}
+              :id "dvd_all_films"
+              :input []
+              :label "全部影片"
+              :limit {:default 50 :max 500}
+              :order {:allowed [:dvd.catalog.film/film_id :dvd.catalog.film/title
+                                :dvd.catalog.film/rental_rate]
+                      :default [:dvd.catalog.film/film_id :asc]}
+              :output [{:dvd.catalog.film/all_films [:dvd.catalog.film/film_id
+                                                     :dvd.catalog.film/title
+                                                     :dvd.catalog.film/release_year
+                                                     :dvd.catalog.film/category_id
+                                                     :dvd.catalog.film/rental_rate
+                                                     :dvd.catalog.film/rating]}]
+              :result_type "list"
+              :source {:query "SELECT film_id, title, release_year, category_id, rental_rate, rating FROM film"
+                       :type "sql"}
+              :source-ref "dvd-demo-db"}
+             {:curated? true
+              :eql-params {:active {:attribute :dvd.party.customer/active
+                                    :description "1 = 有效卡，0 = 已停用。"
+                                    :op :eq}
+                           :store_id {:attribute :dvd.party.customer/store_id
+                                      :description "只看这家门店开卡的客户。"
+                                      :op :eq}}
+              :id "dvd_all_customers"
+              :input []
+              :label "全部客户"
+              :limit {:default 50 :max 500}
+              :order {:allowed [:dvd.party.customer/customer_id :dvd.party.customer/last_name]
+                      :default [:dvd.party.customer/customer_id :asc]}
+              :output [{:dvd.party.customer/all_customers [:dvd.party.customer/customer_id
+                                                           :dvd.party.customer/first_name
+                                                           :dvd.party.customer/last_name
+                                                           :dvd.party.customer/store_id
+                                                           :dvd.party.customer/active]}]
+              :result_type "list"
+              :source {:query "SELECT customer_id, first_name, last_name, store_id, active FROM customer"
+                       :type "sql"}
+              :source-ref "dvd-demo-db"}
+             {:curated? true
+              :description "`return_date` 为空的借出——碟还在客户手里。这是**空即答案**那条线的入口。"
+              :id "dvd_outstanding_rentals"
+              :input []
+              :label "尚未归还的碟"
+              :limit {:default 50 :max 500}
+              :order {:allowed [:dvd.rental.rental/rental_date :dvd.rental.rental/rental_id]
+                      :default [:dvd.rental.rental/rental_date :asc]}
+              :output [{:dvd.rental.rental/outstanding [:dvd.rental.rental/rental_id
+                                                        :dvd.rental.rental/rental_date
+                                                        :dvd.rental.rental/customer_id
+                                                        :dvd.rental.rental/inventory_id
+                                                        :dvd.rental.rental/staff_id]}]
+              :result_type "list"
+              :source {:query "SELECT rental_id, rental_date, customer_id, inventory_id, staff_id FROM rental WHERE return_date IS NULL"
+                       :type "sql"}
+              :source-ref "dvd-demo-db"}
+             {:curated? true
+              :description "全部门店。片库之外的另一半：碟在哪家店、谁在店里、卡在哪开的。"
+              :id "dvd_all_stores"
+              :input []
+              :label "全部门店"
+              :limit {:default 20 :max 100}
+              :order {:allowed [:dvd.store.store/store_id :dvd.store.store/name]
+                      :default [:dvd.store.store/store_id :asc]}
+              :output [{:dvd.store.store/all_stores [:dvd.store.store/store_id :dvd.store.store/name
+                                                     :dvd.store.store/city
+                                                     :dvd.store.store/opened_on]}]
+              :result_type "list"
+              :source {:query "SELECT store_id, name, city, opened_on FROM store" :type "sql"}
+              :source-ref "dvd-demo-db"}
+             {:id "dvd_store_by_id"
+              :input [:dvd.store.store/store_id]
+              :label "按门店号取门店"
+              :output [:dvd.store.store/name :dvd.store.store/city :dvd.store.store/opened_on]
+              :result_type "single"
+              :source {:query "SELECT name, city, opened_on FROM store WHERE store_id = :store_id"
+                       :type "sql"}
+              :source-ref "dvd-demo-db"}
+             {:description "这家店的店员。"
+              :id "dvd_store_staff"
+              :input [:dvd.store.store/store_id]
+              :label "门店 → 店员"
+              :limit {:default 20 :max 100}
+              :output [{:dvd.store.store/staff [:dvd.store.staff/staff_id
+                                                :dvd.store.staff/first_name
+                                                :dvd.store.staff/last_name :dvd.store.staff/active]}]
+              :result_type "list"
+              :source {:query "SELECT staff_id, first_name, last_name, active FROM staff WHERE store_id = :store_id ORDER BY staff_id"
+                       :type "sql"}
+              :source-ref "dvd-demo-db"}
+             {:id "dvd_staff_by_id"
+              :input [:dvd.store.staff/staff_id]
+              :label "按店员号取店员"
+              :output [:dvd.store.staff/first_name :dvd.store.staff/last_name
+                       :dvd.store.staff/store_id :dvd.store.staff/active]
+              :result_type "single"
+              :source {:query "SELECT first_name, last_name, store_id, active FROM staff WHERE staff_id = :staff_id"
+                       :type "sql"}
+              :source-ref "dvd-demo-db"}
+             {:description "出演关系本身，**带番位**。`dvd_film_actors` 给的是演员；这一跳给的是「谁以第几番位演了这部片」。"
+              :id "dvd_film_cast_credits"
+              :input [:dvd.catalog.film/film_id]
+              :label "影片 → 出演记录"
+              :limit {:default 20 :max 100}
+              :output [{:dvd.catalog.film/cast_credits [:dvd.catalog.film_actor/film_id
+                                                        :dvd.catalog.film_actor/actor_id
+                                                        :dvd.catalog.film_actor/billing_order]}]
+              :result_type "list"
+              :source {:query "SELECT film_id, actor_id, billing_order FROM film_actor WHERE film_id = :film_id ORDER BY billing_order"
+                       :type "sql"}
+              :source-ref "dvd-demo-db"}]
+ :sources {"dvd-demo-db" {:description "随包发行的合成 SQLite 库。首次启动时被复制到 <home>/demo/ 并在这里被指向。"
+                          :jdbc_url "jdbc:sqlite:data/open-atlas-demo.db"
+                          :label "DVD 出租店 demo 库"
+                          :type "sql"}}
+ :terms {"dvd.catalog/film_id" {:description "片库里一部影片的编号。**不是碟的编号**——一部片在店里可能有好几张碟（`inventory_id`），借出的是碟不是片。"
+                                :format :id
+                                :label "片号"
+                                :synonyms ["影片编号" "片ID" "film id" "film no"]}
+         "dvd.party/customer_id" {:description "会员卡号。一个人只有一个，换门店也不变。"
+                                  :format :id
+                                  :label "客户号"
+                                  :synonyms ["会员号" "客户编号" "customer id" "member no"]}}
+ :units {"EUR" {} "days" {} "minutes" {}}}

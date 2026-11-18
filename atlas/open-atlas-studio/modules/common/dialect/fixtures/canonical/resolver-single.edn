@@ -1,0 +1,11 @@
+{:cache {:ttl-ms 600000}
+ :description "Vendor master record by vendor number."
+ :id "demo_vendor_by_id"
+ :input [:cis.master.vendor/vend_no]
+ :label "Vendor by vend_no"
+ :output [:cis.master.vendor/vend_name :cis.master.vendor/vend_type :cis.master.vendor/primary_loc
+          :cis.master.vendor/discontinued]
+ :result_type "single"
+ :source {:query "SELECT vend_no, vend_name, vend_type, primary_loc, discontinued FROM vendors WHERE vend_no = :vend_no"
+          :type "sql"}
+ :source-ref "cis-demo-db"}

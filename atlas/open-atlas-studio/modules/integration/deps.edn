@@ -1,0 +1,47 @@
+;; 装配点：把连接器接进 engine，跑真库的端到端。
+;;
+;; 为什么单独成模块而不是塞进 engine 的 :test：engine **不依赖任何具体连接器**
+;; 是 D1.8 的硬规则，在它自己的 deps.edn 里（哪怕只在 :test alias）写下
+;; connector-sql，就等于把那条规则降级成「运行时不依赖，构建期依赖」——
+;; 而依赖方向要的正是构建期可验证。装配是 app 的职责（studio / server），
+;; 本模块是那个职责在 B1 阶段的最小替身：**只有 test，没有 src**。
+;;
+;; 它证明的是 B1 退出条件的第一条「一条真实 EQL 端到端返回正确结果」——
+;; engine 用假连接器、connector-sql 用真库但不接 engine，两边各自全绿也
+;; 证明不了这一条（D1.5 的同一条理由：没被任何测试穿过的接缝）。
+{:paths []
+ :deps  {org.clojure/clojure      {:mvn/version "1.11.4"}
+         open.atlas/dialect       {:local/root "../common/dialect"}
+         open.atlas/engine        {:local/root "../common/engine"}
+         open.atlas/artifact      {:local/root "../common/artifact"}
+         open.atlas/connector-sql {:local/root "../common/connector-sql"}
+         ;; derived 连接器：demo 模型的 *_info 派生属性（D2.25 组移除后的收纳替代）
+         ;; 要在端到端里真的算得出来，装配点必须把它接上。
+         open.atlas/connector-derived {:local/root "../common/connector-derived"}
+         ;; api 连接器：doc 104 §8.17.7 A 的包声明要在一份**同时**有 sql 与 api
+         ;; source 的模型上成立，而只有装配点能同时看见两个连接器——两边各自绿
+         ;; 仍然证明不了 `package-requirements` 把两类 source 的文件与变量都算上了。
+         open.atlas/connector-api     {:local/root "../common/connector-api"}
+         ;; B5c-1's control plane, end to end: studio's half and server's two
+         ;; halves are only on one classpath here. All three being green
+         ;; separately still does not show that the envelope studio signs is one
+         ;; the server accepts over a real Jetty — that is exactly the unpierced
+         ;; seam D1.5 talks about.
+         open.atlas/studio-pool       {:local/root "../studio/pool"}
+         ;; The schema planner. Its own tests plan against a hand-written
+         ;; description; only here is the description read from a **real**
+         ;; database and the plan written into a **real** pool and cut — the
+         ;; three seams that have to agree about what a table is.
+         open.atlas/studio-tools      {:local/root "../studio/tools"}
+         open.atlas/studio-graph      {:local/root "../studio/graph"}
+         open.atlas/studio-version    {:local/root "../studio/version"}
+         open.atlas/studio-deploy     {:local/root "../studio/deploy"}
+         open.atlas/runtime-store     {:local/root "../runtime/store"}
+         open.atlas/runtime-graph     {:local/root "../runtime/graph"}
+         open.atlas/server-http       {:local/root "../server/http"}}
+ :aliases
+ {:test {:extra-paths ["test" "../../fixtures/b1" "../../fixtures/demo" "../common/dialect/fixtures"]
+         :extra-deps  {io.github.cognitect-labs/test-runner
+                       {:git/tag "v0.5.1" :git/sha "dfb30dd"}
+                       org.xerial/sqlite-jdbc {:mvn/version "3.46.1.0"}}
+         :main-opts   ["-m" "cognitect.test-runner"]}}}

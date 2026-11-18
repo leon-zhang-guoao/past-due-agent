@@ -1,0 +1,23 @@
+;; open.atlas.studio.graph —— B5a：workspace 地盘、graph 登记与授权、scope 投影、sync。
+;;
+;; **为什么与 pool 分开**：pool 回答「对象存在、改得动、转得回来」，本模块回答
+;; 「这些对象里，哪些构成 `<workspace>/<graph>` 这张图」。前者是存储与写面，后者是
+;; 治理与投影——[scope projection v1](../../../docs/contracts/scope-projection-v1.md)
+;; 整份契约压在后者身上，混进 pool 会让那份契约的边界看不出来。
+;;
+;; **登记数据仍住在池里**（workspace 地盘、graph 菜谱、授权）：它们要跟着池导出导入,
+;; 否则「删掉 store、导入最后一次导出、精确重建」就重建不出治理状态。它们与确认记录
+;; 同类——**不是方言概念，不进 `as-dialect`**（B4.4 已经立了这个先例）。
+{:paths ["src"]
+ :deps  {org.clojure/clojure {:mvn/version "1.12.0"}
+         open.atlas/dialect  {:local/root "../../common/dialect"}
+         ;; 档位词表与取严（D5.5 的 `meet`）只有这一份，不在本模块再写一遍。
+         ;; 投影要重算引用的 content-hash（契约 §2.3）——规范形与哈希只有制品
+         ;; 模块那一份，本模块不另写一个 writer（D4.3）。
+         open.atlas/artifact {:local/root "../../common/artifact"}
+         open.atlas/pool     {:local/root "../pool"}}
+ :aliases
+ {:test {:extra-paths ["test" "../../../fixtures/demo"]
+         :extra-deps  {io.github.cognitect-labs/test-runner
+                       {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
+         :main-opts   ["-m" "cognitect.test-runner"]}}}

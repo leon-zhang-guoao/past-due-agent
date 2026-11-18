@@ -1,0 +1,37 @@
+;; open.atlas.server.http-stack —— 两个 HTTP 壳**共用的那一套栈**，只有 deps。
+;;
+;; 控制面壳（server/http）与数据面壳（server/data）是两个入口、两套认证（D3.12）,
+;; 但它们跑在**同一棵 Jetty 树**上。把版本号抄两份，那几个扛 CVE 的数字迟早
+;; 在一处被顺手改掉而另一处不动——而这正是 CLAUDE.md 点名的那类事故，只是
+;; 这一份的后果落在安全面上。
+;;
+;; 本模块**没有 src**：它是一份依赖声明加一条守着它的测试。
+{:paths []
+ :deps  {org.clojure/clojure   {:mvn/version "1.12.0"}
+         ;; ── HTTP：版本与 CVE 钉法照参考实现 `open-atlas` 的既有审计结论 ──────
+         ;;
+         ;; ring 1.14.x = Jetty 12 那条线（ee9 servlet 环境）。
+         ring/ring-core          {:mvn/version "1.14.2"}
+         ring/ring-jetty-adapter {:mvn/version "1.14.2"}
+         ;; **必须连同这四个覆盖一起抄**：ring 1.14.2 自己钉的是 Jetty 12.0.21,
+         ;; 低于两个 HIGH 的修复线——CVE-2026-2332（jetty-http，修在 12.0.33）与
+         ;; CVE-2026-10050（jetty-security / ee9-security，修在 12.0.36），外加
+         ;; CVE-2024-6763（MEDIUM，修在 12.0.12）。只抄适配器版本就等于把 CVE
+         ;; 收进来。四个一起钉，是为了解析出来的整棵树是**同一个** Jetty 版本
+         ;; （混着的 12.0.x 模块上游没测过）。
+         ;;
+         ;; 真正该借的不是这几个数字，是那条测试：`deps_security_test` 直接读
+         ;; `Jetty/VERSION` 断言 >= 12.0.36，树一旦回退就红。抄纪律，不抄数字。
+         org.eclipse.jetty/jetty-server            {:mvn/version "12.0.38"}
+         org.eclipse.jetty/jetty-unixdomain-server {:mvn/version "12.0.38"}
+         org.eclipse.jetty.ee9/jetty-ee9-servlet   {:mvn/version "12.0.38"}
+         org.eclipse.jetty.ee9.websocket/jetty-ee9-websocket-jetty-server
+         {:mvn/version "12.0.38"}
+         ;; ring-core 1.14 仍拉 fileupload2 2.0.0-M4（CVE-2025-48976 之前）。
+         org.apache.commons/commons-fileupload2-core {:mvn/version "2.0.0-M5"}
+         compojure/compojure     {:mvn/version "1.7.2"}}
+ :aliases
+ {:test {:extra-paths ["test"]
+         :extra-deps  {io.github.cognitect-labs/test-runner
+                       {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
+         :main-opts   ["-m" "cognitect.test-runner"]}}}

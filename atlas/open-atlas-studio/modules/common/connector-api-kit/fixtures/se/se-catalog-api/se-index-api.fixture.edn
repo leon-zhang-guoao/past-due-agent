@@ -1,0 +1,34 @@
+{:api-kit/version 1,
+ :api-kit/provenance
+ {:connector-version "v1",
+  :contract "api-v1",
+  :operation "se-index-api",
+  :recorded-at "2026-09-18T12:50:31.660074Z",
+  :redaction-rules "sha256:71228c8466a17c0c",
+  :source "se-catalog-api"},
+ :api-kit/samples [{:inputs [{}]}],
+ :api-kit/rules
+ {:detectors [:email :jwt :bearer :api-key-prefix :private-key :unresolved-var :high-entropy],
+  :keep-paths [["identifiers" "commercialReference"]],
+  :max-string 64,
+  :secret-paths []},
+ :api-kit/exchanges
+ [{:method "GET",
+   :endpoint "/v2/reference-data/product/product-catalog/products",
+   :query-param-names ["customerid" "customerid-type" "supplierid" "supplierid-type"],
+   :body-param-names [],
+   :match
+   {:method "GET",
+    :path "/v2/reference-data/product/product-catalog/products",
+    :query
+    {"customerid" "TDSYNNEX_US",
+     "customerid-type" "specific",
+     "supplierid" "Schneider_US",
+     "supplierid-type" "specific"}},
+   :status 200,
+   :headers {"Content-Type" "application/json"},
+   :body
+   {:products
+    [{:identifiers {:commercialReference "NSYMM86"}}
+     {:identifiers {:commercialReference "NSYPLM108G"}}
+     {:identifiers {:commercialReference "SAMPLE-0003"}}]}}]}

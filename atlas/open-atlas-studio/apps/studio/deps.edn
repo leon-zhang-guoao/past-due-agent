@@ -1,0 +1,155 @@
+{:paths ["src" "resources"]
+ :deps  {open.atlas/dialect {:local/root "../../modules/common/dialect"}
+         open.atlas/studio-pool {:local/root "../../modules/studio/pool"}
+         open.atlas/studio-graph {:local/root "../../modules/studio/graph"}
+         open.atlas/studio-version {:local/root "../../modules/studio/version"}
+         ;; The embedded runtime instance (D1.13). studio/app is the single
+         ;; assembly path; this app must not wire runtime subsystems itself.
+         open.atlas/studio-app {:local/root "../../modules/studio/app"}
+         open.atlas/runtime-token {:local/root "../../modules/runtime/token"}
+         ;; Declared rather than leaned on transitively: this app reads token
+         ;; records for its governance views and asks `expired?` about them, and
+         ;; a dependency you actually require should be one the classpath says
+         ;; you have (D1.8 makes module edges a build-time fact, not a habit).
+         open.atlas/token {:local/root "../../modules/common/token"}
+         ;; The offline delivery bundle (D4.13) reads a version's three files
+         ;; off the shelf and recomputes `artifact-digest` before handing them
+         ;; over. Declared for the same reason as the token module above: this
+         ;; app requires it directly, so the classpath should say so.
+         open.atlas/artifact {:local/root "../../modules/common/artifact"}
+         ;; Enterprise SSO (doc 8.16): the OIDC **protocol** lives in one
+         ;; module for all three login faces. Only identity storage stays here.
+         open.atlas/oidc {:local/root "../../modules/common/oidc"}
+         open.atlas/runtime-env {:local/root "../../modules/runtime/env"}
+         open.atlas/runtime-graph {:local/root "../../modules/runtime/graph"}
+         open.atlas/runtime-instance {:local/root "../../modules/runtime/instance"}
+         ;; 记录机械（8.10）：studio 内嵌 instance 与独立 Server 共用同一份。
+         open.atlas/runtime-obs      {:local/root "../../modules/runtime/obs"}
+         ;; app.jsonl 是 JSON 行——观测页要读回它。**直接用到就直接声明**，
+         ;; 不靠 runtime-obs 传递过来。
+         cheshire/cheshire           {:mvn/version "5.11.0"}
+         ;; 审计锚要问 instance 要它自己的 obs 子目录——直接用到就直接声明。
+         open.atlas/runtime-store    {:local/root "../../modules/runtime/store"}
+         ;; **SLF4J 必须有 provider**。studio 此前一个都没有，所以 tools.logging 与
+         ;; 所有库日志（Jetty、连接器、HTTP 客户端）都掉进 NOP——不是「日志少」，
+         ;; 是**一条都没有**。provider 必须在 slf4j-2.x 线上（Jetty 拉的就是 2.0.x）：
+         ;; 老的 slf4j-timbre 0.3.21 是 1.7 时代的 StaticLoggerBinder，在 2.x 下被
+         ;; 静默忽略——apps/server 的 deps.edn 记着这次事故的全过程。
+         com.taoensso/timbre         {:mvn/version "6.5.0"}
+         com.fzakaria/slf4j-timbre   {:mvn/version "0.4.1"}
+         ;; The data plane is the **Server's** shell, reused verbatim: studio
+         ;; must not re-implement grant judgement (D1.13 / owner ruling).
+         open.atlas/server-data {:local/root "../../modules/server/data"}
+         open.atlas/server-mcp  {:local/root "../../modules/server/mcp"}
+         ;; The SQL connector registers itself into the engine SPI by
+         ;; `defmethod`, so it must be both on the classpath and required.
+         ;; Without it every sql resolver compiles to a warning and is
+         ;; excluded — the data plane then answers 200 with no rows.
+         open.atlas/connector-sql {:local/root "../../modules/common/connector-sql"}
+         ;; Ditto for "derived" — the legacy Studio compiler had no derived
+         ;; executor and fenced those resolvers off (doc 89); the engine path
+         ;; runs them like any other source type once this is required.
+         open.atlas/connector-derived {:local/root "../../modules/common/connector-derived"}
+         ;; And for "api". Without it D2.15 leaves the Builder *carrying* an api
+         ;; source (loads, `:executable? false`); with it the same source is
+         ;; validated against api-v1 at write time and runs in the Lab.
+         open.atlas/connector-api {:local/root "../../modules/common/connector-api"}
+         ;; D1.8: declare what this app requires directly rather than only
+         ;; getting it transitively through runtime-instance/runtime-env.
+         ;; The Builder's authoring compile (doc 89) calls `common/engine`
+         ;; itself — it is not only reached via the embedded runtime instance.
+         open.atlas/engine {:local/root "../../modules/common/engine"}
+         ;; Manual modelling and Builder MCP intent tools.
+         open.atlas/studio-tools {:local/root "../../modules/studio/tools"}
+         org.clojure/clojure {:mvn/version "1.11.4"}
+         com.wsscode/pathom3 {:mvn/version "2025.01.16-alpha"}
+         org.clojure/tools.logging {:mvn/version "1.3.0"}
+         com.github.seancorfield/next.jdbc {:mvn/version "1.3.939"}
+         com.zaxxer/HikariCP {:mvn/version "5.1.0"}}
+         ;; NOTE: not one JDBC DRIVER in :deps. They are in the `:drivers`
+         ;; alias below and ship BESIDE the jar (8.13), exactly as in
+         ;; apps/server. Run with `clojure -M:drivers:run`.
+ :aliases
+ {:run {:main-opts ["-m" "open.atlas.studio.builder-server"]}
+
+  ;; ── The drivers, deliberately outside the jar (8.13) ─────────────────────
+  ;;
+  ;; Schema introspection is one implementation over `DatabaseMetaData`, so a
+  ;; driver on the classpath is the whole of what it takes to support an
+  ;; engine — nothing here names a driver class, discovery is
+  ;; `META-INF/services/java.sql.Driver`. Baked into the uberjar that made the
+  ;; drivers most of the artifact and meant swapping one for the version an
+  ;; operator's database needs required rebuilding this repository.
+  ;;
+  ;; A packaged Studio ships them in `drivers/` beside the jar, and the
+  ;; launcher puts that directory on the classpath. The package carries ALL of
+  ;; them, so an unpacked release connects out of the box.
+  ;;
+  ;; Locally: `clojure -M:drivers:run`, `clojure -M:drivers:test`. Without
+  ;; them a connection fails loudly at connect time ("No suitable driver found
+  ;; for jdbc:…"), never as an empty result.
+  ;;
+  ;; Versions match apps/server on purpose: two bases reading one database
+  ;; through two driver versions is a difference nobody thinks to look for.
+  ;; (Owner ruling 2026-08-26: SQLite, PostgreSQL, MySQL, ClickHouse.)
+  ;; SQLite is deliberately ABSENT from this list. It is not only a business
+  ;; engine here: `modules/common/search` stores its index in a SQLite sidecar
+  ;; (D7.7), so the driver is that module's own storage engine and travels
+  ;; inside the jar with it. Shipping a second copy in `drivers/` would put two
+  ;; versions of one driver on the classpath — the exact difference nobody
+  ;; thinks to look for.
+  ;;
+  ;; (There are three SQLite versions pinned in this repository today —
+  ;; common/search 3.46.1.0, apps/studio 3.46.1.3, apps/server 3.45.3.0. That
+  ;; predates this change and is worth settling; it is not settled here.)
+  :drivers
+  {:extra-deps
+   {com.mysql/mysql-connector-j {:mvn/version "8.3.0"}
+    ;; mysql-connector-j 8.3.0 pulls protobuf-java 3.25.1 (CVE-2024-7254);
+    ;; pin the patched 3.25.x, as apps/server does.
+    com.google.protobuf/protobuf-java {:mvn/version "3.25.5"}
+    ;; 42.7.11+ patches CVE-2026-42198.
+    org.postgresql/postgresql {:mvn/version "42.7.13"}
+    ;; Match the original deployment's driver for ClickHouse 22.8.
+    ;; Ship the driver and its dependencies beside the application in drivers/.
+    com.clickhouse/clickhouse-jdbc {:mvn/version "0.6.5"}
+    ;; The analyze_result executor (duckdb-spill v1). server/mcp stopped
+    ;; declaring it (8.13): a JDBC driver belongs to the assembly point.
+    org.duckdb/duckdb_jdbc {:mvn/version "1.3.1.0"}}}
+  ;; Retained for existing launch commands; 0.6.5 is now also the default.
+  :clickhouse-legacy {:override-deps {com.clickhouse/clickhouse-jdbc {:mvn/version "0.6.5"}}}
+  :bootstrap-admin {:main-opts ["-m" "open.atlas.studio.identity.bootstrap"]}
+  :add-admin {:main-opts ["-m" "open.atlas.studio.identity.provision-admin"]}
+  ;; One-shot workspace rename (E4 §1b.3). Same shape as :bootstrap-admin —
+  ;; a headless tool over one Studio home, run with Studio stopped.
+  :rename-workspace {:main-opts ["-m" "open.atlas.studio.rename-workspace"]}
+  ;; The suite opens real SQLite databases, so it carries the drivers itself
+  ;; rather than making `clojure -M:test` mean something different here than
+  ;; in every other module.
+  ;; `../../modules/common/oidc/test` is on the path for its `fake-idp`
+  ;; helper: the studio round trip (doc §8.16.7) must talk to the same fake
+  ;; identity provider the module's own suite does, and a copied helper is a
+  ;; second fake that drifts.
+  ;; `../../modules/common/connector-api/test` is on the path for its
+  ;; `test-env/with-env` helper: `declare_source`'s exit conditions (8.4.24
+  ;; 裁定十八) turn on a `${VAR}` that resolves, and the connector reads those
+  ;; through THREE entry points — a copy here that bound only some of them is
+  ;; exactly the drift that helper's docstring describes.
+  :test {:extra-paths ["test" "../../modules/common/oidc/test"
+                       "../../modules/common/connector-api/test"]
+         ;; SQLite arrives with common/search; this is the executor the
+         ;; analyze_result tests really run.
+         :extra-deps {org.duckdb/duckdb_jdbc {:mvn/version "1.3.1.0"}}
+         :main-opts ["-m" "open.atlas.studio.test-runner"]}
+  :ui {:extra-paths ["src-ui" "test-ui"]
+       :extra-deps {open.atlas/ui {:local/root "../../modules/common/ui"}
+                    org.clojure/clojurescript {:mvn/version "1.11.132"}
+                    com.pitch/uix.core {:mvn/version "1.1.1"}
+                    com.pitch/uix.dom {:mvn/version "1.1.1"}
+                    thheller/shadow-cljs {:mvn/version "2.28.20"}}}
+  ;; sqlite-jdbc is here because the build BUILDS the demo databases from the
+  ;; committed schema.sql + seed.sql (8.14). It is a build-time tool, not a
+  ;; runtime driver — the runtime ones are in :drivers.
+  :build {:deps {io.github.clojure/tools.build {:mvn/version "0.10.6"}
+                 org.xerial/sqlite-jdbc {:mvn/version "3.46.1.0"}}
+          :ns-default build}}}

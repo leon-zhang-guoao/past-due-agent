@@ -1,0 +1,25 @@
+{:deps {:aliases [:ui]}
+ ;; Let the OS allocate the compiler dashboard port. Shadow's default search
+ ;; starts at 9630 and can otherwise take Studio's 9631 when 9630 is occupied.
+ :http {:host "127.0.0.1" :port 0}
+ :builds
+ {:builder {:target :browser
+            :output-dir "resources/public/js"
+            :asset-path "/js"
+            :modules {:main {:init-fn open.atlas.studio.ui.app/init}}
+            :devtools {:watch-dir "resources/public"}
+            :release {:compiler-options {:optimizations :advanced}}}
+  ;; Packaging must not share its output with `watch builder`. A long-running
+  ;; development watcher can otherwise replace the release bundle between the
+  ;; Shadow build and the uberjar resource copy.
+  :builder-package {:target :browser
+                    :output-dir ".package-ui"
+                    :asset-path "/js"
+                    :modules {:main {:init-fn open.atlas.studio.ui.app/init}}
+                    :release {:compiler-options {:optimizations :advanced}}}
+  ;; Pure-logic UI tests (no browser): `npx shadow-cljs compile ui-test`
+  ;; compiles test-ui/** to out/ui-tests.js and node runs it.
+  :ui-test {:target :node-test
+            :output-to "out/ui-tests.js"
+            :ns-regexp "-test$"
+            :autorun false}}}

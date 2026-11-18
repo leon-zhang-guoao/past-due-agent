@@ -1,0 +1,34 @@
+.DS_Store
+.cpcache/
+target/
+dist/
+apps/studio/.package-ui/
+
+# Editor/linter caches at any depth; .clj-kondo/config.edn itself is tracked (it enforces
+# :discouraged-namespace), only its .cache/ is ignored.
+**/.clj-kondo/.cache/
+**/.lsp/
+__pycache__/
+.understand-anything/
+
+# Written by open-atlas-release build-images.sh at build time (BUILD.json, the pinned load-env.sh).
+/build-info/
+
+# Local state, secrets and generated test reports never belong in source control.
+.env
+.env.*
+!.env.example
+!*.env.example
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+*.p12
+*.key
+node_modules/
+test-results/
+playwright-report/
+
+# Business materials live in their own atlas-biz-* repositories (repo-split §5).
+/业务案例/

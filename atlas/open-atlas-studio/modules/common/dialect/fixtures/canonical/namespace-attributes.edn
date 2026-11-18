@@ -1,0 +1,17 @@
+{:attributes {:cis.master.part/all_parts {:label "SKU 目录全集" :target "cis.master.part"}
+              :cis.master.vendor/discontinued {:description "Whether the vendor is discontinued."
+                                               :format :code
+                                               :label "Discontinued"
+                                               :synonyms ["是否停用" "停用" "discontinued" "inactive"]
+                                               :type :string
+                                               :values {"N" {:label "在用"} "Y" {:label "已停用"}}}
+              :cis.master.vendor/vend_no {:description "Unique vendor number."
+                                          :format :id
+                                          :identity? true
+                                          :label "Vendor No"
+                                          :synonyms ["供应商编号" "供应商号" "vendor number" "vendor id"]
+                                          :type :integer}}
+ :namespaces {"cis.master.part" {:kind :master :label "Part — catalog item (SKU)"}
+              "cis.master.vendor" {:kind :master
+                                   :label "Vendor — supplier on a purchase order"
+                                   :synonyms ["供应商" "supplier"]}}}

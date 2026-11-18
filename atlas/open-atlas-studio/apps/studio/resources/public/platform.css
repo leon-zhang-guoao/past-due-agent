@@ -1,0 +1,3751 @@
+/* Platform shell around the mature Studio workbench.  The inner query/index
+   panes keep their original dense instrument layout; navigation, identity and
+   graph scope live in stable outer regions. */
+.platform-shell {
+  display: grid;
+  grid-template-columns: 218px minmax(0, 1fr);
+  height: 100vh;
+  overflow: hidden;
+}
+
+.platform-sidebar {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+  border-right: 1px solid var(--rule);
+  background: var(--panel);
+  box-shadow: inset -1px 0 0 var(--edge-hi);
+}
+
+.shell-brand {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 62px;
+  padding: 0 14px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.brand-mark {
+  display: grid;
+  width: 31px;
+  height: 31px;
+  flex: none;
+  place-items: center;
+  border: 1px solid var(--accent-dim);
+  border-radius: 4px;
+  color: var(--accent);
+  background: var(--raised);
+  font: 600 10px/1 var(--mono);
+  letter-spacing: .08em;
+}
+
+.brand-copy { display: flex; min-width: 0; flex-direction: column; }
+.brand-copy strong {
+  color: var(--ink);
+  font: 600 12px/1.25 var(--cond);
+  letter-spacing: .13em;
+  text-transform: none;
+  white-space: nowrap;
+}
+.brand-copy span {
+  margin-top: 3px;
+  color: var(--faint);
+  font: 500 9px/1 var(--cond);
+  letter-spacing: .12em;
+  text-transform: none;
+  white-space: nowrap;
+}
+
+.collapse-button,
+.theme-toggle {
+  display: grid;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  color: var(--faint);
+  background: none;
+  cursor: pointer;
+}
+.collapse-button { width: 26px; height: 26px; margin-left: auto; }
+.collapse-button:hover,
+.theme-toggle:hover { border-color: var(--rule-2); color: var(--ink); background: var(--raised); }
+
+.shell-navigation { min-height: 0; flex: 1; overflow-y: auto; padding: 13px 9px; }
+.shell-nav-section { margin-bottom: 13px; }
+.shell-nav-section h3 {
+  margin: 0;
+  padding: 7px 10px 5px;
+  color: var(--faint);
+  font: 600 9px/1 var(--cond);
+  letter-spacing: .16em;
+  text-transform: none;
+}
+
+.shell-nav-item {
+  display: flex;
+  width: 100%;
+  height: 34px;
+  align-items: center;
+  gap: 10px;
+  margin: 1px 0;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  color: var(--muted);
+  background: none;
+  cursor: pointer;
+  text-align: left;
+}
+.shell-nav-item:hover { color: var(--ink); background: var(--raised); }
+.shell-nav-item.selected {
+  border-color: var(--rule-2);
+  color: var(--accent);
+  background: var(--raised);
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+.shell-nav-icon { display: grid; width: 18px; flex: none; place-items: center; }
+.shell-nav-label {
+  overflow: hidden;
+  font: 500 12px/1 var(--cond);
+  letter-spacing: .035em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.shell-account { flex: none; padding: 9px; border-top: 1px solid var(--rule); }
+.account-button {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  align-items: center;
+  gap: 9px;
+  padding: 8px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: var(--muted);
+  background: none;
+  cursor: pointer;
+  text-align: left;
+}
+.account-button:hover,
+.account-button.selected { border-color: var(--rule-2); color: var(--ink); background: var(--raised); }
+.account-avatar {
+  display: grid;
+  width: 29px;
+  height: 29px;
+  flex: none;
+  place-items: center;
+  border-radius: 50%;
+  color: #17130d;
+  background: var(--accent);
+  font: 600 11px/1 var(--cond);
+}
+.account-copy { display: flex; min-width: 0; flex: 1; flex-direction: column; }
+.account-copy strong,
+.account-copy span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.account-copy strong { color: var(--ink); font: 600 11px/1.2 var(--cond); }
+.account-copy span { margin-top: 3px; color: var(--faint); font: 10px/1.2 var(--mono); }
+.account-chevron { flex: none; color: var(--faint); font-size: 18px; }
+
+.studio-content {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.context-bar {
+  display: flex;
+  height: 62px;
+  flex: none;
+  align-items: center;
+  gap: 18px;
+  padding: 0 14px 0 17px;
+  border-bottom: 1px solid var(--rule);
+  background: var(--panel);
+}
+.context-heading { display: flex; min-width: 150px; flex: 1; flex-direction: column; }
+.context-heading strong {
+  color: var(--ink);
+  font: 600 14px/1.2 var(--cond);
+  letter-spacing: .02em;
+}
+.context-eyebrow {
+  margin-bottom: 3px;
+  color: var(--accent);
+  font: 600 9px/1 var(--cond);
+  letter-spacing: .15em;
+  text-transform: none;
+}
+.context-graph {
+  margin-top: 3px;
+  overflow: hidden;
+  color: var(--faint);
+  font: 10px/1.1 var(--mono);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.context-bar .model-context { display: flex; min-width: 0; align-items: center; gap: 12px; }
+.context-bar .graph-picker { min-width: 0; flex-direction: row; align-items: center; gap: 8px; font: 500 12px/1.3 var(--cond); letter-spacing: 0; }
+.context-bar .graph-picker select { width: 180px; min-width: 0; max-width: 240px; height: 32px; padding-top: 5px; padding-bottom: 5px; text-overflow: ellipsis; }
+.context-bar .graph-picker:first-child select { width: 220px; }
+.theme-toggle { width: 32px; height: 32px; flex: none; font-size: 16px; }
+
+.nav-collapsed { grid-template-columns: 58px minmax(0, 1fr); }
+.nav-collapsed .shell-brand { justify-content: center; padding: 0; }
+.nav-collapsed .brand-copy,
+.nav-collapsed .shell-nav-section h3,
+.nav-collapsed .shell-nav-label,
+.nav-collapsed .account-copy,
+.nav-collapsed .account-chevron { display: none; }
+.nav-collapsed .collapse-button { position: absolute; right: -13px; bottom: -13px; z-index: 2; background: var(--panel); border-color: var(--rule-2); }
+.nav-collapsed .collapse-button svg { transform: rotate(180deg); }
+.nav-collapsed .shell-navigation { padding-right: 7px; padding-left: 7px; }
+.nav-collapsed .shell-nav-item { justify-content: center; padding: 0; }
+.nav-collapsed .shell-account { padding: 8px 6px; }
+.nav-collapsed .account-button { justify-content: center; padding: 7px 0; }
+
+.graphs-page {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 28px clamp(18px, 4vw, 56px) 44px;
+  background: var(--canvas, var(--ground));
+}
+
+.graphs-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 20px;
+  max-width: 1180px;
+  margin: 0 auto 22px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--rule-2);
+}
+
+.graphs-heading .eyebrow { color: var(--accent); }
+.graphs-heading h2 { margin: 3px 0 5px; font: 600 24px/1.1 var(--cond); color: var(--ink); }
+.graphs-heading p { max-width: 570px; margin: 0; color: var(--muted); }
+.graphs-count { color: var(--faint); font: 500 11px/1 var(--cond); letter-spacing: .09em; text-transform: none; white-space: nowrap; }
+
+/* Workspace registry — a ledger, not a card pile.  People are numbered rows
+   on the left; credentials and administration live on a separate rail to the
+   right (8.4 P1b: two ledgers, visibly apart). */
+.workspace-team-page {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 30px clamp(18px, 4vw, 64px) 52px;
+  background: var(--ground);
+}
+
+.workspace-plate,
+.team-layout { max-width: 1180px; margin-right: auto; margin-left: auto; }
+
+.workspace-plate {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 26px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--rule-2);
+}
+.workspace-plate .eyebrow { color: var(--accent); }
+.workspace-plate h2 {
+  margin: 6px 0 7px;
+  color: var(--ink);
+  font: 600 clamp(22px, 2.4vw, 26px)/1.1 var(--cond);
+  letter-spacing: .015em;
+}
+.workspace-plate p { max-width: 62ch; margin: 0; color: var(--muted); font-size: 13px; line-height: 1.55; }
+.workspace-plate .workspace-role {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: 3px;
+  align-items: flex-start;
+  padding: 7px 11px 8px;
+  border: 1px solid var(--accent-dim);
+  border-radius: 3px;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
+  font: 600 11px/1 var(--mono);
+  letter-spacing: .12em;
+  text-transform: none;
+}
+.workspace-plate .workspace-role em {
+  color: var(--faint);
+  font: 500 8px/1 var(--cond);
+  font-style: normal;
+  letter-spacing: .18em;
+}
+
+.team-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 360px);
+  gap: 34px;
+  align-items: start;
+}
+.team-main { min-width: 0; }
+.team-rail {
+  position: sticky;
+  top: 0;
+  display: grid;
+  gap: 20px;
+  min-width: 0;
+}
+
+.member-role,
+.member-current {
+  justify-self: start;
+  padding: 4px 7px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  color: var(--muted);
+  background: var(--raised);
+  font: 600 9px/1 var(--cond);
+  letter-spacing: .08em;
+  text-transform: none;
+  white-space: nowrap;
+}
+
+/* The owner's role picker is a control and has to look like one: a bordered
+   field with a caret, not a chip that happens to be clickable. */
+select.member-role {
+  width: 100%;
+  padding: 6px 22px 6px 8px;
+  border-color: var(--rule-2);
+  color: var(--ink);
+  font: 500 11px/1 var(--cond);
+  letter-spacing: .06em;
+  text-transform: lowercase;
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--faint) 50%),
+                    linear-gradient(135deg, var(--faint) 50%, transparent 50%);
+  background-repeat: no-repeat;
+  background-position: right 11px center, right 7px center;
+  background-size: 4px 4px, 4px 4px;
+  cursor: pointer;
+}
+select.member-role:hover { border-color: var(--accent-dim); color: var(--accent); }
+select.member-role:focus-visible {
+  border-color: var(--accent);
+  outline: 2px solid color-mix(in srgb, var(--accent) 38%, transparent);
+  outline-offset: 1px;
+}
+
+/* Withdrawing access is destructive, so it stays quiet until aimed at. */
+.btn.member-remove {
+  justify-self: end;
+  padding: 5px 9px;
+  border: 1px solid var(--rule-2);
+  border-radius: 3px;
+  color: var(--faint);
+  background: none;
+  font: 600 9px/1 var(--cond);
+  letter-spacing: .1em;
+  text-transform: none;
+}
+.btn.member-remove:hover,
+.btn.member-remove:focus-visible {
+  border-color: color-mix(in srgb, var(--error) 55%, var(--rule));
+  color: var(--error);
+  background: color-mix(in srgb, var(--error) 8%, transparent);
+}
+
+.team-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin: 0 0 2px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--rule);
+}
+.team-section-head h3,
+.team-note h3 {
+  margin: 0;
+  color: var(--ink);
+  font: 600 12px/1.25 var(--cond);
+  letter-spacing: .16em;
+  text-transform: none;
+}
+.team-section-head .graphs-count { color: var(--faint); font: 500 10px/1 var(--mono); letter-spacing: .06em; }
+
+/* Ledger rows: hairlines instead of card chrome. */
+.team-member-list { display: grid; gap: 0; }
+.team-member {
+  display: grid;
+  grid-template-columns: 22px 30px minmax(0, 1fr) 92px 68px;
+  align-items: center;
+  gap: 0 13px;
+  min-height: 52px;
+  padding: 8px 10px 8px 4px;
+  border-bottom: 1px solid var(--rule-2);
+  animation: row-in .28s ease both;
+  animation-delay: calc(var(--row-index, 0) * 22ms);
+  transition: background .12s ease, box-shadow .12s ease;
+}
+.team-member:hover { background: color-mix(in srgb, var(--raised) 70%, transparent); }
+.team-member.current { box-shadow: inset 3px 0 0 var(--accent); background: color-mix(in srgb, var(--accent) 5%, transparent); }
+.member-index {
+  color: var(--faint);
+  font: 500 10px/1 var(--mono);
+  letter-spacing: .06em;
+  text-align: right;
+}
+.member-avatar {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 1px solid var(--accent-dim);
+  border-radius: 2px;
+  color: var(--accent);
+  background: var(--raised);
+  font: 600 12px/1 var(--mono);
+}
+.member-identity { min-width: 0; }
+.member-identity h4 { margin: 0; color: var(--ink); font: 600 13px/1.3 var(--cond); }
+.member-identity p { margin: 2px 0 0; overflow: hidden; color: var(--faint); font: 10px/1.2 var(--mono); text-overflow: ellipsis; white-space: nowrap; }
+.member-current {
+  border: 1px solid var(--accent-dim);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+.team-note { margin-top: 30px; }
+.team-note p { max-width: 650px; margin-top: 6px; color: var(--muted); font-size: 12px; line-height: 1.55; }
+.team-main .team-note { margin-top: 0; }
+.team-main .team-members { margin-top: 32px; }
+
+/* Rail panels: the credential ledger and user administration read as filed
+   documents — bordered, ticked at the corner, never as member rows. */
+.team-rail > * {
+  position: relative;
+  margin: 0;
+  padding: 15px 16px 17px;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  background: var(--panel);
+  box-shadow: 0 1px 0 var(--edge-hi, transparent) inset;
+}
+.team-rail > *::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  left: -1px;
+  height: 2px;
+  border-radius: 4px 4px 0 0;
+  background: var(--accent-dim);
+  pointer-events: none;
+}
+.team-rail .studio-user-form { grid-template-columns: minmax(0, 1fr); }
+.studio-user-list .team-member {
+  grid-template-columns: 30px minmax(180px, 1fr) auto minmax(224px, auto);
+  gap: 10px 16px;
+  min-height: 58px;
+  padding: 9px 10px 9px 0;
+}
+.studio-user-status,
+.studio-user-actions {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.studio-user-status { justify-content: flex-end; }
+.studio-user-actions { justify-content: flex-end; min-width: 0; }
+.studio-user-actions .btn {
+  width: auto;
+  min-width: max-content;
+  justify-self: auto;
+}
+.studio-user-admin > .studio-user-form {
+  grid-template-columns: minmax(150px, .8fr) minmax(210px, 1fr) minmax(290px, 1.25fr) max-content;
+  max-width: none;
+}
+.studio-password-reset-form {
+  grid-template-columns: minmax(220px, 1fr) minmax(280px, 1.2fr) max-content max-content;
+  max-width: none;
+  align-items: center;
+  margin: 14px 0 18px;
+  padding: 12px;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--raised) 55%, transparent);
+}
+.studio-password-reset-form > span {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--muted);
+  font: 500 11px/1.35 var(--mono);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.team-rail .token-panel h3,
+.team-rail .team-note h3 {
+  margin: 0 0 9px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--rule);
+  font: 600 12px/1.25 var(--cond);
+  letter-spacing: .16em;
+  text-transform: none;
+}
+
+@keyframes row-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .team-member { animation: none; }
+}
+.workspace-member-form,
+.studio-user-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(150px, auto) auto;
+  gap: 8px;
+  max-width: 650px;
+  margin-top: 13px;
+}
+.studio-user-form { grid-template-columns: minmax(120px, .8fr) minmax(170px, 1fr) minmax(180px, 1fr) auto; }
+.workspace-member-form select,
+.studio-user-form input {
+  min-width: 0;
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid var(--rule-2);
+  border-radius: 4px;
+  color: var(--ink);
+  background: var(--raised);
+  font: 12px/1.2 var(--mono);
+}
+.workspace-member-form select:focus,
+.studio-user-form input:focus { outline: 2px solid color-mix(in srgb, var(--accent) 38%, transparent); border-color: var(--accent); }
+.team-action-error {
+  border: 1px solid color-mix(in srgb, var(--error) 45%, var(--rule));
+  border-radius: 3px;
+  color: var(--error) !important;
+  background: color-mix(in srgb, var(--error) 7%, transparent);
+  font-size: 12px;
+}
+.team-action-success {
+  border: 1px solid color-mix(in srgb, var(--ok) 45%, var(--rule));
+  border-radius: 3px;
+  color: color-mix(in srgb, var(--ok) 78%, var(--ink)) !important;
+  background: color-mix(in srgb, var(--ok) 10%, transparent);
+  font-size: 12px;
+}
+.team-action-feedback {
+  margin-top: 10px !important;
+  padding: 8px 10px;
+}
+.team-action-feedback:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent) 42%, transparent);
+  outline-offset: 2px;
+}
+.action-hints {
+  margin-top: 8px;
+  display: grid;
+  gap: 6px;
+}
+.action-hints .hint {
+  margin: 0;
+  color: color-mix(in srgb, var(--error) 86%, var(--ink));
+  font-size: 12px;
+  line-height: 1.35;
+}
+.studio-user-admin { margin-top: 32px; }
+.studio-user-list { margin-top: 14px; }
+.team-empty {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  border: 1px dashed var(--rule);
+  border-radius: 4px;
+  color: var(--muted);
+  font-size: 12px;
+  background: color-mix(in srgb, var(--raised) 45%, transparent);
+}
+
+.profile-page {
+  display: block;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 34px clamp(18px, 5vw, 68px) 48px;
+  background: var(--ground);
+}
+.profile-heading,
+.profile-grid { max-width: 900px; margin-right: auto; margin-left: auto; }
+.profile-heading { margin-bottom: 22px; }
+.profile-heading .eyebrow { color: var(--accent); }
+.profile-heading h2 { margin: 4px 0 5px; color: var(--ink); font: 600 25px/1.1 var(--cond); }
+.profile-heading p { margin: 0; color: var(--muted); }
+.profile-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px; }
+.profile-card {
+  position: relative;
+  min-width: 0;
+  padding: 17px;
+  border: 1px solid var(--rule-2);
+  border-radius: 6px;
+  background: var(--panel);
+}
+.profile-card h3 { margin: 0; color: var(--ink); font: 600 14px/1.3 var(--cond); }
+.change-password-card { width: min(100%, 620px); grid-column: 1 / -1; box-sizing: border-box; }
+.change-password-form { display: grid; gap: 14px; margin-top: 18px; }
+.change-password-field {
+  display: grid;
+  min-width: 0;
+  gap: 6px;
+  color: var(--muted);
+  font: 600 10px/1 var(--cond);
+  letter-spacing: .08em;
+  text-transform: none;
+}
+.change-password-field input {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 10px 11px;
+  border: 1px solid var(--rule-2);
+  border-radius: 4px;
+  color: var(--ink);
+  background: var(--raised);
+  font: 13px/1.2 var(--mono);
+}
+.change-password-field input:focus {
+  outline: 2px solid color-mix(in srgb, var(--accent) 38%, transparent);
+  border-color: var(--accent);
+}
+.change-password-actions { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 2px; }
+.identity-card { display: flex; align-items: center; gap: 13px; grid-column: 1 / -1; }
+.profile-avatar {
+  display: grid;
+  width: 45px;
+  height: 45px;
+  flex: none;
+  place-items: center;
+  border-radius: 50%;
+  color: #17130d;
+  background: var(--accent);
+  font: 600 16px/1 var(--cond);
+}
+.profile-primary { min-width: 0; flex: 1; }
+.profile-primary h3,
+.profile-primary p { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.profile-primary h3 { font-size: 16px; }
+.profile-primary p { margin: 3px 0 7px; color: var(--faint); font: 10.5px/1.2 var(--mono); }
+.profile-badges { display: flex; gap: 5px; flex-wrap: wrap; }
+.dev-session { color: var(--warn); font: 600 9px/1 var(--cond); letter-spacing: .1em; text-transform: none; }
+.profile-help { margin: 5px 0 13px; color: var(--muted); font-size: 12px; line-height: 1.45; }
+.profile-workspaces { display: grid; gap: 6px; }
+.profile-workspace {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 9px;
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  color: var(--ink);
+  background: var(--raised);
+  font: 12px/1.2 var(--mono);
+}
+.profile-theme { display: flex; gap: 7px; margin-top: 14px; }
+.profile-auth-note { grid-column: 1 / -1; }
+.profile-auth-note p { max-width: 700px; margin: 7px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55; }
+
+.auth-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 28px;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 17% 15%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 34%),
+    var(--ground);
+}
+.auth-card {
+  width: min(430px, 100%);
+  padding: 26px;
+  border: 1px solid var(--rule-2);
+  border-radius: 8px;
+  background: var(--panel);
+  box-shadow: 0 24px 70px rgb(0 0 0 / .18);
+}
+.auth-brand { display: flex; align-items: center; gap: 11px; margin-bottom: 32px; }
+.auth-brand > div:last-child { display: grid; gap: 2px; }
+.auth-brand strong { font: 600 15px/1 var(--cond); letter-spacing: .02em; }
+.auth-brand span { color: var(--faint); font: 10px/1 var(--mono); }
+.auth-heading h1 { margin: 7px 0 9px; font: 600 25px/1.15 var(--cond); }
+.auth-heading p { margin: 0 0 22px; color: var(--muted); font-size: 12px; line-height: 1.55; }
+.auth-form { display: grid; gap: 13px; }
+.auth-form label { display: grid; gap: 6px; color: var(--muted); font: 600 10px/1 var(--cond); letter-spacing: .08em; text-transform: none; }
+.auth-form input {
+  width: 100%; box-sizing: border-box; padding: 10px 11px;
+  border: 1px solid var(--rule-2); border-radius: 4px;
+  color: var(--ink); background: var(--raised); font: 13px/1.2 var(--mono);
+}
+.auth-form input:focus { outline: 2px solid color-mix(in srgb, var(--accent) 38%, transparent); border-color: var(--accent); }
+.auth-submit { width: 100%; min-height: 38px; margin-top: 3px; }
+.auth-error { padding: 9px 10px; border: 1px solid color-mix(in srgb, var(--error) 50%, var(--rule)); border-radius: 4px; color: var(--error); background: color-mix(in srgb, var(--error) 7%, transparent); font-size: 12px; }
+.auth-sso { display: grid; gap: 13px; margin-top: 16px; }
+.auth-divider { display: flex; align-items: center; gap: 10px; color: var(--faint); font: 600 10px/1 var(--cond); letter-spacing: .08em; text-transform: uppercase; }
+.auth-divider::before, .auth-divider::after { content: ""; flex: 1; border-top: 1px solid var(--rule); }
+.auth-sso-link { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 38px; box-sizing: border-box; text-decoration: none; }
+.auth-footnote { margin: 18px 0 0; color: var(--faint); font-size: 10.5px; line-height: 1.45; }
+.auth-loading { color: var(--muted); font: 12px/1 var(--mono); }
+
+@media (min-width: 701px) and (max-width: 1200px) {
+  .context-bar .graph-picker { flex-direction: column; align-items: stretch; gap: 3px; }
+}
+
+@media (max-width: 980px) {
+  .platform-shell { grid-template-columns: 58px minmax(0, 1fr); }
+  .team-layout { grid-template-columns: minmax(0, 1fr); gap: 26px; }
+  .team-rail { position: static; }
+  .platform-shell .shell-brand { justify-content: center; padding: 0; }
+  .platform-shell .brand-copy,
+  .platform-shell .shell-nav-section h3,
+  .platform-shell .shell-nav-label,
+  .platform-shell .account-copy,
+  .platform-shell .account-chevron { display: none; }
+  .platform-shell .collapse-button { display: none; }
+  .platform-shell .shell-navigation { padding-right: 7px; padding-left: 7px; }
+  .platform-shell .shell-nav-item { justify-content: center; padding: 0; }
+  .platform-shell .shell-account { padding: 8px 6px; }
+  .platform-shell .account-button { justify-content: center; padding: 7px 0; }
+  .context-bar { gap: 10px; }
+  .context-heading { min-width: 112px; }
+  .context-bar .graph-picker select { width: 145px; }
+  .context-bar .graph-picker:first-child select { width: 170px; }
+}
+
+@media (max-width: 700px) {
+  .platform-shell {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: 48px minmax(0, 1fr);
+  }
+  .platform-sidebar {
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr) 48px;
+    grid-template-rows: 48px;
+    border-right: 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .platform-sidebar .shell-brand { height: 48px; border-bottom: 0; }
+  .platform-sidebar .brand-mark { width: 28px; height: 28px; }
+  .platform-sidebar .shell-navigation {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: 0;
+    overflow: hidden;
+  }
+  .platform-sidebar .shell-nav-section { display: contents; margin: 0; }
+  .platform-sidebar .shell-nav-item { width: 38px; height: 34px; flex: none; margin: 0; }
+  .platform-sidebar .shell-account {
+    display: grid;
+    padding: 0;
+    border-top: 0;
+    place-items: center;
+  }
+  .platform-sidebar .account-button { width: 38px; padding: 3px; }
+  .platform-sidebar .account-avatar { width: 27px; height: 27px; }
+  .context-bar { height: auto; min-height: 72px; flex-wrap: wrap; gap: 8px 12px; padding: 8px 10px; }
+  .context-heading { min-width: 120px; }
+  .context-heading .context-graph { display: none; }
+  .context-bar .model-context { order: 3; width: 100%; }
+  .context-bar .graph-picker { flex: 1; flex-direction: column; align-items: stretch; gap: 4px; }
+  .context-bar .graph-picker select,
+  .context-bar .graph-picker:first-child select { width: 100%; max-width: none; }
+  .context-bar .theme-toggle { margin-left: auto; }
+  .graphs-page,
+  .workspace-team-page,
+  .profile-page { padding: 20px 14px 32px; }
+  .graphs-heading,
+  .workspace-plate { align-items: start; flex-direction: column; gap: 10px; }
+  .workspace-member-form,
+  .studio-user-form { grid-template-columns: minmax(0, 1fr); }
+  .team-member {
+    grid-template-columns: 22px 30px minmax(0, 1fr) auto;
+    gap: 6px 10px;
+  }
+  .team-member > :nth-child(n + 4) { grid-column: 3 / -1; justify-self: start; }
+  select.member-role { width: auto; min-width: 120px; }
+  .profile-grid { grid-template-columns: minmax(0, 1fr); }
+  .identity-card,
+  .profile-auth-note { grid-column: auto; }
+}
+
+/* ------------------------------------------------------------------------
+   In-place asset editor (dossier write surface)
+   ------------------------------------------------------------------------ */
+
+.asset-editor {
+  margin: 12px 0;
+  padding: 12px;
+  border: 1px solid var(--rule-2);
+  border-radius: 6px;
+  background: var(--panel);
+}
+/* The entry box is the CodeMirror editor the query panes use (owner ruling
+   2026-09-05: a pool object is authored as EDN, so it deserves EDN's reading
+   aids). Its height comes from the CodeMirror theme in editor.cljs — grow with
+   the document, cap at 70vh, then scroll: a thirty-line source entry used to
+   make the whole tab tall, so «edit» on the Sources register opened below the
+   fold. What is lost against the textarea is the drag handle on the bottom
+   edge: `resize: vertical` cannot act on a CodeMirror scroller, and the
+   Maximize button plus Cmd/Ctrl+Shift+M is the replacement. */
+.asset-editor .editor.asset-entry {
+  flex: none;
+  min-height: 9em;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.asset-editor .editor.asset-entry .cm-editor { height: auto; }
+
+/* Read-only: the same document, shown. The box keeps the editor's geometry
+   (grow with the entry, then scroll) but is not scoped to `.asset-editor` --
+   the dossier shows an entry with no editor around it. */
+.editor.editor-read-only {
+  flex: none;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.editor.editor-read-only .cm-editor { height: auto; }
+
+/* Maximized: the editor becomes an overlay filling the viewport, so a long
+   entry is read without scrolling a box inside a scrolling page. Only a view
+   state -- the same textarea, the same text, the same save path. */
+.asset-editor.maximized {
+  position: fixed;
+  inset: 16px;
+  z-index: 200;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  box-shadow: 0 8px 32px var(--sunk, rgba(0, 0, 0, .35));
+}
+/* The box grows, the actions row stays reachable at the bottom: the editor
+   takes what is left rather than the 70vh cap it uses in the page. */
+.asset-editor.maximized .editor.asset-entry {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.asset-editor.maximized .editor.asset-entry .cm-editor { height: 100%; }
+.asset-editor.maximized .asset-editor-actions { flex: 0 0 auto; }
+/* The block always renders through a portal (app.cljs): this is where it sits
+   in the page — no box of its own, so the page lays out as it did before the
+   portal existed. Maximized, the same container is moved to <body>, out of
+   reach of any transform/filter/contain ancestor that would otherwise make
+   `position: fixed` mean "fill the drawer" rather than "fill the window". */
+.asset-editor-anchor, .asset-editor-portal { display: contents; }
+/* Dims the page under the overlay and takes the clicks the page must not see.
+   Below the editor, above everything the drawer stacks (studio.css tops out
+   at 60). */
+.asset-editor-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 199;
+  background: rgba(0, 0, 0, .45);
+}
+.asset-editor-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+.asset-editor-actions .via { margin-left: auto; }
+
+/* ------------------------------------------------------------------------
+   Semantic Contract definition
+
+   The toolbar and CodeMirror are separate flex rows. A long Contract scrolls
+   only inside CodeMirror, so validation and save remain reachable at line 1,
+   line 1500, and line 3000 without a second nested page scroll.
+   ------------------------------------------------------------------------ */
+
+.semantic-definition {
+  min-width: 0;
+}
+.semantic-definition-header,
+.semantic-definition-status,
+.semantic-definition-import-strip,
+.semantic-document-toolbar,
+.semantic-document-actions {
+  display: flex;
+  align-items: center;
+}
+.semantic-definition-header {
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.semantic-definition-heading { min-width: 0; }
+.semantic-definition-heading h3,
+.semantic-definition-heading p { margin: 0; }
+.semantic-definition-import-strip,
+.semantic-definition-status { gap: 8px; }
+.semantic-definition-status,
+.semantic-definition-import-strip {
+  min-width: 0;
+  flex-wrap: wrap;
+  margin: 6px 0;
+}
+.semantic-definition-status > span {
+  padding-left: 8px;
+  border-left: 1px solid var(--rule-2);
+  color: var(--muted);
+}
+.semantic-definition-status .unsaved {
+  color: var(--warn);
+  font-weight: 650;
+}
+.semantic-definition-status .saved { color: var(--success, var(--muted)); }
+.semantic-definition-import-strip .hint { margin: 0; }
+.semantic-definition-tools,
+.semantic-definition-result {
+  margin: 8px 0;
+  border: 1px solid var(--rule-2);
+  border-radius: 5px;
+  padding: 7px 10px;
+  background: var(--panel);
+}
+.semantic-definition-tools > summary,
+.semantic-definition-result > summary {
+  cursor: pointer;
+  font-weight: 650;
+}
+.semantic-definition-tools > details { margin: 10px 0; }
+.semantic-source-mapping-list {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0;
+}
+.semantic-source-mapping-row {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(260px, 1fr);
+  align-items: center;
+  gap: 12px;
+  padding: 9px 10px;
+  border: 1px solid var(--rule-2);
+  border-radius: 5px;
+  background: var(--ground);
+}
+.semantic-source-mapping-row select { width: 100%; }
+@media (max-width: 780px) {
+  .semantic-source-mapping-row { grid-template-columns: 1fr; }
+}
+.semantic-document-shell {
+  height: clamp(520px, calc(100dvh - 310px), 860px);
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  background: var(--ground);
+}
+.semantic-document-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  flex: 0 0 auto;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--rule);
+  background: var(--panel);
+}
+.semantic-document-label {
+  flex: 0 0 auto;
+  font-weight: 700;
+}
+.semantic-document-actions {
+  min-width: 0;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 1px;
+  scrollbar-width: thin;
+}
+.semantic-document-actions .btn { flex: 0 0 auto; }
+.semantic-document-shell .editor.semantic-document-editor {
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+.semantic-document-shell .semantic-document-editor .cm-editor {
+  height: 100%;
+  max-height: none;
+}
+.semantic-document-shell .semantic-document-editor .cm-scroller {
+  overflow: auto;
+}
+
+/* Selected Contract objects remain editable in the Graph Editor dossier. The
+   dossier owns the scroll; this bar stays pinned while either EDN body moves. */
+.contract-object-editor { min-width: 0; }
+.contract-object-editor-actions {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  margin: -4px -4px 10px;
+  padding: 8px 4px;
+  border-bottom: 1px solid var(--rule);
+  background: var(--panel);
+}
+.contract-object-editor-actions .mono {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.contract-object-editor > label {
+  display: block;
+  margin: 10px 0 5px;
+  font-weight: 650;
+}
+.contract-object-editor .editor {
+  flex: none;
+  min-height: 180px;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+}
+.contract-object-result { margin-top: 10px; }
+
+@media (max-width: 720px) {
+  .semantic-definition-header { align-items: flex-start; }
+  .semantic-document-shell {
+    height: max(460px, calc(100dvh - 260px));
+  }
+  .semantic-document-toolbar { align-items: flex-start; flex-direction: column; }
+  .semantic-document-actions { width: 100%; }
+}
+
+/* finding-v1 rejections: code + path + message, expected/got below */
+.findings {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.finding {
+  border: 1px solid var(--rule-2);
+  border-left: 3px solid var(--error, #c0504d);
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-size: 12px;
+}
+.finding.warning { border-left-color: var(--warn); }
+/* An :info finding is a connector DECLARING what its engine cannot do (a
+   ClickHouse source has no foreign keys) -- not a fault. Without this rule it
+   inherits the error bar above and reads as a broken connector. */
+.finding.info { border-left-color: var(--muted); }
+.finding-head {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  font-family: var(--mono);
+  margin-bottom: 2px;
+}
+.finding-head .code { font-weight: 600; }
+.finding .mono {
+  font-family: var(--mono);
+  opacity: .85;
+  word-break: break-all;
+}
+.finding-message { margin: 2px 0; }
+.asset-editor input.asset-id {
+  width: 100%;
+  box-sizing: border-box;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: 6px 8px;
+  margin-bottom: 8px;
+}
+
+/* ------------------------------------------------------------------------
+   Connect mode: drawing a proposed hop between two attributes
+   ------------------------------------------------------------------------ */
+
+/* Crosshair over the whole canvas says the gesture means something else now;
+   the nodes keep their own pointer so a target still reads as a target. */
+.attr-graph.connecting { cursor: crosshair; }
+.attr-graph.connecting .ag-node { cursor: crosshair; }
+
+.ag-rubber {
+  stroke: var(--accent);
+  stroke-width: 2px;
+  stroke-dasharray: 5 4;
+  pointer-events: none;
+}
+
+/* ------------------------------------------------------------------------
+   Entry forms — fields come from /api/studio/schema
+   ------------------------------------------------------------------------ */
+
+.entry-form { display: flex; flex-direction: column; gap: 8px; }
+
+.field-row { display: flex; flex-direction: column; gap: 3px; }
+.field-label {
+  font-size: 10px;
+  text-transform: none;
+  letter-spacing: .08em;
+  opacity: .7;
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+}
+.field-hint { text-transform: none; letter-spacing: 0; opacity: .65; font-size: 10px; }
+
+.field-row input[type="text"],
+.field-row input:not([type]),
+.field-row input[type="number"],
+.field-row select,
+.field-row textarea {
+  width: 100%;
+  box-sizing: border-box;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: 5px 7px;
+}
+.field-row input[type="checkbox"] { width: auto; align-self: flex-start; }
+.field-row textarea.field-edn { resize: vertical; line-height: 1.45; }
+.field-pair { display: flex; gap: 6px; }
+.field-pair input { flex: 1; }
+
+/* ------------------------------------------------------------------------
+   Graph membership: the resolvers a recipe currently selects
+   ------------------------------------------------------------------------ */
+
+.graph-members { margin-top: 10px; }
+.graph-members summary { cursor: pointer; font-size: 12px; opacity: .8; }
+.graph-member-list {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  max-height: 260px;
+  overflow-y: auto;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+}
+.graph-member-list li {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--rule);
+}
+.graph-member-list li:last-child { border-bottom: 0; }
+.graph-member-list .name { font-family: var(--mono); font-size: 12px; }
+.graph-member-list .meta { margin-left: auto; opacity: .6; font-size: 11px; }
+
+/* binding rows: attribute · its column/bind in the resolver result */
+.binding-rows { display: flex; flex-direction: column; gap: 4px; }
+/* Attribute over its binding. A qualified name runs to thirty-odd characters;
+   side by side, the box shows the namespace every row shares and clips the
+   part that tells them apart. */
+.binding-row { display: flex; flex-direction: column; gap: 3px; }
+.binding-head { display: flex; gap: 6px; align-items: center; }
+.binding-head .binding-attr { flex: 1; min-width: 0; }
+.binding-row .binding-bind { width: 100%; }
+.binding-row input {
+  box-sizing: border-box;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: 5px 7px;
+  min-width: 0;
+}
+.binding-row input:disabled { opacity: .4; }
+.binding-remove { flex: 0 0 auto; padding: 1px 5px; line-height: 1.2; }
+
+/* ------------------------------------------------------------------------
+   Local runtime: publish + self-test tokens
+   ------------------------------------------------------------------------ */
+
+.token-panel { margin-top: 12px; }
+.token-panel h3 { margin: 0 0 4px; font-size: 13px; }
+.token-issue {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 10px 0;
+}
+.token-issue select {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: 4px 6px;
+}
+
+/* The secret is shown once; make that visually unmistakable. */
+.token-secret {
+  border: 1px solid var(--accent);
+  border-radius: 5px;
+  padding: 10px;
+  margin: 10px 0;
+}
+.token-secret-head { margin: 0 0 6px; font-size: 12px; color: var(--accent); }
+.token-secret-value {
+  display: block;
+  font-family: var(--mono);
+  font-size: 11px;
+  word-break: break-all;
+  line-height: 1.5;
+  padding: 6px 8px;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+}
+
+.token-list { list-style: none; margin: 8px 0 0; padding: 0; }
+.token-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+  border-top: 1px solid var(--rule);
+}
+.token-list .name { font-family: var(--mono); font-size: 11px; }
+.token-list .btn { margin-left: auto; }
+
+/* Team: role editing and withdrawal */
+select.member-role {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: 3px 5px;
+}
+.member-remove { margin-left: 8px; }
+
+.token-list li { flex-wrap: wrap; }
+
+.pane-error { padding: 16px; }
+
+/* An output tree: members belong to their collection, so they are indented
+   under it rather than listed as siblings. */
+.tree-node { display: flex; flex-direction: column; gap: 4px; }
+.tree-members {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-left: 18px;
+  padding-left: 10px;
+  border-left: 1px solid var(--rule-2);
+}
+.collection-tag { align-self: flex-start; opacity: .7; }
+
+.shape-variant { margin-bottom: 8px; }
+
+.preflight { padding: 4px 0; }
+.preflight-existing { margin-top: 8px; }
+.preflight-existing summary { cursor: pointer; font-size: 11px; opacity: .75; }
+
+/* Read view of an output tree: a collection sits above its members, never
+   beside them — the same shape the editor uses, and the only one a qualified
+   name fits in. `.ledger li` is a flex row by default, which is what pushed
+   the members off the right edge. */
+.tree-ledger ul { list-style: none; margin: 0; padding: 0; }
+.tree-ledger li.tree-item {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2px;
+}
+/* The name shrinks; the facts do not. The tier is the one thing on this row
+   that can mean "you may not have this", so it must not be the thing that
+   runs off the edge — which is exactly what happened when the name was free
+   to take the whole width. */
+.tree-ledger .tree-head { display: flex; align-items: baseline; gap: 8px; }
+.tree-ledger .tree-head > .link {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tree-ledger .tree-head > .facts { flex: none; margin-left: auto; }
+.tree-ledger ul.tree-members li {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 2px 0;
+}
+.tree-ledger ul.tree-members li > .link {
+  flex: 0 1 auto; min-width: 0; overflow: hidden;
+  text-overflow: ellipsis; white-space: nowrap;
+}
+.tree-ledger ul.tree-members li > .facts { flex: none; margin-left: auto; }
+.tree-ledger ul.tree-members {
+  margin: 2px 0 6px 14px;
+  padding-left: 10px;
+  border-left: 1px solid var(--rule-2);
+}
+
+/* Workspace assets: the pool, unfiltered by any graph. */
+
+.lab-scope-note { padding: 6px 12px; margin: 0; }
+
+/* ==========================================================================
+   The workspace register — the Graphs page
+   --------------------------------------------------------------------------
+   A graph is a registered scope, so it is set as a register entry rather than
+   a floating card: a ruled plate with a catalogue gutter, the qualified name
+   carrying the weight (it is the identity, D3.10) and the friendly label as an
+   over-line. Full width, because the recipe, the membership and the runtime
+   panel all have to be readable — which a 340px card never allowed.
+   ========================================================================== */
+
+.register {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 34px clamp(18px, 5vw, 68px) 64px;
+  background: var(--canvas, var(--ground));
+}
+
+/* --- masthead ----------------------------------------------------------- */
+
+.register-head {
+  max-width: 1080px;
+  margin: 0 auto 26px;
+  padding-bottom: 14px;
+  /* A double rule: the register's own head-band. */
+  border-bottom: 3px double var(--rule-2);
+}
+
+.register-eyebrow {
+  margin: 0;
+  color: var(--accent);
+  font: 600 10px/1 var(--cond);
+  letter-spacing: .22em;
+  text-transform: none;
+}
+
+.register-title {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  margin: 10px 0 8px;
+}
+
+.register-title h2 {
+  margin: 0;
+  color: var(--ink);
+  font: 600 clamp(30px, 4.6vw, 46px)/.95 var(--cond);
+  letter-spacing: -.015em;
+}
+
+/* The tally reads as a stamped figure on the same baseline as the title. */
+.register-tally {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding-bottom: 3px;
+  color: var(--faint);
+  font: 500 11px/1 var(--cond);
+  letter-spacing: .1em;
+  text-transform: none;
+}
+.register-tally b {
+  color: var(--accent);
+  font: 600 20px/1 var(--mono);
+  letter-spacing: 0;
+}
+
+.register-note {
+  max-width: 62ch;
+  margin: 0;
+  color: var(--muted);
+  font: 13px/1.55 var(--cond);
+}
+
+/* --- plates ------------------------------------------------------------- */
+
+.plates { max-width: 1080px; margin: 0 auto; }
+
+.plate {
+  display: grid;
+  grid-template-columns: 62px minmax(0, 1fr);
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  margin-bottom: 10px;
+  /* Set down the page in order rather than all at once. */
+  animation: plate-set .42s cubic-bezier(.2, .7, .3, 1) backwards;
+  animation-delay: calc(var(--plate-i, 0) * 55ms);
+}
+
+@keyframes plate-set {
+  from { opacity: 0; transform: translateY(7px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .plate { animation: none; }
+}
+
+/* The gutter is the catalogue column: number above, state below, separated
+   from the body by the same hairline the rest of the app uses. */
+.plate-gutter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  padding: 17px 0;
+  border-right: 1px solid var(--rule);
+  background: var(--raised);
+  border-radius: 3px 0 0 3px;
+}
+
+.plate-mark {
+  color: var(--faint);
+  font: 500 15px/1 var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.plate-state {
+  writing-mode: vertical-rl;
+  color: var(--faint);
+  font: 600 8px/1 var(--cond);
+  letter-spacing: .16em;
+  text-transform: none;
+}
+
+.plate.active  .plate-state { color: var(--ok); }
+.plate.active  .plate-mark  { color: var(--muted); }
+
+/* An archived plate recedes: hatched gutter, muted body. It is still legible —
+   it has not been deleted — but it stops competing with the live ones. */
+.plate.archived { opacity: .72; }
+.plate.archived .plate-gutter {
+  background-image: repeating-linear-gradient(
+    -45deg, transparent 0 4px, var(--rule) 4px 5px);
+}
+
+.plate.selected { border-color: var(--accent-dim); }
+.plate.selected .plate-gutter {
+  background: var(--accent);
+  border-right-color: var(--accent);
+}
+.plate.selected .plate-mark,
+.plate.selected .plate-state { color: #fff; }
+
+.plate-body { min-width: 0; padding: 16px 18px 17px; }
+
+/* --- identity ----------------------------------------------------------- */
+
+.plate-id {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.plate-eyebrow {
+  margin: 0 0 3px;
+  color: var(--faint);
+  font: 600 9.5px/1 var(--cond);
+  letter-spacing: .17em;
+  text-transform: none;
+}
+
+.plate-name {
+  margin: 0;
+  color: var(--ink);
+  font: 500 17px/1.2 var(--mono);
+  overflow-wrap: anywhere;
+}
+
+/* The spec block is a catalogue number, so it is set small, right-aligned and
+   out of the way — present when looked for, silent otherwise. */
+.plate-spec {
+  flex: none;
+  display: grid;
+  gap: 3px;
+  margin: 0;
+  text-align: right;
+}
+.plate-spec div { display: flex; justify-content: flex-end; gap: 8px; }
+.plate-spec dt {
+  color: var(--faint);
+  font: 600 9px/1.4 var(--cond);
+  letter-spacing: .13em;
+  text-transform: none;
+}
+.plate-spec dd {
+  margin: 0;
+  color: var(--muted);
+  font: 9.5px/1.4 var(--mono);
+}
+
+/* --- recipe ------------------------------------------------------------- */
+
+.plate-recipe {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 14px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--rule);
+}
+
+.plate-key {
+  flex: none;
+  color: var(--faint);
+  font: 600 9.5px/1.5 var(--cond);
+  letter-spacing: .17em;
+  text-transform: none;
+}
+
+.chips { display: flex; flex-wrap: wrap; gap: 5px; }
+
+/* Each selector is a pattern you could have typed, so it is set as one. */
+.chip {
+  padding: 2px 7px;
+  border: 1px solid var(--rule-2);
+  border-radius: 2px;
+  background: var(--raised);
+  color: var(--ink);
+  font: 11px/1.5 var(--mono);
+}
+
+.plate-none { color: var(--faint); font: italic 11px/1.5 var(--cond); }
+
+/* The attribute picker: chips of what is chosen, one box to add the next. */
+.attr-picker { display: flex; flex-direction: column; gap: 6px; }
+.attr-picker .chip { display: inline-flex; align-items: center; gap: 4px; }
+.chip-x {
+  appearance: none; border: 0; background: none; cursor: pointer;
+  padding: 0 2px; line-height: 1; color: var(--faint); font-size: 12px;
+}
+.chip-x:hover { color: var(--error); }
+
+/* --- actions & panels --------------------------------------------------- */
+
+.plate-actions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 14px; }
+.plate-actions .primary { border-color: var(--accent); background: var(--accent); color: #fff; }
+
+.plate-panels {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--rule);
+}
+
+/* --- the form plate ----------------------------------------------------- */
+
+.plate-form { margin-bottom: 16px; border-style: dashed; }
+.plate-form .plate-gutter { background: transparent; border-right-style: dashed; }
+.plate-form .plate-mark { color: var(--accent); font-size: 19px; }
+
+.recipe-fields { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.recipe-fields input {
+  flex: 1 1 200px;
+  min-width: 0;
+  padding: 6px 9px;
+  border: 1px solid var(--rule-2);
+  border-radius: 3px;
+  background: var(--ground);
+  color: var(--ink);
+  font: 12px/1.4 var(--mono);
+}
+.recipe-fields input:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-dim);
+}
+.recipe-fields .field-name { flex: 0 1 190px; }
+.recipe-fields .field-selectors { flex: 2 1 280px; }
+
+/* The rail's kind strip carries six tabs, which will not fit a joined
+   segmented control in a pane this narrow. It wraps instead of clipping, so
+   every kind stays reachable at any rail width. */
+/* Its own row, not a cell in `.pane-head`: that head is a fixed 32px line with
+   `white-space: nowrap` and `> * { flex: none }`, so a strip inside it can
+   only ever overflow and be clipped — which is what hid the sixth kind. */
+.pane-head.kinds-head {
+  height: auto;
+  flex-wrap: wrap;
+  white-space: normal;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+.pane-head.kinds-head > * { flex: 1 1 100%; min-width: 0; }
+
+.seg.kinds {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  border: 0;
+  overflow: visible;
+  box-shadow: none;
+}
+.seg.kinds button {
+  border: 1px solid var(--rule-2);
+  border-radius: 2px;
+  padding: 4px 8px;
+  box-shadow: none;
+}
+.seg.kinds button.on {
+  border-color: var(--accent);
+  background: var(--raised);
+  color: var(--accent);
+  box-shadow: none;
+}
+
+/* ==========================================================================
+   The worksheet — the table view of whatever kind the rail is showing
+   --------------------------------------------------------------------------
+   Defining resolvers, terms and links is patient work, and the question being
+   asked is rarely "what does this one say" — it is "which of these two hundred
+   is unfinished". So this is built for scanning: one row per object, the facts
+   that decide completeness in columns, and a `wants` column that answers the
+   question without opening anything.
+
+   Density is the point. 22px rows, tabular numerals, rules instead of padding.
+   No zebra striping, no card chrome, no colour except one accent where
+   something is missing — a reader looking for defects should find exactly one
+   thing on the page competing for attention, and it should be the defects.
+   ========================================================================== */
+
+.worksheet { display: flex; flex-direction: column; min-height: 0; }
+
+.worksheet-summary {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  flex: none;
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--rule);
+  color: var(--muted);
+  font: 500 10.5px/1 var(--cond);
+  letter-spacing: .09em;
+  text-transform: none;
+}
+.worksheet-summary b {
+  color: var(--ink);
+  font: 600 13px/1 var(--mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+/* Two figures because they are two different debts: one refuses a version,
+   the other is documentation. Only the first earns the accent. */
+.worksheet-blocking, .worksheet-blocking b { color: var(--accent); }
+.worksheet-thin, .worksheet-thin b { color: var(--muted); }
+.worksheet-hint {
+  margin-left: auto;
+  color: var(--faint);
+  letter-spacing: .04em;
+  text-transform: none;
+  font-weight: 400;
+}
+
+.worksheet-table {
+  width: 100%;
+  border-collapse: collapse;
+  font: 11px/1.35 var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The head stays put: scanning two hundred rows is the whole activity, and a
+   column you have to scroll back up to identify is not a column. */
+.worksheet-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 6px 8px;
+  background: var(--raised);
+  border-bottom: 1px solid var(--rule-2);
+  color: var(--faint);
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+  font: 600 9.5px/1 var(--cond);
+  letter-spacing: .13em;
+  text-transform: none;
+  user-select: none;
+}
+.worksheet-table thead th:hover { color: var(--ink); }
+.worksheet-table thead th.sorted-asc,
+.worksheet-table thead th.sorted-desc { color: var(--accent); }
+/* The sort mark is a rule under the heading, not a glyph beside it — it says
+   which column without adding a character to a row that has none to spare. */
+.worksheet-table thead th.sorted-asc  { box-shadow: inset 0 -2px 0 var(--accent); }
+.worksheet-table thead th.sorted-desc { box-shadow: inset 0  2px 0 var(--accent); }
+
+.worksheet-table tbody tr {
+  border-bottom: 1px solid var(--rule);
+  cursor: pointer;
+}
+.worksheet-table tbody tr:hover { background: var(--raised); }
+
+.worksheet-table td {
+  padding: 3px 8px;
+  height: 22px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* The identifier is what the eye tracks down the page, so it alone gets ink. */
+.worksheet-table td.wide { max-width: 0; width: 34%; color: var(--ink); }
+.worksheet-table td.mid  { max-width: 0; width: 14%; }
+.worksheet-table td.xs   { max-width: 0; width: 8%; }
+.worksheet-table td.num  { width: 52px; }
+.worksheet-table td.right, .worksheet-table th.num { text-align: right; }
+.worksheet-table th.num { width: 52px; }
+
+/* A defect is set as a word, not a badge: the reader needs to know *which*
+   thing is missing, and a coloured dot would send them back to a legend. */
+.wants { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+.wants i {
+  font-style: normal;
+  padding: 0 4px;
+  border: 1px solid var(--rule-2);
+  border-radius: 2px;
+  color: var(--muted);
+  font-size: 9.5px;
+  line-height: 1.5;
+}
+/* What would actually refuse at seal time is the only thing on this page
+   allowed to take the accent. Documentation debt is real but it is not an
+   error, and marking both the same way is how a signal stops being read. */
+.wants i.blocks { border-color: var(--accent-dim); color: var(--accent); }
+.complete { color: var(--faint); }
+
+/* A qualified name clipped from the tail loses the only part that identifies
+   it — every row in a group shares the namespace. The namespace shrinks and
+   clips; the leaf never does. */
+.qual { display: flex; min-width: 0; align-items: baseline; }
+.qual-ns {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--faint);
+}
+.qual-leaf { flex: none; color: var(--ink); }
+
+/* --------------------------------------------------------------------------
+   Relation tables inside a dossier
+   --------------------------------------------------------------------------
+   Same rules and density as the worksheet, so a reader who has learned one
+   has learned both. A ledger row could only say a name and one number; these
+   carry the facts a comparison actually turns on.
+   -------------------------------------------------------------------------- */
+
+.relations { margin-top: 16px; }
+.relations-head {
+  margin: 0 0 5px;
+  color: var(--faint);
+  font: 600 9.5px/1 var(--cond);
+  letter-spacing: .16em;
+  text-transform: none;
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 5px;
+}
+.relations-head .count { color: var(--muted); letter-spacing: .04em; }
+.relations .none { margin: 4px 0 0; color: var(--faint); font: italic 11px/1.5 var(--cond); }
+
+.relations-table {
+  width: 100%;
+  border-collapse: collapse;
+  font: 10.5px/1.35 var(--mono);
+  font-variant-numeric: tabular-nums;
+  table-layout: fixed;
+}
+.relations-table th {
+  padding: 3px 5px;
+  color: var(--faint);
+  text-align: left;
+  font: 600 8.5px/1 var(--cond);
+  letter-spacing: .12em;
+  text-transform: none;
+  border-bottom: 1px solid var(--rule);
+}
+.relations-table th.num, .relations-table td.num { text-align: right; width: 34px; }
+.relations-table tbody tr { cursor: pointer; border-bottom: 1px solid var(--rule); }
+.relations-table tbody tr:last-child { border-bottom: 0; }
+.relations-table tbody tr:hover { background: var(--raised); }
+.relations-table td {
+  padding: 3px 5px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.relations-table td.wide { width: auto; max-width: 0; color: var(--ink); }
+
+/* A tier is the one thing here that can mean "you may not have this", so it
+   is the one thing allowed to carry colour — and only the two that restrict. */
+.tier { font-size: 9.5px; }
+.tier-public { color: var(--faint); }
+.tier-sensitive { color: var(--warn); }
+.tier-restricted { color: var(--error); }
+
+/* Type and tier alongside an output row: dim, small, never competing with the
+   name — until a tier says the value is restricted, which is the one thing
+   here that can mean "you may not have this". */
+.facts { display: inline-flex; gap: 7px; margin-left: 9px; font: 9.5px/1.5 var(--mono); }
+.fact-type { color: var(--faint); }
+
+/* ------------------------------------------------------------------------
+   Tokens page: two ledgers on one screen, and only one of them can mint
+   (8.4.11 ①).
+
+   Laid out as two separately filed panels rather than one list with a "kind"
+   column — the layout is the page saying these are not two views of one thing.
+   The graph-key panel deliberately has no issue control: minting stays on the
+   graph it belongs to, so no screen in Studio ever asks which kind of key to
+   make.
+   ------------------------------------------------------------------------ */
+
+.workspace-tokens-page { padding: 20px 24px; overflow-y: auto; max-width: 1200px; }
+
+/* One column, two stacked ledgers (owner 2026-10-04): side by side, each row
+   wrapped onto several lines and the two lists never lined up. */
+.token-ledgers {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 22px;
+  align-items: start;
+}
+/* Same filed-document treatment the team rail gives a credential panel. */
+.token-ledgers > .token-panel {
+  position: relative;
+  margin: 0;
+  padding: 15px 16px 17px;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  background: var(--panel);
+  box-shadow: 0 1px 0 var(--edge-hi, transparent) inset;
+}
+.token-ledgers > .token-panel::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  width: 22px;
+  height: 22px;
+  border-top: 2px solid var(--accent);
+  border-left: 2px solid var(--accent);
+  border-top-left-radius: 4px;
+  pointer-events: none;
+}
+.token-ledgers .token-panel h3 {
+  margin: 0 0 8px;
+  font: 600 12px/1.25 var(--cond);
+  letter-spacing: .16em;
+  text-transform: none;
+}
+
+.token-head { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+.token-ledgers .token-head h3 { margin: 0; }
+.token-count { font: 11px/1 var(--mono); color: var(--muted); }
+
+/* One row per key, one height per row: everything that could wrap is cut
+   with an ellipsis and kept whole in the tooltip. */
+.token-table { table-layout: fixed; margin-top: 8px; }
+.token-table th, .token-table td {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  height: 30px;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.token-table th:nth-child(1) { width: 22%; }
+.token-table th:nth-child(2) { width: 24%; }
+.token-table th:nth-child(3) { width: 12%; }
+.token-table th:nth-child(4) { width: 20%; }
+.token-table th:nth-child(5) { width: 10%; }
+.token-table th.act { width: 84px; }
+.token-table td.act { text-align: right; }
+.token-table td.token-id { font: 11px var(--mono); color: var(--muted); }
+.token-table td.token-name { font: 600 12px/1.3 var(--cond); color: var(--ink); }
+.token-table .btn { padding-top: 2px; padding-bottom: 2px; }
+.tag.tag-live { color: var(--accent); }
+.token-filter {
+  margin-top: 6px;
+  background: none; border: none; padding: 0; cursor: pointer;
+  font-size: 11px; color: var(--muted);
+}
+.token-filter:hover { color: var(--accent); text-decoration: underline; }
+
+/* A key's name is what a person recognises; the id is what the audit uses. The
+   name therefore leads the row and carries the weight. */
+.token-list .token-name { font: 600 12px/1.3 var(--cond); color: var(--ink); }
+button.linkish.token-name {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font: 600 12px/1.3 var(--cond);
+  color: var(--ink);
+}
+button.linkish.token-name:hover { color: var(--accent); text-decoration: underline; }
+/* Its own line: a description is a sentence, and a sentence competing for room
+   with four tags gets read as none of them. */
+.token-desc { flex: 1 0 100%; color: var(--muted); font-size: 11px; line-height: 1.5; }
+
+.token-issue .field-wide { flex: 1 0 100%; }
+.token-issue input[type="text"],
+.token-issue textarea {
+  font-family: inherit;
+  font-size: 12px;
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: 4px 6px;
+}
+.token-issue textarea { width: 100%; resize: vertical; line-height: 1.45; }
+
+/* The team page is one column for everyone but an admin: the credential rail
+   moved to its own page, and the only rail left is the user directory. */
+.team-layout-single { grid-template-columns: minmax(0, 1fr); }
+
+@media (max-width: 1120px) {
+  .studio-user-admin > .studio-user-form {
+    grid-template-columns: minmax(160px, 1fr) minmax(220px, 1.2fr);
+  }
+  .studio-user-admin > .studio-user-form .btn.primary { justify-self: start; }
+  .studio-user-list .team-member {
+    grid-template-columns: 30px minmax(160px, 1fr) auto;
+  }
+  .studio-user-actions { grid-column: 2 / -1; }
+}
+
+@media (max-width: 700px) {
+  .studio-user-admin > .studio-user-form,
+  .studio-password-reset-form { grid-template-columns: minmax(0, 1fr); }
+  .studio-user-admin > .studio-user-form .btn.primary,
+  .studio-password-reset-form .btn { width: 100%; justify-self: stretch; }
+  .studio-password-reset-form > span { white-space: normal; }
+  .studio-user-list .team-member {
+    grid-template-columns: 30px minmax(0, 1fr);
+    gap: 8px 12px;
+    padding: 12px 4px 12px 0;
+  }
+  .studio-user-list .member-avatar { grid-column: 1; grid-row: 1; }
+  .studio-user-list .member-identity { grid-column: 2; grid-row: 1; }
+  .studio-user-list .studio-user-status,
+  .studio-user-list .studio-user-actions {
+    grid-column: 2;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+  .studio-user-actions .btn { min-width: 0; }
+}
+
+/* ------------------------------------------------------------------------
+   Local runtime, on the graph's detail panel: what is live, what could be,
+   who may read it.
+
+   Was a shut `<details>` whose only content was a publish button and a result
+   sentence; the rules for both are gone from the section above rather than left
+   matching nothing.
+   ------------------------------------------------------------------------ */
+
+.graph-runtime { margin-top: 14px; }
+.runtime-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+.runtime-head h3 { margin: 0; font-size: 13px; }
+.runtime-head .spacer { flex: 1; }
+
+.version-list { list-style: none; margin: 10px 0 0; padding: 0; }
+.version-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  border-top: 1px solid var(--rule);
+  font-size: 12px;
+}
+/* The live one is the row every other row is being compared against. */
+.version-list li.serving { background: var(--raised); box-shadow: inset 2px 0 0 var(--accent); }
+.version-list .v-num { font-family: var(--mono); font-weight: 600; min-width: 3.2em; }
+.version-list .v-when { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.version-list .v-who { color: var(--muted); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.version-list .btn { margin-left: auto; }
+
+
+/* ------------------------------------------------------------------------
+   Graphs table: filtering, sorting, and the two columns that answer «is
+   anybody using this» and «has it been published since it was made».
+   ------------------------------------------------------------------------ */
+
+.badge--warn { background: color-mix(in srgb, var(--warn) 18%, transparent); color: var(--warn); }
+
+.table-tools {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.g-filter {
+  flex: 0 1 320px;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--ink);
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: 6px 10px;
+}
+.g-filter:focus { outline: none; border-color: var(--accent); }
+
+/* The header IS the control: a separate sort affordance next to a label the
+   eye already treats as clickable is one thing too many. */
+.g-table th button.th-sort {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: inherit;
+  cursor: pointer;
+}
+.g-table th.num button.th-sort { justify-content: flex-end; }
+.g-table th button.th-sort:hover { color: var(--ink); }
+.g-table th button.th-sort.on { color: var(--accent); }
+/* The arrow is reserved on every header, not only the active one, so turning
+   sorting on does not shift the row of headers sideways. */
+.th-arrow { font-size: 9px; opacity: 0; }
+.g-table th button.th-sort.on .th-arrow { opacity: 1; }
+
+.g-name .badge--warn { margin-left: 8px; vertical-align: middle; }
+.g-consumers { white-space: nowrap; }
+.g-consumers .tag + .tag { margin-left: 5px; }
+
+/* The cut check, above the button that cuts. «Free to write, strict to seal»
+   (D2.2) means the seal is the first place a modeller learns the graph is not
+   sealable — so the answer belongs here, before the press, not in the refusal
+   afterwards. */
+
+.graph-runtime .hint.ok { color: var(--ok); }
+.cut-check-bad { margin: 6px 0 2px; }
+.finding-list {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0 0 0 10px;
+  border-left: 2px solid var(--error);
+}
+.finding-list li {
+  padding: 3px 0;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.finding-list .mono { font-family: var(--mono); font-size: 11px; color: var(--error); }
+.finding-list .dim { opacity: .7; }
+
+/* The export link is a button in every way but the element: it is a plain
+   same-origin navigation so the session cookie carries the download, and
+   assembling it in JavaScript would only add a blob for the browser to undo. */
+a.btn.version-export { text-decoration: none; margin-left: auto; }
+.version-list a.btn.version-export + .btn { margin-left: 6px; }
+
+/* The publish result: the artifact, at the moment it exists. Publishing used to
+   leave a sentence the next render discarded — what a person wants right then
+   is the file, not a confirmation. */
+.publish-result {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 10px 0 4px;
+  padding: 9px 12px;
+  border: 1px solid var(--accent);
+  border-radius: 5px;
+  background: var(--panel);
+}
+.publish-result a.btn { text-decoration: none; }
+.publish-result .publish-serving { font-size: 12px; color: var(--muted); }
+/* The six steps, as evidence the round trip happened. Its own line: it is
+   provenance, not a control. */
+.publish-result .via { flex: 1 0 100%; font-size: 11px; color: var(--faint); line-height: 1.5; }
+
+
+/* ==========================================================================
+   Graphs console (owner ruling 2026-08-30, «B+»)
+
+   A rail of graphs and the selected one's working surface. The rail carries the
+   state — a dot and one line per graph — instead of an attention banner above
+   the list: a strip has to justify its own height and goes furniture the moment
+   it is usually empty, while the rail is scanned top to bottom anyway.
+   ========================================================================== */
+
+.page-graphs {
+  /* Not a grid. The global `main { display: grid }` (studio.css) made this page
+     two auto rows, and `align-content: stretch` split the leftover height
+     between them — which is where the empty band under «Graphs» came from: the
+     header was being stretched to half the viewport. A column instead, where
+     the header takes what it needs and the console takes the rest. */
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 20px 24px 24px;
+  width: 100%;
+  max-width: none;
+  margin-inline: 0;
+  background: var(--ground);
+}
+.page-graphs > .graph-console { flex: 1 1 auto; }
+.page-graphs { min-width: 0; }
+/* The header is the lid of the console, not a floating title: a rule under it
+   ties the two together and gives the eye somewhere to stop. */
+.page-graphs > .page-header {
+  flex: none;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--rule-2);
+}
+.page-header-row .spacer { flex: 1; }
+.page-counts {
+  font: 500 11px/1 var(--cond);
+  letter-spacing: .1em; text-transform: none; color: var(--muted);
+}
+
+/* Two views of one list. Segmented, because they are alternatives — a pair of
+   plain buttons would read as two actions. */
+.view-switch { display: inline-flex; }
+.view-switch .btn { border-radius: 0; }
+.view-switch .btn:first-child { border-radius: 3px 0 0 3px; }
+.view-switch .btn:last-child { border-radius: 0 3px 3px 0; margin-left: -1px; }
+.view-switch .btn.on {
+  background: var(--raised); color: var(--ink);
+  border-color: var(--rule-2); box-shadow: inset 0 -2px 0 var(--accent);
+}
+
+.graph-console {
+  display: grid;
+  grid-template-columns: clamp(300px, 23vw, 380px) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  border: 1px solid var(--rule-2);
+  border-radius: 5px;
+  background: var(--panel);
+  overflow: hidden;
+  min-height: 460px;
+}
+
+/* --- the rail ----------------------------------------------------------- */
+.graph-rail {
+  border-right: 1px solid var(--rule-2);
+  background: var(--raised);
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.graph-rail .g-filter { margin: 10px; flex: none; }
+.rail-list { overflow-y: auto; min-height: 0; }
+.rail-item {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  border-bottom: 1px solid var(--rule);
+  border-left: 2px solid transparent;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+}
+.rail-item:hover { background: color-mix(in srgb, var(--accent) 5%, transparent); }
+.rail-item.on {
+  background: var(--panel);
+  border-left-color: var(--accent);
+}
+.rail-item:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.rail-top { display: flex; align-items: center; gap: 7px; min-width: 0; }
+.rail-dot { width: 6px; height: 6px; border-radius: 50%; flex: none; background: var(--rule-2); }
+.rail-dot.tone-ok { background: var(--ok); }
+.rail-dot.tone-warn { background: var(--warn); }
+.rail-name {
+  font: 500 12px/1.3 var(--mono);
+  color: var(--ink);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.rail-caption {
+  font: 400 10.5px/1.4 var(--cond);
+  color: var(--faint);
+  padding-left: 13px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.rail-item.tone-warn .rail-caption { color: var(--warn); }
+
+/* --- the retired list --------------------------------------------------- */
+/* Below the live graphs and pinned to the bottom of the rail, because it is
+   looked up on purpose rather than scanned. Closed, it costs one line. */
+.rail-archived { margin-top: auto; flex: none; border-top: 1px solid var(--rule-2); }
+.rail-section {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: none;
+  color: var(--faint);
+  cursor: pointer;
+  font: 500 10.5px/1 var(--cond);
+  letter-spacing: .1em;
+  text-transform: none;
+}
+.rail-section:hover { color: var(--muted); }
+.rail-section:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.rail-section-caret { font-size: 9px; line-height: 1; }
+.rail-section-label { flex: 1; text-align: left; }
+.rail-section-count { font-variant-numeric: tabular-nums; }
+/* Retired graphs read as retired: the name is present, not addressed. They are
+   still clickable — restoring one is why you opened this. */
+.rail-list.is-archived { max-height: 40vh; }
+.rail-list.is-archived .rail-item { border-bottom: none; }
+.rail-list.is-archived .rail-name { color: var(--muted); font-weight: 400; }
+
+/* --- the working surface ------------------------------------------------ */
+.graph-pane {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  padding: 15px 18px 20px;
+}
+.graph-pane > .pane-title, .graph-pane > .pane-tabs { flex: none; }
+.graph-pane > .pane-body { overflow-y: auto; }
+.pane-title { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.pane-title .spacer { flex: 1; }
+.pane-graph { min-width: 0; overflow-wrap: anywhere; margin: 0; font: 600 15px/1.2 var(--mono); letter-spacing: -.01em; }
+
+/* The tabs name the jobs — that is half of why the console is easier to learn
+   than a stack of panels, so they read as structure, not as chrome. */
+.pane-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  border-bottom: 1px solid var(--rule-2);
+  margin: 13px 0 15px;
+}
+.pane-tab {
+  font: 600 11.5px/1 var(--cond);
+  letter-spacing: .08em;
+  text-transform: none;
+  padding: 7px 12px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+.pane-tab:hover { color: var(--ink); }
+.pane-tab.on { color: var(--ink); border-bottom-color: var(--accent); }
+.pane-tab:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.pane-body > .token-panel:first-child,
+.pane-body > .graph-runtime:first-child { margin-top: 0; }
+.pane-body .graph-access h3,
+.pane-body .token-panel h3 { margin-top: 0; }
+
+/* --- settings: labelled, grouped by cost -------------------------------- */
+.graph-settings { display: grid; gap: 18px; max-width: 640px; }
+.setting > h3 { margin: 0 0 3px; font-size: 13px; }
+.setting > .hint { padding: 0 0 7px; border: none; }
+.setting-actions { display: flex; gap: 7px; flex-wrap: wrap; }
+/* Under its own rule, with the sentence that says what it does and does not
+   touch — it used to sit in a menu one item below «Query». */
+.setting.danger { border-top: 1px solid var(--rule); padding-top: 14px; }
+.setting.danger > h3 { color: var(--error); }
+.btn--danger { border-color: var(--error); color: var(--error); }
+.btn--danger:hover { background: var(--error); color: var(--panel); }
+
+/* --- register ------------------------------------------------------------ */
+.g-table tbody tr.picked td { background: color-mix(in srgb, var(--accent) 7%, transparent); }
+.g-holds { color: var(--muted); white-space: nowrap; }
+.g-serving .g-sub { margin-top: 2px; }
+.register-note { padding-left: 0; border: none; }
+.version-list .tag { white-space: nowrap; }
+
+@media (max-width: 900px) {
+  .graph-console { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
+  .graph-rail { border-right: none; border-bottom: 1px solid var(--rule-2); }
+  .rail-list { max-height: 230px; }
+}
+
+/* ------------------------------------------------------------------------
+   Observability (8.10.6) — activity / logs / metrics
+   一张台账、一条日志、一组计数：三页共用同一套表格与徽章，因为它们是同一件事
+   的三个切面，看起来不一样只会让人以为它们来自不同的地方。
+   ------------------------------------------------------------------------ */
+
+.obs-page {
+  /* studio.css 的全局 `main { display: grid }` 会让每个直接子元素按内容宽度
+     成为 grid item，配上下面的 `margin: auto` 就是各行左边缘各不相同——
+     `.profile-page` 早就踩过并用同样一行绕开。这里是文档流，不是网格。 */
+  display: block;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 30px clamp(18px, 4vw, 64px) 52px;
+  background: var(--ground);
+}
+.obs-page > * { max-width: 1180px; margin-right: auto; margin-left: auto; }
+
+.obs-head {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 18px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--rule-2);
+}
+.obs-head .eyebrow { color: var(--accent); }
+.obs-head h2 { margin: 6px 0 7px; color: var(--ink); font: 600 clamp(22px, 2.4vw, 26px)/1.1 var(--cond); }
+.obs-head p { max-width: 68ch; margin: 0; color: var(--muted); font-size: 13px; line-height: 1.55; }
+.obs-actions { display: flex; flex: none; gap: 8px; align-items: center; }
+.obs-actions select,
+.obs-actions input {
+  height: 32px;
+  min-width: 0;
+  padding: 0 9px;
+  border: 1px solid var(--rule-2);
+  border-radius: 4px;
+  color: var(--ink);
+  background: var(--raised);
+  font: 12px/1.2 var(--mono);
+}
+.obs-actions input { width: 180px; }
+.obs-actions select:focus-visible,
+.obs-actions input:focus-visible {
+  border-color: var(--accent);
+  outline: 2px solid color-mix(in srgb, var(--accent) 38%, transparent);
+}
+
+/* 「我看得到什么」是读这张表的前提，所以它是标题区的一行元信息，
+   不是横在标题与表格之间的一条通告——通告会被读一次然后被忽略。 */
+.obs-range {
+  /* 它是 .obs-head 里的 <p>，但不该继承正文那条 68ch 的行宽——范围是一行标签,
+     不是一段说明，断在中间反而更难扫。 */
+  max-width: none;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 9px 0 0;
+  color: var(--muted);
+  font: 11.5px/1.5 var(--mono);
+}
+.obs-range-label {
+  padding: 2px 6px;
+  border: 1px solid var(--accent-dim);
+  border-radius: 3px;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
+  font: 600 9px/1.4 var(--cond);
+  letter-spacing: .14em;
+  text-transform: none;
+}
+.obs-range-note { color: var(--faint); font-size: 11px; }
+
+.obs-subject-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.obs-chip {
+  padding: 4px 9px;
+  border: 1px solid var(--accent-dim);
+  border-radius: 3px;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  font: 600 11px/1 var(--mono);
+}
+.obs-note { color: var(--faint); font-size: 12px; font-style: italic; }
+
+.obs-table-wrap { overflow-x: auto; }
+.obs-table { width: 100%; min-width: 760px; border-collapse: collapse; }
+.obs-table th {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--rule);
+  color: var(--faint);
+  background: var(--raised);
+  font: 600 9px/1 var(--cond);
+  letter-spacing: .14em;
+  text-align: left;
+  text-transform: none;
+}
+.obs-table td {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--rule-2);
+  color: var(--ink);
+  font-size: 12.5px;
+  vertical-align: top;
+}
+.obs-table tbody tr:hover td { background: color-mix(in srgb, var(--raised) 60%, transparent); }
+.obs-when { white-space: nowrap; }
+.obs-when span { display: block; font: 11px/1.4 var(--mono); }
+.obs-rid { color: var(--faint); font: 10px/1.4 var(--mono); letter-spacing: .04em; }
+.obs-event { font: 600 11.5px/1 var(--mono); color: var(--ink); }
+.obs-entry { color: var(--muted); font: 11px/1 var(--mono); }
+.obs-muted { color: var(--faint); }
+.obs-reason { display: block; margin-top: 3px; color: var(--faint); font: 10.5px/1.3 var(--mono); }
+
+/* 结果三态：颜色只用来区分状态，不用来装饰 */
+.obs-outcome {
+  display: inline-block;
+  padding: 2.5px 7px;
+  border-radius: 3px;
+  color: var(--muted);
+  background: var(--raised);
+  font: 600 10px/1 var(--cond);
+  letter-spacing: .1em;
+  text-transform: none;
+}
+.obs-outcome.ok { color: var(--ok); background: color-mix(in srgb, var(--ok) 12%, transparent); }
+.obs-outcome.denied { color: var(--warn); background: color-mix(in srgb, var(--warn) 14%, transparent); }
+.obs-outcome.error { color: var(--error); background: color-mix(in srgb, var(--error) 12%, transparent); }
+
+.obs-link {
+  padding: 0;
+  border: 0;
+  color: var(--accent);
+  background: none;
+  font: 12.5px/1.4 var(--mono);
+  cursor: pointer;
+  text-align: left;
+}
+.obs-link:hover { text-decoration: underline; }
+
+.obs-empty { padding: 26px 0; color: var(--faint); font-size: 13px; }
+.obs-foot { margin-top: 18px; color: var(--faint); font-size: 12px; line-height: 1.6; }
+
+/* 日志：等宽一行一条，级别用左边一道色条而不是整行染色 */
+.obs-log { display: grid; gap: 0; border-top: 1px solid var(--rule-2); }
+.obs-log-line {
+  display: grid;
+  grid-template-columns: 168px 52px minmax(0, 1fr) auto;
+  gap: 10px;
+  padding: 6px 10px 6px 8px;
+  border-bottom: 1px solid var(--rule-2);
+  border-left: 2px solid transparent;
+  font: 11.5px/1.5 var(--mono);
+}
+.obs-log-line.lvl-error { border-left-color: var(--error); }
+.obs-log-line.lvl-warn { border-left-color: var(--warn); }
+.obs-log-line:hover { background: color-mix(in srgb, var(--raised) 60%, transparent); }
+.obs-log-ts { color: var(--faint); }
+.obs-log-lvl { color: var(--muted); text-transform: none; }
+.obs-log-line.lvl-error .obs-log-lvl { color: var(--error); }
+.obs-log-line.lvl-warn .obs-log-lvl { color: var(--warn); }
+.obs-log-msg { overflow-wrap: anywhere; color: var(--ink); }
+
+.obs-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.obs-card {
+  padding: 13px 15px;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  background: var(--panel);
+}
+.obs-card h4 {
+  margin: 0 0 6px;
+  color: var(--faint);
+  font: 600 9px/1 var(--cond);
+  letter-spacing: .14em;
+  text-transform: none;
+}
+.obs-card strong {
+  color: var(--ink);
+  font: 600 22px/1 var(--cond);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 700px) {
+  .obs-page { padding: 20px 14px 32px; }
+  .obs-head { align-items: start; flex-direction: column; gap: 12px; }
+  .obs-log-line { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+}
+
+/* ── Activity master / detail ────────────────────────────────────────────── */
+/* 左边一张流水，右边一条的全部。open-atlas 的 activity 页证明了这个读法：
+   扫读靠列表，追问靠详情，两者同屏才不用来回跳。 */
+.obs-master-detail {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(300px, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+.obs-master-detail .obs-table { min-width: 520px; }
+.obs-master-detail .obs-table tbody tr { cursor: pointer; }
+.obs-master-detail .obs-table tbody tr.selected td {
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+.obs-master-detail .obs-table tbody tr.selected td:first-child {
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+
+.obs-detail {
+  position: sticky;
+  top: 0;
+  padding: 15px 16px 17px;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  background: var(--panel);
+}
+.obs-detail.empty { color: var(--faint); }
+.obs-detail.empty p { margin: 0 0 8px; font-size: 13px; }
+.obs-detail > header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--rule-2);
+}
+
+.obs-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
+  gap: 12px 14px;
+  margin: 0 0 14px;
+}
+.obs-field dt {
+  margin-bottom: 3px;
+  color: var(--faint);
+  font: 600 9px/1 var(--cond);
+  letter-spacing: .14em;
+  text-transform: none;
+}
+.obs-field dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font: 11.5px/1.4 var(--mono);
+}
+
+.obs-error {
+  margin: 0 0 14px;
+  padding: 8px 10px;
+  border: 1px solid color-mix(in srgb, var(--error) 45%, var(--rule));
+  border-radius: 3px;
+  color: var(--error);
+  background: color-mix(in srgb, var(--error) 7%, transparent);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.obs-chips { margin-bottom: 14px; }
+.obs-chips h5,
+.obs-timeline h5 {
+  margin: 0 0 7px;
+  color: var(--faint);
+  font: 600 9px/1 var(--cond);
+  letter-spacing: .14em;
+  text-transform: none;
+}
+.obs-chip-row { display: flex; gap: 5px; flex-wrap: wrap; }
+.obs-tag {
+  padding: 2.5px 7px;
+  border: 1px solid var(--rule-2);
+  border-radius: 3px;
+  color: var(--muted);
+  background: var(--raised);
+  font: 10.5px/1.3 var(--mono);
+}
+
+/* resolver 时间线：条的位置=何时开始，长度=跑了多久，重叠=并行 */
+.obs-timeline { margin-top: 4px; }
+.obs-track-row { margin-bottom: 8px; }
+.obs-track-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 3px;
+  font: 10.5px/1.3 var(--mono);
+}
+.obs-track-name {
+  overflow: hidden;
+  max-width: 68%;
+  color: var(--muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.obs-track-name.slowest { color: var(--ink); font-weight: 600; }
+.obs-track-ms { flex: none; color: var(--faint); font-variant-numeric: tabular-nums; }
+.obs-track-ms.failed { color: var(--error); }
+.obs-track {
+  position: relative;
+  height: 7px;
+  border-radius: 3px;
+  background: var(--sunk, var(--raised));
+  overflow: hidden;
+}
+.obs-track i {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--accent);
+}
+.obs-track i.failed { background: var(--error); }
+
+@media (max-width: 1020px) {
+  .obs-master-detail { grid-template-columns: minmax(0, 1fr); }
+  .obs-detail { position: static; }
+}
+
+/* 语句层面的步骤：一行一条，四列都是名称/计数/时延——语句原文不在这里 */
+.obs-statements { margin-top: 4px; }
+.obs-statements h5 {
+  margin: 0 0 7px;
+  color: var(--faint);
+  font: 600 9px/1 var(--cond);
+  letter-spacing: .14em;
+  text-transform: none;
+}
+.obs-stmt-rows { display: grid; gap: 1px; }
+.obs-stmt {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
+  gap: 10px;
+  padding: 5px 7px;
+  border-radius: 3px;
+  background: var(--raised);
+  font: 10.5px/1.4 var(--mono);
+}
+.obs-stmt-name { overflow: hidden; color: var(--ink); text-overflow: ellipsis; white-space: nowrap; }
+.obs-stmt-src { color: var(--accent); }
+.obs-stmt-num { color: var(--faint); font-variant-numeric: tabular-nums; }
+
+/* ── An api source's DECLARED structure (no schema to read) ────────────────
+   Shown where the SQL path shows relations. Deliberately quieter than that
+   table: this is what a person wrote down, not what an engine reported, and
+   the panel proposes nothing from it. */
+.declared-structure { margin-top: 10px; display: flex; flex-direction: column; gap: 14px; }
+.declared-op {
+  border: 1px solid var(--rule-2);
+  border-left: 3px solid var(--accent-dim);
+  border-radius: 4px;
+  padding: 10px 12px;
+}
+.declared-op-head { display: flex; gap: 8px; align-items: baseline; margin-bottom: 6px; }
+.declared-op-id { font-weight: 600; }
+.declared-op-facts {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 2px 12px;
+  margin: 0 0 8px;
+  font-size: 12px;
+}
+.declared-op-facts dt { color: var(--muted); }
+.declared-op-facts dd { margin: 0; word-break: break-all; }
+.declared-mapping { width: 100%; border-collapse: collapse; font-size: 12px; display: block; overflow-x: auto; }
+.declared-mapping th {
+  text-align: left;
+  font-weight: 500;
+  color: var(--muted);
+  border-bottom: 1px solid var(--rule);
+  padding: 3px 10px 3px 0;
+}
+.declared-mapping td { padding: 2px 10px 2px 0; vertical-align: top; word-break: break-all; }
+.declared-op-rest { margin-top: 8px; }
+
+/* SQL source authoring shares Studio's field, rail and selection palette. */
+
+/* Settings keeps lifecycle consequences beside the action they describe. */
+.graph-settings .btn { font-family: var(--cond); }
+.graph-settings .btn--primary:not(:disabled) { background: var(--accent); color: var(--panel); border-color: var(--accent); }
+.setting.lifecycle { border-top: 1px solid var(--rule); padding-top: 14px; }
+.setting-delete { margin-top: 18px; padding-left: 14px; border-left: 2px solid var(--error); }
+.setting-delete h4 { margin: 0 0 7px; }
+.delete-confirmation { display: grid; gap: 10px; }
+.delete-confirmation p, .delete-confirmation ul { margin: 0; }
+.delete-confirmation input { width: 100%; min-width: 0; box-sizing: border-box; font-family: var(--mono); }
+.graph-settings .btn--danger:disabled { color: var(--muted); border-color: var(--rule); background: transparent; opacity: 1; cursor: not-allowed; }
+.settings-identity, .duplicate-scope { margin: 0; display: grid; gap: 10px; }
+.settings-identity { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); padding-bottom: 16px; border-bottom: 1px solid var(--rule); }
+.settings-identity dt, .duplicate-scope dt { color: var(--muted); font-size: 12px; }
+.settings-identity dd, .duplicate-scope dd { margin: 3px 0 0; overflow-wrap: anywhere; }
+.duplicate-scope { margin: 10px 0 14px; }
+.duplicate-scope > div { display: grid; grid-template-columns: 125px minmax(0, 1fr); gap: 12px; }
+.graph-settings input { min-width: 0; }
+@media (max-width: 600px) {
+  .settings-identity, .duplicate-scope > div { grid-template-columns: minmax(0, 1fr); }
+  .graph-settings .prefix-form { flex-wrap: wrap; }
+  .graph-settings .prefix-form input { flex-basis: 100%; }
+}
+.duplicate-plan { margin: 14px 0; padding: 14px; border: 1px solid var(--rule); overflow-wrap: anywhere; }
+.duplicate-plan h4 { margin-top: 0; }
+.duplicate-plan ul { padding-left: 20px; }
+.settings-leave-confirmation { position: sticky; top: 8px; z-index: 5; padding: 14px; background: var(--panel); border: 1px solid var(--accent); box-shadow: 0 2px 10px #0002; }
+.settings-leave-confirmation p { margin-top: 0; }
+@media (max-width: 600px) {
+  .page-graphs .page-header-row { flex-wrap: wrap; }
+  .page-graphs .page-header-row .spacer { display: none; }
+  .page-graphs > .graph-console:has(.graph-settings) { flex: none; grid-template-rows: auto auto; }
+  .graph-console:has(.graph-settings) .graph-pane > .pane-body { overflow: visible; flex: none; }
+}
+
+/* A Graph has one model workspace and four task-oriented sections. */
+.graph-actions { position: relative; }
+.graph-actions > summary { list-style: none; min-width: 36px; text-align: center; }
+.graph-actions > summary::-webkit-details-marker { display: none; }
+.graph-actions[open] > button { display: block; width: 180px; text-align: left; margin-top: 5px; }
+.graph-model .page-index { min-height: 520px; height: auto; padding: 0; gap: 12px; display: flex; }
+.graph-model .pane-rail { flex: 0 0 30% !important; min-width: 180px; }
+.graph-model .pane-dossier { flex: 1 1 40% !important; min-width: 0; }
+.graph-model .pane-graph { flex: 1 1 35%; min-height: 400px; }
+.graph-model .pane-body { overflow: auto; }
+.model-view-switch { display: flex; gap: 8px; margin-bottom: 12px; }
+.model-object-summary { overflow-wrap: anywhere; padding: 8px 0; }
+.model-object-summary ul { padding-left: 20px; }
+.graph-settings .setting.lifecycle { border-top: 0; padding-top: 0; }
+.graph-settings .setting.lifecycle > h3:not(:first-child) { margin-top: 28px; }
+.graph-settings + .graph-runtime { margin-top: 28px; }
+.source-row-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.source-row-actions select { max-width: 100%; min-width: 0; }
+@media (max-width: 900px) {
+  .graph-model .page-index { flex-direction: column; }
+  .graph-model .pane-rail { max-height: 260px; }
+  .graph-model .pane-dossier { flex: auto !important; }
+}
+@media (max-width: 600px) {
+  .page-graphs > .graph-console:has(.graph-model) { flex: none; grid-template-rows: auto auto; }
+  .graph-console:has(.graph-model) .graph-pane > .pane-body { overflow: visible; flex: none; }
+  .graph-model .page-index { min-height: 0; overflow: visible; }
+  .graph-model .pane-rail { flex: none !important; height: 260px; }
+  .graph-model .pane-dossier { min-height: 300px; }
+}
+
+/* Let the desktop model workspace follow the available window height. */
+@media (min-width: 901px) {
+  .graph-pane > .pane-body:has(.graph-model) { display: flex; flex-direction: column; }
+  .graph-model,
+  .graph-model > .guarded-model,
+  .graph-model > .guarded-model > div {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+  .graph-model .model-view-switch { flex: none; }
+  .graph-model .page-index { flex: 1 1 auto; min-height: 0; }
+  .graph-model .pane-rail { flex-basis: clamp(300px, 26vw, 380px) !important; }
+}
+.graph-model-settings { flex: none; margin-top: 16px; border-top: 1px solid var(--rule); padding-top: 12px; }
+.graph-model-settings > summary { cursor: pointer; font-weight: 600; }
+.graph-model-settings > .graph-settings { margin-top: 16px; }
+
+/* Keep category and asset names readable in the Model / Explorer rail. */
+.graph-model .need-sections { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.graph-model .need-sections button { white-space: normal; overflow-wrap: anywhere; text-align: left; min-width: 0; }
+.graph-model .entity-list-row { min-width: 0; }
+.graph-model .entity-list-row > span { white-space: normal; overflow-wrap: anywhere; overflow: visible; text-overflow: clip; }
+
+.graph-model .need-sections button { padding: 8px 3px; font-size: 11px; letter-spacing: 0; }
+
+.graph-rail-toolbar { display: flex; align-items: center; justify-content: space-between; padding: 8px; gap: 8px; flex: none; }
+.graph-rail-toolbar .btn { padding: 6px 8px; min-width: 28px; }
+.graph-console .rail-name { white-space: normal; overflow-wrap: anywhere; overflow: visible; text-overflow: clip; }
+.graph-console.is-rail-collapsed { grid-template-columns: 46px minmax(0, 1fr); }
+.graph-console.is-rail-collapsed .graph-rail > :not(.graph-rail-toolbar) { display: none; }
+@media (max-width: 900px) {
+  .graph-console.is-rail-collapsed { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
+  .graph-console.is-rail-collapsed .graph-rail-toolbar { justify-content: flex-start; }
+}
+.usage-guide-form { width: 100%; max-width: 760px; overflow-y: auto; }
+.usage-guide-form > label { display: block; margin-bottom: 14px; }
+.usage-guide-form textarea { display: block; width: 100%; margin-top: 5px; padding: 8px; font: inherit; resize: vertical; }
+.usage-guide-form fieldset label { display: block; margin: 6px 0; }
+.new-graph-panel { display: flex; flex-direction: column; gap: 14px; min-height: 0; }
+.new-graph-panel h3, .new-graph-panel p { margin: 0; }
+.new-graph-panel > label { display: flex; gap: 12px; align-items: center; }
+.new-graph-panel > label input { flex: 1; max-width: 440px; padding: 8px; }
+.new-graph-panel .actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.new-graph-panel .table-wrapper { flex: 1 1 auto; min-height: 0; overflow: auto; }
+.studio-user-edit-form { margin: 16px 0; padding: 16px; border: 1px solid var(--rule); display: grid; gap: 12px; max-width: 760px; }
+.studio-user-edit-form > label { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 12px; align-items: center; }
+.studio-user-edit-form input, .studio-user-edit-form select { padding: 8px; width: 100%; }
+.studio-user-edit-form .actions { display: flex; gap: 8px; }
+/* Keep user roles and actions in stable columns, including absent actions. */
+.studio-user-list .team-member { grid-template-columns: 30px minmax(180px, 1fr) 110px 480px; }
+.studio-user-list .studio-user-status { justify-content: flex-start; }
+/* SSO email has its own column (doc 101 §8.16.9); sharing Edit's slot stacked the two buttons. */
+.studio-user-list .studio-user-actions { display: grid; grid-template-columns: 64px 104px 170px 96px; gap: 10px; }
+.studio-user-actions .user-edit { grid-column: 1; grid-row: 1; }
+.studio-user-actions .user-sso { grid-column: 2; grid-row: 1; }
+.studio-user-actions .user-reset { grid-column: 3; grid-row: 1; }
+.studio-user-actions .member-remove { grid-column: 4; grid-row: 1; }
+.studio-user-list .studio-user-actions .btn { width: 100%; min-width: 0; }
+.studio-user-admin > .studio-user-form > label { display: flex; align-items: center; gap: 8px; }
+.studio-user-admin > .studio-user-form select { padding: 10px; }
+.studio-user-admin > .studio-user-form #studio-user-create-hints { grid-column: 1 / -1; }
+@media (max-width: 1120px) {
+  .studio-user-list .team-member { grid-template-columns: 30px minmax(0, 1fr) 110px; }
+  .studio-user-list .studio-user-actions { grid-column: 2 / -1; justify-content: start; }
+}
+@media (max-width: 700px) {
+  .studio-user-list .team-member { grid-template-columns: 30px minmax(0, 1fr); }
+  .studio-user-list .studio-user-status { grid-column: 2; }
+  .studio-user-list .studio-user-actions { grid-template-columns: minmax(44px, .6fr) minmax(0, 1.5fr) minmax(60px, .9fr); gap: 6px; }
+  .studio-user-list .studio-user-actions .btn { padding: 8px 4px; white-space: normal; }
+  .studio-user-edit-form > label { grid-template-columns: minmax(0, 1fr); }
+}
+@media (min-width: 1121px) {
+  .studio-user-admin > .studio-user-form { grid-template-columns: minmax(150px, .8fr) minmax(210px, 1fr) 130px minmax(200px, 1fr); }
+}
+
+.new-graph-panel > .g-filter {
+  flex: 0 0 36px;
+  height: 36px;
+  min-height: 36px;
+  max-height: 36px;
+  width: min(100%, 440px);
+  box-sizing: border-box;
+  align-self: flex-start;
+}
+.new-graph-panel > :not(.table-wrapper):not(.g-filter) { flex-shrink: 0; }
+
+/* Workspace MCP connections and compact context controls. */
+.context-help { flex: none; color: var(--muted); font: 12px/1.3 var(--cond); text-decoration: none; padding: 8px 4px; }
+.context-help:hover { color: var(--ink); text-decoration: underline; }
+.mcp-connections { max-width: 780px; }
+.variables-page { max-width: 1100px; }
+.variable-form { max-width: 620px; padding: 18px; margin: 16px 0; border: 1px solid var(--rule); background: var(--panel); }
+.variable-form label { display: flex; flex-direction: column; gap: 6px; margin: 12px 0; font-size: 13px; }
+.variable-form input { padding: 9px 10px; border: 1px solid var(--rule-2); border-radius: 4px; background: var(--raised); color: var(--ink); font: 13px/1.4 var(--mono); }
+.variables-table-wrap { overflow-x: auto; }
+.variables-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.variables-table th, .variables-table td { padding: 12px; text-align: left; border-bottom: 1px solid var(--rule); }
+.variables-table th { color: var(--muted); font-weight: 500; }
+.variables-table .btn { margin: 3px; }
+.mcp-endpoint { margin-top: 20px; padding: 18px; border: 1px solid var(--rule); border-radius: 8px; background: var(--panel); }
+.mcp-endpoint-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.mcp-endpoint-heading h3 { margin: 0; }
+.mcp-credential { color: var(--faint); font: 11px/1.4 var(--mono); }
+.mcp-endpoint p { color: var(--muted); line-height: 1.5; }
+.mcp-url-row { display: flex; gap: 8px; }
+.mcp-url-row input { flex: 1; min-width: 0; padding: 9px 10px; border: 1px solid var(--rule-2); border-radius: 4px; background: var(--raised); color: var(--ink); font: 12px/1.4 var(--mono); }
+.mcp-url-row .btn { flex: none; }
+.mcp-copy-status { min-height: 18px; margin-bottom: 0; font-size: 12px; }
+@media (max-width: 420px) {
+  .mcp-endpoint-heading { align-items: flex-start; flex-direction: column; gap: 4px; }
+  .mcp-url-row { flex-direction: column; }
+}
+
+/* Keep long Source usage lists out of the connection picker layout. */
+.semantic-source-mapping-row { align-items: start; }
+.source-usage { margin-top: 6px; min-width: 0; }
+.source-usage summary { cursor: pointer; color: var(--muted); }
+.source-usage ul { max-height: 220px; overflow: auto; padding-left: 20px; overflow-wrap: anywhere; }
+.draft-status, .publish-readiness { display: grid; gap: 8px; padding: 14px 16px; margin: 12px 0; border: 1px solid var(--rule-2); border-radius: 6px; background: var(--ground); }
+.draft-status span { color: var(--muted); font-size: 13px; }
+.publish-readiness > strong { font-size: 18px; margin: 0; }
+.publish-readiness--warn { border-color: var(--warn); background: color-mix(in srgb, var(--warn) 8%, var(--ground)); }
+.publish-readiness .hint.warn { color: var(--warn); }
+.publish-readiness p { margin: 4px 0 0; }
+
+/* ==========================================================================
+   Page frame (2026-10)
+
+   Five page shells grew separately — Graphs, Workspace, User management,
+   Observability, Account — and each picked its own gutter, column width, title
+   scale and ground. Moving between them shifted the title, the left edge and
+   the background under the operator's eye. They now read one frame: the same
+   ground, the same gutter, one centred column, and one header (eyebrow, title,
+   lede, rule). Tokens live in studio.css `:root`.
+   ========================================================================== */
+
+/* One ground. Cards and panels sit on it; a page is never itself a panel. */
+.page-graphs, .obs-page, .profile-page, .workspace-team-page, .ws-page { background: var(--ground); }
+.obs-page, .profile-page, .workspace-team-page { padding: var(--page-top) var(--page-gutter) 36px; }
+.page-graphs { padding: var(--page-top) var(--page-gutter) 18px; }
+
+.obs-page > *, .profile-heading, .profile-grid, .workspace-plate, .team-layout {
+  max-width: var(--page-max); margin-right: auto; margin-left: auto;
+}
+
+/* One header. */
+.obs-head, .profile-heading, .workspace-plate, .page-graphs > .page-header {
+  margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid var(--rule-2);
+}
+.page-graphs > .page-header { margin-bottom: 12px; padding-bottom: 10px; }
+.obs-head .eyebrow, .profile-heading .eyebrow, .workspace-plate .eyebrow, .ws-header .eyebrow {
+  display: block; color: var(--accent);
+  font: 600 9.5px/1 var(--cond); letter-spacing: .15em; text-transform: none;
+}
+.obs-head h2, .profile-heading h2, .workspace-plate h2, .page-graphs .page-header-row h2 {
+  margin: 4px 0 5px; color: var(--ink);
+  font: 600 22px/1.15 var(--cond); letter-spacing: .01em;
+}
+.page-graphs .page-header-row h2 { margin: 0; }
+.obs-head p:not(.obs-range), .profile-heading p, .workspace-plate p {
+  max-width: 76ch; margin: 0; color: var(--muted); font: 400 12.5px/1.5 var(--cond);
+}
+.obs-head p code, .obs-foot code, .ws-header .page-desc code {
+  padding: 1px 5px; border: 1px solid var(--rule); border-radius: 2px;
+  background: var(--raised); color: var(--ink); font: 11.5px/1.4 var(--mono);
+}
+
+/* Native controls nobody styled (a bare <select> drew OS chrome — white, serif
+   weight, on a dark page). Zero specificity on purpose: any class that styles a
+   control still wins; this only catches the ones that were left raw. */
+:where(select, textarea, input:not([type=checkbox], [type=radio], [type=range], [type=file], [type=color])) {
+  color: var(--ink); background-color: var(--raised);
+  border: 1px solid var(--rule-2); border-radius: 3px;
+}
+:where(select) { min-height: var(--ctl); padding: 0 8px; font: 500 12.5px/1.2 var(--cond); letter-spacing: .02em; }
+:where(input:not([type=checkbox], [type=radio], [type=range], [type=file], [type=color])) { min-height: var(--ctl); padding: 0 10px; font: 400 12.5px/1.2 var(--mono); }
+:where(textarea) { padding: 8px 10px; font: 400 12.5px/1.5 var(--mono); }
+:where(select, textarea, input):focus-visible { outline: 0; border-color: var(--accent); box-shadow: var(--ring); }
+:where(select, textarea, input)::placeholder { color: var(--faint); }
+:where(select, textarea, input):disabled { opacity: .5; cursor: not-allowed; }
+
+/* Two spellings of the primary action existed (`.btn.primary`, 21 uses, brass;
+   `.btn.btn--primary`, 7 uses, a flat fill), so the same job looked different
+   from page to page. Both now draw the brass key. */
+.btn.btn--primary:not(:disabled), .btn.btn--primary {
+  background: linear-gradient(180deg, #f0b755, var(--accent) 62%, #c9862a);
+  color: #191207; border-color: #9c6a19; letter-spacing: .15em; font-weight: 600;
+  box-shadow: inset 0 1px 0 rgba(255, 244, 214, .55), 0 1px 2px var(--edge-lo);
+}
+.btn.btn--primary:hover:not(:disabled) { background: linear-gradient(180deg, #f6c169, #eeb14a 62%, #d0902f); opacity: 1; }
+:root[data-theme="light"] .btn.btn--primary:not(:disabled) { color: #fdf8ec; }
+/* A faded brass key on paper read as a smear, not as «not available». A key
+   that cannot be pressed goes flat and quiet, dashed, and says so on hover. */
+:root .btn.primary:disabled, :root .btn.btn--primary:disabled {
+  background: var(--raised); color: var(--faint); border: 1px dashed var(--rule-2);
+  box-shadow: none; opacity: 1; cursor: not-allowed; font-weight: 500;
+}
+
+/* --- Density -------------------------------------------------------------
+   Compact is a property of the whole instrument, not of a page: one row height
+   for every control that sits in a row (`--ctl`), one rhythm for every list.
+   Nothing here shrinks type below 11px — a denser screen that cannot be read
+   is slower, not faster. */
+
+/* Shell: the brand block and the context bar share a height so their bottom
+   rules form one line across the window. */
+.shell-brand { height: 50px; }
+/* Phones stack the pickers under the heading, so the bar must be free to grow
+   (the ≤700px rules above set `height: auto`; a later fixed height clipped them). */
+@media (min-width: 701px) { .context-bar { height: 50px; } }
+.shell-navigation { padding: 9px 8px; }
+.shell-nav-section { margin-bottom: 9px; }
+.shell-nav-section h3 { padding: 5px 10px 4px; }
+.shell-nav-item { height: 30px; gap: 9px; }
+.shell-nav-item.selected { font-weight: 600; }
+.shell-account { padding: 7px; }
+.account-button { padding: 6px 7px; }
+.context-bar { gap: 14px; }
+.context-bar .graph-picker select { height: var(--ctl); padding-top: 0; padding-bottom: 0; }
+.theme-toggle { width: var(--ctl); height: var(--ctl); }
+
+/* Buttons: one height. A row of controls (select, input, button) now lines up
+   instead of stepping by a pixel or two. `.tiny` keeps its own, smaller, rhythm. */
+.btn:not(.tiny):not(.pane-tab) { min-height: var(--ctl); padding-top: 0; padding-bottom: 0; padding-inline: 11px; }
+summary.btn { display: inline-grid; place-items: center; }
+.btn:focus-visible { outline: 0; box-shadow: var(--ring); border-color: var(--accent); }
+
+/* Observability: ledger rows sit at editor density. */
+.obs-table th { padding: 6px 10px; }
+.obs-table td { padding: 6px 10px; }
+.obs-empty { padding: 14px 0; }
+.obs-foot { margin-top: 12px; }
+.obs-foot strong, .obs-head p strong { color: var(--ink); font-weight: 600; }
+.obs-log-line { padding: 3px 10px 3px 8px; }
+.obs-cards { gap: 8px; margin-bottom: 12px; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+.obs-card { padding: 9px 12px; }
+.obs-card strong { font-size: 20px; }
+.obs-master-detail { gap: 12px; }
+.obs-subject-bar { margin-bottom: 10px; }
+.obs-head { gap: 16px; }
+
+/* Graphs console: the rail gives the working surface its width back. */
+.graph-console { min-height: 420px; }
+/* Only above the single-column breakpoint (≤900px collapses rail over pane). */
+@media (min-width: 901px) { .graph-console { grid-template-columns: clamp(210px, 20vw, 300px) minmax(0, 1fr); } }
+.graph-rail .g-filter { margin: 8px; }
+.rail-item { padding: 6px 10px; gap: 1px; }
+.graph-pane { padding: 10px 14px 14px; }
+.pane-tabs { margin: 9px 0 11px; }
+.pane-tab { padding: 6px 11px; }
+.graph-rail-toolbar { padding: 6px 8px; }
+.graph-rail-toolbar > span { color: var(--muted); font: 600 10px/1 var(--cond); letter-spacing: .15em; }
+
+/* Scrollbars follow the theme and stay out of the way: a 15px light-grey track
+   beside a dense list read as chrome louder than the list itself. */
+* { scrollbar-width: thin; scrollbar-color: var(--rule-2) transparent; }
+
+/* --- Graph pane ----------------------------------------------------------
+   The pane is a container: its own width, not the window's, decides whether
+   the entity list and its detail sit side by side. At 940px the window said
+   «desktop» while the pane had 520px — two columns of 180px, identifiers
+   broken mid-word. */
+.graph-pane { container: graph-pane / inline-size; }
+.entity-detail { container: entity-detail / inline-size; }
+@container graph-pane (max-width: 460px) {
+  .need-toolbar { flex-direction: column; align-items: stretch; }
+  .graph-model .need-sections { grid-template-columns: repeat(3, auto); justify-content: start; }
+  .need-search { width: 100%; }
+  .entity-browser { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .entity-list { max-height: 190px; }
+  .entity-detail { max-height: none; }
+}
+@container entity-detail (max-width: 460px) { .entity-attribute-list { columns: 1; } }
+
+/* The banner that opens each tab states the job in a line and a half; it had
+   the weight of a dialog (12px padding, a hairline above and below). */
+.graph-guidance, .source-readiness { padding: 2px 0 9px; gap: 4px 14px; background: transparent; }
+.graph-guidance strong { font: 600 12px/1.3 var(--cond); letter-spacing: .02em; }
+.graph-guidance p, .error-guidance > p { margin: 2px 0 0; font-size: 11.5px; line-height: 1.45; }
+/* `.hint` was designed as a pane footer (rule above, indented). Inside a
+   graph's working surface it drew a rule under every sentence. */
+.graph-pane .hint { border-top: 0; padding-left: 0; padding-right: 0; }
+.publish-readiness, .draft-status { padding: 8px 12px; gap: 3px; margin: 8px 0; }
+.publish-readiness > strong { font-size: 14px; }
+
+/* Sub-tabs (Objects · Import/Export · Usage guide) are the second level, so
+   they read quieter than the pane's own tabs and share one baseline rule. */
+.model-view-switch { gap: 2px; margin-bottom: 8px; border-bottom: 1px solid var(--rule); }
+.model-view-switch .pane-tab { margin-bottom: -1px; padding: 5px 10px; font-weight: 500; letter-spacing: .06em; }
+
+/* Entities · Concepts · Validation, search, intro, list. */
+.need-toolbar { gap: 8px; }
+.need-sections button { padding: 5px 9px; border-radius: 3px; font: 600 11px/1 var(--cond); letter-spacing: .05em; }
+.graph-model .need-sections button { padding: 6px 8px; }
+.need-search { height: var(--ctl); padding: 0 10px; border-radius: 3px; background: var(--ground); }
+.need-intro { margin: 8px 0 10px; font-size: 11.5px; line-height: 1.5; color: var(--faint); }
+@container graph-pane (min-width: 461px) {
+  .entity-browser { grid-template-columns: minmax(212px, 36%) minmax(0, 1fr); gap: 10px; }
+  /* Pills and search share one row; the search takes what the pills leave. */
+  .need-toolbar { flex-wrap: nowrap; }
+  .need-sections { flex: none; }
+  .need-search { flex: 1 1 140px; width: auto; min-width: 0; }
+}
+.entity-list-head { padding: 7px 10px; font: 600 10.5px/1 var(--cond); letter-spacing: .12em; color: var(--muted); }
+.entity-list-row { padding: 6px 10px; gap: 1px; }
+.entity-detail { padding: 12px 14px; }
+.entity-attribute-list li { padding: 2px 0; }
+
+/* Usage guide: a form, not a poster. */
+.usage-guide-form { padding: 6px 2px 14px; }
+.guide-header { margin-bottom: 10px; }
+.guide-header h3 { margin: 0 0 3px; font-size: 16px; letter-spacing: .01em; }
+.guide-header p { font-size: 12px; }
+.guide-optional { padding: 3px 9px; font-size: 11px; }
+.guide-guideline { padding: 8px 12px; margin-bottom: 12px; }
+.guide-guideline p { margin: 3px 0; font-size: 12px; }
+.guide-fields { gap: 10px; }
+.guide-field { padding: 10px 12px; border-radius: 4px; }
+.guide-field-hint { margin: 3px 0 7px; font-size: 12px; }
+.usage-guide-form .guide-field textarea { min-height: 72px; padding: 7px 10px; font-size: 13px; line-height: 1.45; }
+.guide-example { margin-top: 8px; font-size: 12px; }
+.guide-actions { padding: 9px 0; margin-top: 10px; }
+.guide-save-status { font-size: 12px; }
+
+/* --- Section rhythm inside a graph --------------------------------------
+   Every tab of the pane opened its sections with a differently sized heading
+   (13px bold, 16px bold, 14px with an underline). One section title now: small,
+   condensed, tracked, sitting on a hairline — the same voice as `.pane-head`. */
+.graph-pane .pane-body h3,
+.semantic-definition-heading h3,
+.runtime-head h3 {
+  margin: 14px 0 4px; padding: 0;
+  font: 600 11px/1.2 var(--cond); letter-spacing: .12em; color: var(--muted);
+}
+.graph-pane .pane-body > section:first-of-type h3:first-child,
+.semantic-definition-heading h3 { margin-top: 0; }
+.semantic-definition-header { margin-bottom: 4px; }
+.semantic-definition-heading p.hint { margin-top: 2px; }
+
+/* A row of controls is one row: label, select, button, button — wrapping
+   only when it must, never leaving a lone button on its own line. */
+.semantic-definition-body > .actions, .graph-pane .pane-body .actions {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin: 8px 0;
+}
+.semantic-definition-body > .actions > label { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font: 500 12px/1 var(--cond); }
+.semantic-definition-body > .actions > label select { min-width: 220px; }
+.semantic-definition-import-strip { margin: 0 0 8px; }
+.semantic-definition-import-strip > .btn, .semantic-definition-import-strip > label.btn { display: inline-flex; align-items: center; justify-content: center; }
+.draft-status span:first-of-type { color: var(--ink); font-weight: 500; }
+.draft-status span { font-size: 12px; }
+
+.semantic-source-mapping-list { gap: 4px; margin: 6px 0; }
+.semantic-source-mapping-row { padding: 5px 8px; gap: 10px; border-radius: 3px; }
+.semantic-definition-tools, .semantic-definition-result { margin: 6px 0; padding: 5px 10px; border-radius: 3px; }
+.semantic-source-filters { display: flex; align-items: center; gap: 10px; margin: 6px 0; }
+.semantic-source-filters input[type="search"], .semantic-source-filters input:not([type]) { width: 220px; }
+
+/* Publish: the run of actions beside the section title is a toolbar. */
+.runtime-head { gap: 8px; margin-bottom: 4px; }
+.graph-runtime { margin-top: 10px; }
+.token-panel { margin-top: 10px; }
+.token-panel h3 { margin: 0 0 4px; }
+
+/* Hints sit tight to what they explain; the 7px of padding the footer-style
+   `.hint` carries made every caption look like its own row. */
+.graph-pane .hint { padding-top: 3px; padding-bottom: 3px; line-height: 1.45; }
+.graph-pane .setting > .hint { padding-bottom: 4px; }
+
+/* `main` is `display: grid` globally (studio.css), which turns each direct child
+   into a content-sized grid item; with `margin: auto` the header and the body
+   then centre separately and their left edges disagree. Observability and
+   Account already opt out with `display: block` — User management did not, so
+   its title sat 150px right of its own form. */
+.workspace-team-page { display: block; }
+
+/* Query Studio --------------------------------------------------------------
+   The Contract strip had no rules of its own, so it inherited a pane's height
+   and footer-style hints (each with its own rule and 7px padding). */
+
+/* An empty EQL box is the starting state, not a failure: say what is expected
+   in the error colour on a quiet tint. It was dark amber text (#4a3b00) on a
+   bright amber bar, the loudest thing on the page for a box nobody had typed
+   in yet. */
+.pane-head.bad {
+  background: color-mix(in srgb, var(--error) 8%, var(--panel));
+  box-shadow: inset 0 -2px 0 color-mix(in srgb, var(--error) 70%, transparent);
+  color: var(--error);
+}
+.pane-head.bad > span:not(:first-child) { color: var(--error); }
+
+/* Workspace tabs: every tab is a plate. Team and Sources were wrapped in
+   `.ws-section`; Variables and MCP connections opened the same
+   `.ws-section-heading` bare on the ground, at their own max-widths, so the four
+   tabs had four different widths and two different backgrounds. */
+.ws-page .mcp-connections, .ws-page .variables-page {
+  max-width: none; margin: 0 0 14px; padding: 0 0 12px;
+  background: var(--panel); border: 1px solid var(--rule-2); border-radius: 5px;
+  box-shadow: inset 0 1px 0 var(--edge-hi); overflow: hidden;
+}
+.ws-page .mcp-connections > :not(.ws-section-heading),
+.ws-page .variables-page > :not(.ws-section-heading) { margin-left: 14px; margin-right: 14px; }
+.ws-page .variables-page .hint, .ws-page .mcp-connections > .hint { padding-left: 0; padding-right: 0; }
+.ws-page .mcp-connections > .page-desc { margin-top: 10px; margin-bottom: 0; font-size: 12px; }
+.mcp-endpoint { margin-top: 10px; padding: 10px 12px; border-radius: 4px; }
+.mcp-endpoint p { margin: 6px 0; font-size: 12px; line-height: 1.45; }
+.mcp-url-row { margin-top: 6px; }
+.mcp-url-row input { height: var(--ctl); padding: 0 10px; }
+.mcp-copy-status { min-height: 0; }
+.variable-form { padding: 12px 14px; margin: 10px 0; }
+.variable-form label { margin: 8px 0; font-size: 12px; }
+.variables-table th, .variables-table td { padding: 6px 10px; }
+
+/* Links nobody classed fell back to the browser's blue. In this instrument a
+   link is the operator's colour, underlined only when it is being aimed at. */
+a:where(:not([class])) { color: var(--accent); text-decoration: none; text-underline-offset: 2px; }
+a:where(:not([class])):hover { text-decoration: underline; }
+a:where(:not([class])):focus-visible { outline: 0; box-shadow: var(--ring); border-radius: 2px; }
+
+/* --- One scroller per surface ---------------------------------------------
+   Workspace → Sources stacked three vertical scrollbars at laptop heights: the
+   page (`.ws-sections`), the source panel (`.source-view-body`) and the code
+   editor — a wheel over the editor handed off to each in turn. A working
+   surface now fills the window and lets exactly its *content* scroll: the
+   source list on the left, the entry's own CodeMirror on the right. The action
+   row and the usage note stay on screen instead of scrolling away under a
+   70vh-tall editor. (Documents — Team, Variables, Account — still scroll as
+   pages; they have no inner surface to give the scroll to.) */
+.ws-page .ws-sections { display: flex; flex-direction: column; }
+.ws-page .ws-sections > * { flex: none; }
+.ws-page .ws-sections > .ws-sources { flex: 1 1 auto; min-height: 300px; display: flex; flex-direction: column; margin-bottom: 0; }
+.ws-page .ws-sections { padding-bottom: 14px; }
+.ws-sources > .sources-page { height: auto; max-height: none; min-height: 0; flex: 1 1 auto; }
+
+.source-view-body { display: flex; flex-direction: column; overflow: hidden; padding: 10px 14px 8px; }
+.source-view-body > .asset-editor, .source-view-body .asset-editor-portal > .asset-editor {
+  flex: 1 1 auto; min-height: 0; margin: 0; display: flex; flex-direction: column;
+}
+.source-view-body .asset-editor .editor.asset-entry { flex: 1 1 auto; min-height: 120px; }
+.source-view-body .asset-editor .editor.asset-entry .cm-editor { height: 100%; max-height: none; }
+.source-view-body .asset-editor-actions { flex: none; }
+.source-view-body .source-archive { flex: none; margin-top: 8px; padding-top: 8px; }
+.source-view-body .source-archive > .hint { margin: 0 0 6px; padding: 0; border: 0; }
+
+/* The removal block is a sentence and a button: one row, not two. */
+.source-view-body .source-archive { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 14px; }
+.source-view-body .source-archive > .hint { flex: 1 1 280px; margin: 0; }
+
+/* On a short window the page lede is the first thing to give: the working
+   surface under it is worth more than a restatement of the tab names. */
+@media (max-height: 760px) {
+  .ws-page .ws-header { padding-bottom: 6px; }
+  .ws-page .ws-header .page-desc { display: none; }
+  .ws-page .ws-sections { padding-top: 10px; }
+}
+
+/* Model / Explorer: the entity list and its detail take the height that is
+   left and scroll *themselves*. Their `max-height: min(68vh, 760px)` caps sat
+   inside a pane that also scrolled, so a laptop window had two vertical
+   scrollbars under one wheel (and the list could be 190px tall while the pane
+   had 400px free). The pane still scrolls if the window is genuinely too short
+   for the minimum below — it just no longer does so while there is room. */
+@media (min-width: 901px) {
+  .graph-model .need-view { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+  .graph-model .need-toolbar, .graph-model .need-intro { flex: none; }
+  .graph-model .entity-browser {
+    flex: 1 1 auto; min-height: 200px; align-items: stretch;
+    grid-template-rows: minmax(0, 1fr);
+  }
+  .graph-model .entity-list, .graph-model .entity-detail { max-height: none; min-height: 0; }
+  .graph-model .entity-fragments { grid-column: 1 / -1; }
+}
+@container graph-pane (max-width: 460px) {
+  @media (min-width: 901px) {
+    .graph-model .entity-browser { grid-template-rows: minmax(96px, 38%) minmax(0, 1fr); }
+  }
+}
+
+/* MCP connections is a document, but it overran a 600px window by 17px — a
+   scrollbar for one stray line. Tighter plates, no scrollbar. */
+.ws-page .mcp-connections { padding-bottom: 8px; }
+.mcp-endpoint { margin-top: 8px; padding: 8px 12px; }
+.mcp-endpoint p { margin: 4px 0; }
+.mcp-endpoint-heading h3 { font-size: 13px; }
+.mcp-copy-status { display: none; }
+.mcp-copy-status:not(:empty) { display: block; margin: 2px 0 0; }
+
+/* Short windows: the banner and the intro line restate what the tabs already
+   say. Keep the banner's title and its action on one row, drop the prose. */
+@media (max-height: 760px) {
+  .page-graphs { padding-top: 12px; }
+  .page-graphs > .page-header { margin-bottom: 10px; padding-bottom: 8px; }
+  .page-graphs .page-header-row h2 { font-size: 18px; }
+  .graph-guidance { flex-wrap: nowrap; padding-bottom: 6px; }
+  .graph-guidance > div { flex: 1 1 auto; }
+  .graph-guidance p { display: none; }
+  .graph-model .need-intro { display: none; }
+  .pane-tabs { margin: 6px 0 8px; }
+}
+
+/* Long lists scroll inside their plate, under a header that stays put.
+   Variables grows with the instance (dozens of ${...} references is normal);
+   as a page-length plate it pushed the title, the «Add variable» action and the
+   tabs off screen — the column headings had to be remembered, not read. The
+   plate now takes the window's height and only the rows scroll. */
+.ws-page .ws-sections > .guarded-model, .ws-page .ws-sections > .guarded-model > div {
+  display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0;
+}
+.ws-page .variables-page { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; margin-bottom: 0; }
+/* The Add/Edit and Remove forms cannot shrink, and the plate clipped
+   (`overflow: hidden`): on a short window the form's Save/Cancel row was cut
+   off. The table yields first; past its floor the plate scrolls, never clips. */
+.ws-page .variables-page { overflow-y: auto; }
+.ws-page .variables-page:has(> .variable-form) .variables-table-wrap { min-height: 0; }
+/* The form itself was taller than a laptop window's share of the plate (a
+   full-height column of label, field, label, field, two ruled hints, actions).
+   Name and value now sit side by side, the hints are quiet single lines, and
+   the actions follow directly: the whole form is about half its old height. */
+.ws-page .variable-form { display: grid; grid-template-columns: 1fr 1fr; column-gap: 14px; max-width: 900px; padding: 10px 14px; margin: 8px 0; }
+.ws-page .variable-form > :not(label) { grid-column: 1 / -1; }
+.ws-page .variable-form h4 { margin: 0 0 2px; }
+.ws-page .variable-form label { margin: 6px 0; }
+.ws-page .variable-form .hint { margin: 2px 0; padding: 0; border: 0; font-size: 11.5px; line-height: 1.4; }
+.ws-page .variable-form .asset-editor-actions { margin-top: 6px; }
+@media (max-width: 700px) { .ws-page .variable-form { grid-template-columns: 1fr; } }
+.ws-page .variables-page > .ws-section-heading, .ws-page .variables-page > .hint, .ws-page .variables-page > .variable-form { flex: none; }
+.ws-page .variables-page > .hint { border-top: 0; padding-top: 6px; padding-bottom: 0; }
+.ws-page .variables-page > .hint + .hint { padding-top: 2px; }
+.ws-page .variables-table-wrap { flex: 1 1 auto; min-height: 120px; overflow: auto; margin-top: 8px; margin-bottom: 0; border-top: 1px solid var(--rule); }
+.variables-table thead th { position: sticky; top: 0; z-index: 1; background: var(--panel); box-shadow: 0 1px 0 var(--rule-2); }
+.variables-table td { vertical-align: middle; }
+.variables-table .btn { margin: 0 4px 0 0; min-height: 24px; }
+
+/* The two sentences above the Variables table are reference text, not
+   content: set them as a quiet two-line block so the rows get the height. */
+.ws-page .variables-page > .hint { padding: 5px 0 0; font-size: 11.5px; line-height: 1.4; }
+.ws-page .variables-page > .hint + .hint { padding-top: 1px; }
+.ws-page .variables-page > .hint:last-of-type { padding-bottom: 2px; }
+@media (max-height: 760px) { .ws-page .ws-section-heading { padding-top: 6px; padding-bottom: 6px; } }
+
+/* Identifiers in the list are 20–30 characters of monospace; at 12.5px a 190px
+   column broke «category» into «categor / y». Set tighter, break only if forced. */
+.graph-model .entity-list-row { padding: 5px 8px; }
+.graph-model .entity-list-row > span:first-child { font-size: 12px; letter-spacing: -.01em; }
+
+/* Logs and Activity: the title, the Refresh action and the column headings stay
+   put; the rows scroll under them. As a page-length column the first thing to
+   leave the screen was the very header that says which log this is. Narrow
+   windows keep the plain page scroll (the two-column activity view stacks). */
+@media (min-width: 901px) {
+  .obs-page:has(> .obs-log, > .obs-master-detail) { display: flex; flex-direction: column; overflow: hidden; }
+  .obs-page:has(> .obs-log, > .obs-master-detail) > * { width: 100%; flex: none; }
+  .obs-page > .obs-log, .obs-page > .obs-master-detail { flex: 1 1 auto; min-height: 0; }
+  .obs-page > .obs-log { overflow: auto; align-content: start; }
+  .obs-master-detail { align-items: stretch; grid-template-rows: minmax(0, 1fr); }
+  .obs-master-detail > .obs-table-wrap { min-height: 0; overflow: auto; }
+  .obs-master-detail > .obs-detail { position: static; min-height: 0; overflow: auto; }
+  .obs-table thead th { position: sticky; top: 0; z-index: 1; box-shadow: 0 1px 0 var(--rule-2); }
+}
+
+/* Query Studio, short windows ------------------------------------------------
+   The page is a column: Contract strip, toolbar, the request/result row, then
+   Plan over Trace. At laptop heights the last two shared ~135px — 75 for the
+   plan graph and 60 for the trace, each a header and one clipped line. Height is
+   the scarce axis here and width is not, so below 820px tall the bottom band
+   puts them side by side: each gets the whole band, and the graph, which is
+   wide, gets the wider half. The inline `flex: 0 0 <plan-h>%` the page sets on
+   the plan pane resolves against the band's width in a row, so the split keeps
+   working; the divider between them is a fixed hairline in this arrangement
+   (its drag handler measures height, which a row does not have). Taller windows
+   keep the stacked, draggable layout untouched. */
+@media (max-height: 820px) and (min-width: 701px) {
+  .lab-bottom { flex-direction: row; }
+  .lab-bottom > .gutter { width: 1px; height: auto; cursor: default; pointer-events: none; }
+  .lab-bottom > .pane { min-width: 0; }
+  .lab-bottom .pane-body, .lab-bottom > .pane > .attr-graph { min-height: 0; }
+
+  .lab-toolbar { height: 36px; }
+}
+
+/* A half-width Plan header cannot hold the title, the step count, the legend and
+   the graph/table switch: the legend squeezed the count down to «0 s…». The
+   legend explains the picture and is the first to go; zoom (⤢) shows it whole. */
+.lab-bottom > .pane { container-type: inline-size; }
+@container (max-width: 520px) { .lab-bottom .pane-head .legend { display: none; } }
+
+/* ==========================================================================
+   Sources · Import/Export · Publish, set at one density (2026-10-01)
+
+   These three tabs were built as forms: a heading, a paragraph of explanation,
+   a labelled control, another paragraph. The explanations are now tooltips or
+   one muted line; the controls sit on the row they belong to; lists fill the
+   pane and scroll themselves.
+   ========================================================================== */
+
+/* --- Sources: connections as a table -------------------------------------- */
+.gs-head { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; margin: 0 0 8px; }
+.gs-head h3 { margin: 0; }
+.gs-count { color: var(--faint); font: 400 11px/1 var(--cond); letter-spacing: .04em; }
+.gs-add { display: flex; align-items: center; gap: 6px; }
+.gs-add select { width: 210px; }
+.gs-table { border: 1px solid var(--rule); border-radius: 3px; background: var(--ground); }
+.gs-row {
+  display: grid; align-items: center; gap: 4px 12px; padding: 5px 10px; min-height: 38px;
+  grid-template-columns: minmax(150px, 1.5fr) minmax(70px, auto) minmax(70px, auto) minmax(180px, auto);
+  border-bottom: 1px solid var(--rule);
+}
+.gs-row:last-child { border-bottom: 0; }
+.gs-row:hover { background: color-mix(in srgb, var(--raised) 60%, transparent); }
+.gs-name { display: flex; flex-direction: column; min-width: 0; gap: 1px; }
+.gs-name strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 600 12.5px/1.25 var(--cond); }
+.gs-name .mono { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--faint); font: 400 10.5px/1.2 var(--mono); }
+.gs-warn { color: var(--warn); font: 600 10.5px/1.2 var(--cond); }
+.gs-kind { color: var(--muted); font: 400 11px/1.2 var(--mono); white-space: nowrap; }
+.gs-unused { color: var(--faint); font: 400 11.5px/1 var(--cond); }
+.gs-row .source-usage { margin: 0; }
+.gs-row .source-usage summary { font: 400 11.5px/1.2 var(--cond); }
+.gs-row .source-usage ul { position: absolute; z-index: 5; max-width: 420px; margin: 4px 0 0; padding: 6px 10px 6px 24px; border: 1px solid var(--rule-2); border-radius: 3px; background: var(--panel); box-shadow: 0 6px 18px var(--sunk); font-size: 11px; }
+.gs-row .source-usage { position: relative; }
+.gs-actions { display: flex; align-items: center; justify-content: flex-end; gap: 6px; }
+.gs-actions select { width: 150px; }
+.gs-empty { margin: 10px 0; padding: 14px; border: 1px dashed var(--rule-2); border-radius: 3px; color: var(--muted); font-size: 12.5px; }
+.gs-foot { margin: 8px 0 0; }
+
+/* --- Import/Export --------------------------------------------------------- */
+.semantic-definition-import-strip { margin: 0 0 8px; gap: 6px; }
+.draft-line { color: var(--muted); font: 400 11px/1 var(--mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.bindings-head { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; margin: 6px 0; }
+.bindings-head h3 { margin: 0; }
+.bindings-head input[type="search"] { width: 170px; }
+.bindings-state { padding: 2px 7px; border-radius: 9px; font: 600 10.5px/1.3 var(--cond); letter-spacing: .03em; }
+.bindings-state.ok { color: var(--ok); background: color-mix(in srgb, var(--ok) 13%, transparent); }
+.bindings-state.bad { color: var(--warn); background: color-mix(in srgb, var(--warn) 15%, transparent); }
+.bindings-head .check { color: var(--muted); font: 500 11.5px/1 var(--cond); letter-spacing: .02em; }
+
+.kind-sets { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 0 0 8px; padding: 6px 8px; border: 1px solid var(--rule); border-radius: 3px; background: var(--raised); }
+.kind-set { display: inline-flex; align-items: center; gap: 6px; }
+.kind-name { color: var(--muted); font: 600 11.5px/1 var(--cond); letter-spacing: .03em; white-space: nowrap; }
+.kind-set select { width: 190px; }
+
+/* The list takes the pane's remaining height (it was a fixed 420px box under
+   four paragraphs); rows are one line of name, one of id. */
+.semantic-definition, .semantic-definition-body { min-width: 0; }
+.semantic-resolver-sources { flex: 1 1 auto; min-height: 240px; border: 1px solid var(--rule); border-radius: 3px; background: var(--ground); }
+@media (min-width: 901px) {
+  .graph-model .semantic-definition, .graph-model .semantic-definition-body { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+}
+.src-row {
+  display: grid; align-items: center; width: 100%; gap: 10px;
+  grid-template-columns: minmax(120px, 1fr) 40px minmax(150px, 220px) 84px;
+}
+.src-name { display: flex; flex-direction: column; min-width: 0; gap: 1px; }
+.src-name strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 600 12.5px/1.2 var(--cond); }
+.src-name .mono { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--faint); font: 400 10.5px/1.2 var(--mono); }
+.src-kind { color: var(--muted); font: 400 11px/1 var(--mono); }
+.src-none { color: var(--faint); font: 400 11.5px/1 var(--cond); }
+.src-status { font: 600 11px/1 var(--cond); letter-spacing: .03em; white-space: nowrap; }
+.src-status.ok { color: var(--ok); }
+.src-status.bad { color: var(--warn); }
+.src-row select { width: 100%; min-width: 0; height: 24px; font-size: 12px; }
+
+/* --- Publish --------------------------------------------------------------- */
+.graph-settings { gap: 8px; max-width: none; }
+.graph-settings + .graph-runtime { margin-top: 10px; }
+.release-name { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; padding: 6px 0; border-bottom: 1px solid var(--rule); }
+.rn-label { color: var(--muted); font: 600 11px/1 var(--cond); letter-spacing: .12em; }
+.rn-value { color: var(--ink); font: 500 12.5px/1 var(--mono); }
+.rn-form { display: flex; align-items: center; gap: 6px; flex: 1 1 320px; }
+.rn-form input { flex: 1 1 auto; max-width: 320px; }
+.release-name .findings, .release-name .error-guidance { flex: 1 1 100%; margin: 2px 0 0; }
+
+.runtime-head { gap: 8px; margin: 0 0 6px; }
+.publish-status {
+  display: flex; align-items: baseline; flex-wrap: wrap; gap: 3px 12px; margin: 0 0 8px; padding: 5px 10px;
+  border: 1px solid var(--rule-2); border-left-width: 3px; border-radius: 3px; background: var(--ground);
+}
+.publish-status--ok   { border-left-color: var(--ok);   background: color-mix(in srgb, var(--ok) 7%, var(--ground)); }
+.publish-status--warn { border-left-color: var(--warn); background: color-mix(in srgb, var(--warn) 8%, var(--ground)); }
+.publish-status--bad  { border-left-color: var(--error); background: color-mix(in srgb, var(--error) 7%, var(--ground)); }
+.ps-state { font: 600 12.5px/1.3 var(--cond); letter-spacing: .01em; }
+.publish-status--ok .ps-state { color: var(--ok); }
+.publish-status--warn .ps-state { color: var(--warn); }
+.publish-status--bad .ps-state { color: var(--error); }
+.ps-meta { color: var(--muted); font: 400 11px/1.3 var(--mono); }
+
+.graph-mcp-connection { margin: 8px 0; }
+.mcp-line { display: grid; grid-template-columns: 78px minmax(0, 1fr) auto; align-items: center; gap: 8px; margin: 0 0 4px; }
+.mcp-line-label { color: var(--muted); font: 600 11px/1 var(--cond); letter-spacing: .08em; white-space: nowrap; }
+.mcp-line input { height: var(--ctl); padding: 0 8px; border: 1px solid var(--rule-2); border-radius: 3px; background: var(--ground); color: var(--ink); font: 11.5px/1 var(--mono); min-width: 0; }
+.graph-mcp-connection > .hint { padding: 2px 0; }
+
+.token-panel { margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--rule); }
+.token-panel .runtime-head h3 { margin: 0; }
+.token-panel > .hint { padding-top: 0; }
+.version-list { margin: 6px 0 0; }
+.version-list li { padding: 4px 6px; }
+
+/* Import/Export, tightened once more: the draft summary shares the toolbar row
+   and truncates (its full text is the tooltip); the result message is a line,
+   not a box; the list keeps four rows even in a short window. */
+.semantic-definition-import-strip { flex-wrap: nowrap; }
+.draft-line { flex: 1 1 0; text-align: right; }
+.graph-model .semantic-definition-result, .semantic-definition-result { margin: 0 0 6px; padding: 4px 10px; border-radius: 3px; font-size: 12px; }
+.semantic-definition-result p { margin: 0; }
+.kind-sets { padding: 4px 8px; margin-bottom: 6px; }
+.semantic-resolver-sources { min-height: 150px; }
+.src-row { grid-template-columns: minmax(120px, 1fr) 40px minmax(150px, 220px) 96px; }
+
+/* The contract Model view's filter tiles (Entities 4 · Attributes 34 · … ·
+   Equivalences 0) were a four-column grid of wrapping buttons: «Equivalences»
+   broke to «Equivalenc / es». Chips that size to their label and wrap as a row
+   instead; the search box takes the rail's width. */
+.graph-model .need-sections { display: flex; flex-wrap: wrap; gap: 2px 3px; margin: 4px 0 6px; }
+.graph-model .need-sections button { white-space: nowrap; overflow-wrap: normal; padding: 3px 7px; font-size: 10.5px; }
+.pane-rail input.need-search { display: block; width: 100%; box-sizing: border-box; margin: 6px 0 0; }
+
+/* Publish: the last few pixels. */
+.graph-pane .runtime-head + .publish-status { margin-top: 2px; }
+.graph-mcp-connection > .hint, .token-panel > .hint, .graph-runtime > .hint { padding-top: 1px; padding-bottom: 1px; }
+.bindings-head input[type="search"] { width: 140px; }
+
+/* A connection row has to fit a 500px pane: name | kind · usage | actions. The
+   action select shrinks first, then the usage count drops under the name. */
+.gs-row { grid-template-columns: minmax(130px, 1.4fr) auto auto minmax(110px, 1fr); }
+.gs-actions select { width: 100%; max-width: 170px; min-width: 90px; }
+@container graph-pane (max-width: 560px) {
+  .gs-row { grid-template-columns: minmax(0, 1fr) auto; }
+  .gs-kind, .gs-unused, .gs-row .source-usage { grid-column: 1; }
+  .gs-actions { grid-column: 2; grid-row: 1 / span 2; }
+}
+
+/* --- Reading a rejection ---------------------------------------------------
+   A rejection is the thing someone has to understand and often hand to somebody
+   else, so it is set to be read: the headline, then each finding as
+   CODE  location  /  message  /  expected · got, with «Copy details» to take it
+   away. It was a tall boxed card with a generic paragraph (and, after a source
+   check, sat INSIDE the row of buttons, pushing Cancel and the revision aside). */
+.error-guidance { position: relative; margin: 6px 0; padding: 8px 12px; background: var(--ground); }
+.error-guidance > strong { display: block; padding-right: 96px; font: 600 12.5px/1.3 var(--cond); letter-spacing: .01em; }
+.error-guidance > p { font-size: 11.5px; line-height: 1.45; }
+.eg-copy { position: absolute; top: 6px; right: 8px; }
+.error-guidance .findings { margin-top: 6px; gap: 4px; }
+.error-guidance--compact { padding-top: 6px; }
+.error-guidance--compact .findings { margin-top: 0; padding-right: 88px; }
+.finding { padding: 4px 8px; background: var(--panel); border-radius: 3px; }
+.finding-head { flex-wrap: wrap; gap: 2px 10px; margin-bottom: 1px; }
+.finding-head .code { color: var(--error); font-weight: 600; }
+.finding.warning .finding-head .code { color: var(--warn); }
+.finding.info .finding-head .code { color: var(--muted); }
+.finding-head .mono { color: var(--muted); font-weight: 400; opacity: 1; }
+.finding-message { margin: 1px 0; font-size: 12.5px; line-height: 1.4; }
+.finding .mono { font-size: 11px; color: var(--muted); opacity: 1; }
+
+/* The check's result takes the last full line of the action row. */
+.asset-editor-actions { flex-wrap: wrap; row-gap: 8px; }
+.asset-editor-actions .via { margin-left: auto; white-space: nowrap; }
+.check-result { order: 99; flex: 1 1 100%; min-width: 0; }
+.check-head { margin: 2px 0 4px; font: 600 12.5px/1.3 var(--cond); letter-spacing: .01em; }
+.check-result.ok .check-head { color: var(--ok); }
+.check-result.bad .check-head { color: var(--error); }
+.check-result .error-guidance { margin: 0; }
+
+/* --- Variables: a list you search ------------------------------------------
+   Tens to hundreds of ${...} references is ordinary. The toolbar sits above the
+   table (searching never scrolls away), the header row is sortable and pinned,
+   rows are one line, and the Sources that use a variable read as chips. */
+.variables-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; margin: 8px 0 0; flex: none; }
+.vt-search { flex: 0 1 320px; min-width: 180px; }
+.vt-search input { width: 100%; }
+.vt-count { color: var(--muted); font: 500 11px/1 var(--mono); }
+.vt-empty { margin: 14px 0; color: var(--muted); font-size: 12.5px; }
+.vt-empty strong { color: var(--ink); }
+.variables-table th { padding: 0; }
+.th-sort { display: flex; align-items: center; gap: 5px; width: 100%; padding: 6px 10px; border: 0; background: none; color: var(--muted); cursor: pointer; text-align: left; font: 600 10.5px/1 var(--cond); letter-spacing: .1em; }
+.th-sort:hover { color: var(--ink); }
+.th-arrow { color: var(--accent); font-size: 8px; min-width: 8px; }
+.variables-table td { padding: 3px 10px; }
+.variables-table tbody tr:hover td { background: color-mix(in srgb, var(--raised) 70%, transparent); }
+.var-name { font: 500 12.5px/1.3 var(--mono); color: var(--ink); }
+.var-brace { color: var(--faint); }
+.var-status { font: 600 10.5px/1 var(--cond); letter-spacing: .04em; color: var(--muted); }
+.var-status--not-set { color: var(--warn); }
+.var-src { display: inline-block; margin: 1px 4px 1px 0; padding: 1px 6px; border: 1px solid var(--rule-2); border-radius: 9px; color: var(--muted); font: 400 11px/1.3 var(--cond); }
+.var-unused { color: var(--faint); font: italic 400 11.5px/1 var(--cond); }
+.var-actions { text-align: right; white-space: nowrap; width: 1%; }
+.var-actions .btn { margin-left: 4px; }
+.variables-table mark { padding: 0 1px; border-radius: 2px; color: var(--ink); background: color-mix(in srgb, var(--accent) 38%, transparent); }
+
+/* Query Studio's top: ONE row. It was three bands — a «Contract tools» strip
+   (a header, the capability list, a sentence on what Run uses), the toolbar, and
+   a tan «Run target» banner that said the strip's second sentence again. The
+   contract and draft it runs against, and its examples, now sit at the left of
+   the toolbar; the sentences are the tooltip. */
+.lab-toolbar { gap: 10px; }
+.contract-inline { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 0 1 auto; }
+.ci-label { color: var(--muted); font: 500 11px/1 var(--mono); white-space: nowrap; cursor: help; }
+.ci-state { color: var(--faint); font: 400 11.5px/1 var(--cond); white-space: nowrap; }
+.ci-state.bad { color: var(--error); }
+.ci-examples { height: 26px; max-width: 170px; font-size: 11.5px; }
+.lab-toolbar > .check { margin-left: 4px; }
+.lab-scope-note { margin: 0; padding: 4px 12px; border-bottom: 1px solid var(--rule); }
+
+/* Password is a card on My Profile now, beside Appearance — not a full-width
+   page-sized form. */
+.profile-grid .change-password-card { width: auto; grid-column: auto; }
+.change-password-card .change-password-form { margin-top: 10px; gap: 10px; }
+.change-password-card .change-password-field input { padding: 0 10px; height: var(--ctl); }
+
+/* Publish, after reading it with a version live:
+   - the verdict line lives in the action row (flex: 1), not under it;
+   - a link styled as a button centres its label like a button (the
+     `download bundle` / `Download` text sat at the top edge — an <a> has no
+     button's built-in vertical centring);
+   - the version a publish just produced is marked in its own row. */
+.runtime-head .publish-status { flex: 1 1 auto; min-width: 0; margin: 0; }
+a.btn { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+.version-list li.just { box-shadow: inset 2px 0 0 var(--ok); }
+.tag--just { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 50%, transparent); }
+.version-list .v-who { font: 400 11px/1 var(--mono); }
+.version-list a.btn.version-export { min-height: 24px; padding-inline: 9px; font-size: 10.5px; }
+/* In a narrow pane the verdict takes its own line and the two buttons wrap
+   under it, rather than squeezing the verdict into a three-line column. */
+.runtime-head { flex-wrap: wrap; row-gap: 6px; }
+.runtime-head .publish-status { flex: 1 1 340px; }
+
+/* Studio polish: readable chrome, quieter surfaces and task-focused panels. */
+:root { --cond: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; --ctl: 32px; }
+:root[data-theme="light"] { --ground: #f0ece3; --raised: #f5f1e8; --rule: #ded7ca; --rule-2: #c6bcaa; }
+body { font-size: 14px; }
+.shell-brand { height: 58px; }
+.brand-copy strong { font-size: 14px; letter-spacing: .02em; }
+.brand-copy span, .context-eyebrow { font-size: 11px; letter-spacing: .03em; }
+.shell-nav-section h3 { font-size: 11px; letter-spacing: .04em; padding-block: 10px 6px; }
+.shell-nav-item { height: 38px; border-radius: 6px; }
+.shell-nav-label { font-size: 14px; letter-spacing: 0; }
+.shell-nav-item.selected { border-color: transparent; }
+.account-copy strong { font-size: 13px; }
+.account-copy span { font: 11px/1.4 var(--cond); }
+.context-heading strong { font-size: 16px; }
+.context-graph { font-size: 11px; }
+@media (min-width: 701px) { .context-bar { height: 58px; } }
+.context-bar .graph-picker, .context-bar .graph-picker select { font-size: 13px; }
+.btn, .btn:not(.tiny):not(.pane-tab) { font-family: var(--cond); font-size: 13px; letter-spacing: 0; border-radius: 5px; background: var(--panel); box-shadow: none; }
+.btn:hover:not(:disabled) { background: var(--raised); }
+:root .btn.primary:not(:disabled), :root .btn.btn--primary:not(:disabled) { color: var(--ground); background: var(--accent); border-color: var(--accent); box-shadow: none; letter-spacing: 0; font-weight: 600; }
+:root .btn.primary:hover:not(:disabled), :root .btn.btn--primary:hover:not(:disabled) { background: color-mix(in srgb, var(--accent) 90%, var(--ink)); }
+:root .btn.primary:disabled, :root .btn.btn--primary:disabled { border-style: solid; }
+:where(input[type=search]) { font-family: var(--cond); font-size: 13px; }
+.pane-head { min-height: 36px; height: auto; font-size: 12px; letter-spacing: .01em; }
+.pane-head .count { font: 12px/1.4 var(--cond); letter-spacing: 0; }
+.pane-tab, .model-view-switch .pane-tab { font-size: 13px; letter-spacing: 0; padding: 9px 12px; }
+.pane-tabs { gap: 4px; }
+.graph-rail-toolbar > span, .page-counts, .rn-label { font-size: 12px; letter-spacing: .02em; }
+.rail-item { padding: 9px 12px; gap: 4px; }
+.rail-name { font-size: 13px; }
+.rail-caption { font-size: 12px; }
+.graph-guidance p, .hint, .gs-foot { font-size: 13px; line-height: 1.5; }
+.graph-model .need-sections { gap: 5px; margin-block: 8px; }
+.graph-model .need-sections button { font-size: 12px; padding: 5px 7px; border-radius: 4px; }
+.graph-model .entity-list-row { padding: 9px 10px; }
+.graph-model .entity-list-row > span:first-child { font-size: 13px; }
+.graph-model .need-meta { font-size: 12px; }
+.model-object-summary p { line-height: 1.6; }
+.relationships-tools { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 12px; flex: none; border-bottom: 1px solid var(--rule); background: var(--panel); }
+.relationships-tools .seg button { font-size: 12px; letter-spacing: 0; padding: 7px 9px; }
+.relationships-tools select { font-size: 12px; min-width: 0; }
+.relationships-legend { display: flex; flex-wrap: wrap; gap: 8px 16px; padding: 8px 12px; color: var(--muted); font-size: 12px; flex: none; }
+.relationships-legend > span { display: inline-flex; align-items: center; gap: 6px; }
+.relationships-legend .line { width: 18px; border-top: 2px solid var(--muted); }
+.relationships-legend .nested { border-top-style: dashed; }
+.relationships-panel .attr-graph { min-height: 220px; }
+.relationships-dialog .attr-graph { min-height: 0; }
+.graph-model .graph-explorer > .pane-rail { flex: 0 1 24% !important; }
+.graph-model .graph-explorer > .pane-dossier { flex: 0 1 25% !important; }
+.graph-model .graph-explorer > .relationships-panel { flex: 1 1 51%; min-height: 360px; }
+.lab-toolbar { height: auto; min-height: 50px; padding: 8px 12px; flex-wrap: wrap; gap: 8px; }
+.lab-toolbar .check { font-size: 12px; letter-spacing: 0; }
+.lab-target { padding: 4px 8px; border-radius: 5px; color: var(--accent); background: color-mix(in srgb, var(--accent) 9%, var(--panel)); font-size: 12px; white-space: nowrap; }
+.lab-diagnostics { display: flex; flex: 1 1 auto; flex-direction: column; min-height: 170px; background: var(--panel); }
+.diagnostic-tabs { display: flex; flex: none; align-items: center; padding: 0 10px; border-bottom: 1px solid var(--rule); }
+.diagnostic-tabs .spacer { flex: 1; }
+.lab-diagnostics .lab-bottom { flex-direction: column; }
+.lab-diagnostics .lab-bottom > .pane { flex: 1 1 auto; }
+.obs-head p:not(.obs-range), .profile-heading p, .workspace-plate p { font-size: 14px; }
+.obs-card h4, .obs-table th { font-size: 12px; letter-spacing: 0; }
+.status { font-size: 11px; letter-spacing: 0; }
+@container graph-pane (max-width: 850px) {
+  .graph-model .graph-explorer { flex-wrap: wrap; overflow-y: auto; }
+  .graph-model .graph-explorer > .pane-rail, .graph-model .graph-explorer > .pane-dossier { flex: 1 1 240px !important; }
+  .graph-model .graph-explorer > .relationships-panel { order: 3; flex: 1 0 100%; height: 65vh; }
+}
+@media (max-width: 700px) {
+  .lab-toolbar > .spacer { display: none; }
+  .lab-target { flex: 1 1 100%; }
+  .lab-row { flex-direction: column; overflow: auto; }
+  .lab-row .lab-request { flex: 1 0 260px !important; }
+  .lab-row > .pane-result { flex: 1 0 220px; }
+  .lab-row > .gutter { display: none; }
+  .lab-diagnostics { min-height: 230px; }
+  .relationships-tools { padding-inline: 8px; }
+}
+.graph-pane { container-name: graph-pane; container-type: inline-size; }
+.lab-actions { display: flex; flex: 1 1 460px; justify-content: flex-end; flex-wrap: wrap; gap: 8px; min-width: 0; }
+.lab-actions .btn { white-space: nowrap; }
+@media (max-width: 700px) { .lab-actions { justify-content: flex-start; flex-basis: 100%; } }
+/* Keep the map visible when the editing surface is narrower than the window. */
+@container graph-pane (max-width: 850px) {
+  .graph-model .graph-explorer { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: minmax(180px, 40%) minmax(240px, 1fr); gap: 1px; }
+  .graph-model .graph-explorer > .pane-rail { grid-column: 1; grid-row: 1; min-width: 0; }
+  .graph-model .graph-explorer > .pane-dossier { grid-column: 2; grid-row: 1; min-width: 0; }
+  .graph-model .graph-explorer > .relationships-panel { grid-column: 1 / -1; grid-row: 2; height: auto; min-height: 240px; }
+  .graph-model .graph-explorer .attr-graph { min-height: 120px; }
+}
+@container graph-pane (max-width: 500px) {
+  .graph-model .graph-explorer { grid-template-columns: minmax(0, 1fr); grid-template-rows: 240px 240px 420px; }
+  .graph-model .graph-explorer > .pane-dossier { grid-column: 1; grid-row: 2; }
+  .graph-model .graph-explorer > .relationships-panel { grid-row: 3; }
+}
+
+/* Profile, simplified (owner 2026-10-04): one narrow column. */
+.profile-simple { max-width: 640px; display: grid; gap: 10px; align-content: start; grid-auto-rows: max-content; }
+.profile-simple .profile-card { padding: 12px 14px; min-height: 0; }
+.profile-simple .identity-card { display: flex; align-items: center; gap: 12px; }
+.profile-simple .identity-card .profile-primary { flex: 1; }
+.profile-simple .profile-avatar { width: 36px; height: 36px; font-size: 15px; }
+.profile-simple .profile-workspaces { display: grid; gap: 4px; margin-top: 8px; }
+.profile-simple .profile-workspace { padding: 6px 10px; }
+.profile-simple .profile-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.profile-simple .profile-row h3 { margin: 0; }
+.profile-simple .profile-cancel { justify-self: start; }
+
+/* Brand top left, as in Workbench (owner 2026-10-10): the Open Atlas mark, «Open Atlas Studio» and the version. */
+.wordmark-icon { flex: none; color: var(--accent); }
+/* Version on its own line under the name: beside it, it ran into the collapse button. */
+.shell-brand .brand-copy { flex-direction: column; align-items: flex-start; gap: 3px; }
+.shell-brand .brand-copy strong { font: 650 15px/1.2 var(--cond); letter-spacing: -.01em; }
+.shell-brand .brand-copy .brand-version {
+  margin: 0; color: var(--faint);
+  font: 500 10px/1 var(--mono); letter-spacing: 0; white-space: nowrap;
+}
+
+/* Query Studio: the data plane's recent requests (proposal studio-saved-queries §4). */
+.history-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.history-tabs { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+.history-tabs .btn { padding: 2px 8px; font-size: 11px; }
+.recent-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 4px;
+  color: var(--faint); font-size: 11px; }
+.recent-meta .x { margin-left: auto; position: static; }
+.recent-outcome { padding: 0 6px; border-radius: 3px; font: 600 10px/16px var(--mono); }
+.recent-outcome.ok { color: var(--ok, #2f7d4f); background: color-mix(in srgb, var(--ok, #2f7d4f) 12%, transparent); }
+.recent-outcome.bad { color: var(--bad, #b3261e); background: color-mix(in srgb, var(--bad, #b3261e) 12%, transparent); }
+.recent-rules { border-top: 1px solid var(--rule); padding: 8px; display: grid; gap: 6px; font-size: 11px; }
+.recent-rule-form { display: flex; gap: 6px; }
+.recent-rule-form input { flex: 1; min-width: 0; font-size: 11px; padding: 4px 6px; }
+
+/* Query Studio toolbar (owner 2026-10-10): panel toggles as one segmented
+   control; explain + run query; occasional acts behind ⋯. */
+.lab-views { display: inline-flex; margin-left: 8px; }
+.lab-views .btn { border-radius: 0; white-space: nowrap; }
+.lab-views .btn + .btn { margin-left: -1px; }
+.lab-views .btn:first-child { border-radius: 4px 0 0 4px; }
+.lab-views .btn:last-child { border-radius: 0 4px 4px 0; }
+.lab-menu { position: relative; }
+.lab-menu-list { position: absolute; right: 0; top: calc(100% + 4px); z-index: 20; min-width: 170px;
+  display: grid; padding: 4px; border: 1px solid var(--rule-2, var(--rule)); border-radius: 4px;
+  background: var(--raised); box-shadow: 0 8px 24px rgb(0 0 0 / .12); }
+.lab-menu-list button { text-align: left; padding: 7px 10px; border: 0; border-radius: 3px;
+  background: transparent; color: var(--ink); font: inherit; font-size: 12px; cursor: pointer; }
+.lab-menu-list button:hover:not(:disabled) { background: var(--accent-dim, rgb(0 0 0 / .06)); }
+.lab-menu-list button:disabled { color: var(--faint); cursor: default; }

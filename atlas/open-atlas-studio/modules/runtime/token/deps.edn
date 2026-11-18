@@ -1,0 +1,31 @@
+;; open.atlas.runtime.token —— 一台 instance 的**本机 token 台账**（S5.8 / S5.9）。
+;;
+;; 一张 token 只在签发它的那台 instance 上有效，所以**本机台账就是它的唯一权威**
+;; ——不存在第二处需要与它对账的记录，也就不存在会漂移的第二份真相（D3.12）。
+;; 没有 import、没有迁移、没有跨 instance 吊销编排。
+;;
+;; 与 `runtime/graph` 拿的是**同一个已打开的 instance**（③-1）：同一把租约、同一份
+;; poisoned、同一套原子写。本模块**不自己开 `control.lock`**。
+;;
+;; **不认识 graph 的私有目录，也不解析限定名**（owner 裁定 2026-08-25）：签发前
+;; 要问「这张图本机装了吗」「latest 现在指哪一版」，走的是装配方注入的两个公开
+;; 能力（`graph-loaded?` / `graph-serving-version`）。在这里读制品架或再写一份
+;; 限定名解析，就是让 token 模块变成半个 graph 模块。
+{:paths ["src"]
+ :deps  {org.clojure/clojure     {:mvn/version "1.12.0"}
+         ;; grants schema、外部格式、digest 输入、grant 选择——纯的那一半。
+         open.atlas/token        {:local/root "../../common/token"}
+         ;; 租约、poisoned、原子写、锁注册表。
+         open.atlas/runtime-store {:local/root "../store"}
+         ;; 审计只有一本账（owner 裁定 2026-08-31）：本模块不再自己写 EDN 审计,
+         ;; 事件提交给 obs，按 token 的检索走它的主体索引。
+         open.atlas/runtime-obs   {:local/root "../obs"}
+         ;; **直接用到就直接声明**，不靠 common/token 传递过来：传递依赖能编译过,
+         ;; 但上游哪天不再需要它，这里就在一次无关的改动里断掉。
+         open.atlas/crypto       {:local/root "../../common/crypto"}
+         open.atlas/dialect      {:local/root "../../common/dialect"}}
+ :aliases
+ {:test {:extra-paths ["test"]
+         :extra-deps  {io.github.cognitect-labs/test-runner
+                       {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
+         :main-opts   ["-m" "cognitect.test-runner"]}}}

@@ -1,0 +1,22 @@
+;; The graphs a Studio seeded from this model starts with (doc 104 §8.17.6,
+;; OQ-STUDIO-SEED). Bootstrap used to hard-code this list in
+;; `builder_server.clj`, so a Studio seeded from any other model came up with
+;; four empty `cis.*` graphs. The list is modelling content and lives with the
+;; model it describes.
+;;
+;; `:selectors` are expanded ONCE, at graph creation, by the same
+;; `expand-selectors` the Graph Editor's "add all of cis.master.*" button uses
+;; (D3.19) — objects added to the pool later do not join by themselves.
+;;
+;; `:package-name` is the RELEASE name a cut version is sealed under
+;; (doc 104 §8.17.7 D): the qualified name carries the LOGIN workspace, which on
+;; a personal Studio is an email address, and a package must not be named after
+;; a person.
+[;; The original complete graph, kept available as a reference screen.
+ {:name "cis" :selectors ["cis.*"] :package-name "open-atlas/cis"}
+ ;; Business ownership is intentionally narrower than the aggregate graph:
+ ;; master owns master fields and resolvers only; sales/purchase can show
+ ;; master fields only as external dependency endpoints.
+ {:name "master" :selectors ["cis.master.*"] :package-name "open-atlas/cis-master"}
+ {:name "sales" :selectors ["cis.sales.*"] :package-name "open-atlas/cis-sales"}
+ {:name "purchase" :selectors ["cis.purchase.*"] :package-name "open-atlas/cis-purchase"}]

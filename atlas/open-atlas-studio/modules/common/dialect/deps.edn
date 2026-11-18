@@ -1,0 +1,12 @@
+;; B0 内核：纯函数库。无 IO、无 Pathom、无连接器。
+;; 这份 :deps 清单就是模块边界的执法——谁在这里 require pathom，编译直接失败。
+{:paths ["src"]
+ :deps  {org.clojure/clojure {:mvn/version "1.11.4"}
+         metosin/malli       {:mvn/version "0.16.4"}}
+ :aliases
+ ;; `../../../fixtures/demo` 只在 :test 上：demo 模型是真实装料，方言层的
+ ;; 不变量必须在它上面读干净（照 studio/tools 的同一条路径）。src 不碰。
+ {:test {:extra-paths ["test" "fixtures" "../../../fixtures/demo"]
+         :extra-deps  {io.github.cognitect-labs/test-runner
+                       {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
+         :main-opts   ["-m" "cognitect.test-runner"]}}}

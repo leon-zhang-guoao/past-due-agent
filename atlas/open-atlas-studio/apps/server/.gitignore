@@ -1,0 +1,18 @@
+.cpcache/
+.shadow-cljs/
+node_modules/
+target/
+
+# Generated runtime state. The canonical demo inputs live under fixtures/demo.
+data/
+logs/
+
+.DS_Store
+
+# shadow-cljs build output; rebuilt by scripts/build-server.sh
+resources/public/admin/js/
+
+# The console's compiled ClojureScript (8.12 P4), same reason as the admin
+# SPA's: it is build output. `npm run console:release` regenerates it, and the
+# image builds it in its own stage.
+resources-console/js/

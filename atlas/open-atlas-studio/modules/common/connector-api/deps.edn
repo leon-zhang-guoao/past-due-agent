@@ -1,0 +1,20 @@
+;; api (HTTP) connector: implementation of contracts/connectors/api-v1.md.
+;; Depends on the SPI, never the other way round; the engine does not depend on
+;; it either — connectors are pluggable, the assembling app decides which to load.
+{:paths ["src"]
+ :deps  {org.clojure/clojure       {:mvn/version "1.11.4"}
+         open.atlas/connector-spi  {:local/root "../connector-spi"}
+         ;; Declared, not inherited: the closed `:resilience` / `:policy` key
+         ;; face and the failure vocabulary are the dialect's (doc 107 §107.3),
+         ;; and `impl.validate` requires it directly.
+         open.atlas/dialect        {:local/root "../dialect"}
+         ;; HTTP + JSON: same client stack the migrated open-atlas api plugin
+         ;; used (clj-http ships clj-http.conn-mgr — no extra dependency for
+         ;; the pooled connection managers).
+         clj-http/clj-http         {:mvn/version "3.12.3"}
+         cheshire/cheshire         {:mvn/version "5.13.0"}}
+ :aliases
+ {:test {:extra-paths ["test" "fixtures"]
+         :extra-deps  {io.github.cognitect-labs/test-runner
+                       {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
+         :main-opts   ["-m" "cognitect.test-runner"]}}}

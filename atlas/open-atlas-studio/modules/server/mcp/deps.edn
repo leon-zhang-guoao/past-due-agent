@@ -1,0 +1,64 @@
+;; open.atlas.server.mcp —— 数据面的**第二层外衣**：MCP over Streamable HTTP。
+;;
+;; 与 `server/data` 是同一个身份（runtime 的传输壳），只是协议不同：`/eql` 说
+;; EDN，`/mcp` 说 JSON-RPC，两者调的是**同一个** `instance/answer`。壳里不做
+;; 判定——D1.13 不许为 studio 另写一套语义，而「MCP 走一条绕过 token 与制品的
+;; 老路」正是那种第二套语义。
+;;
+;; 实现从 `open-atlas` 的 `ent.dx.mcp.*` **迁移**而来（CLAUDE.md：迁移和改造，
+;; 不是重做）。协议层（JSON-RPC 信封、版本协商、两代传输）原样搬；取数那一侧
+;; 换成 runtime 的 catalog 与 answer。
+;;
+;; 协议层在 8.4 P1a 又**下沉**到 `common/mcp-transport`：Builder 的 MCP 端点要
+;; 的是同一份协议加不同的判定，而 server 与 studio 不得互相依赖（D1.8），共用
+;; 的那一半只能住 common。本模块因此留下的是判定那一半——graph token 认证、
+;; 八个读工具、instructions——协议不再有第二份。
+{:paths ["src"]
+ :deps  {org.clojure/clojure         {:mvn/version "1.12.0"}
+         cheshire/cheshire           {:mvn/version "5.13.0"}
+         ;; 协议层（JSON-RPC / 版本协商 / 两代传输），认证与工具由本模块注入。
+         open.atlas/mcp-transport    {:local/root "../../common/mcp-transport"}
+         ;; 8.4 P4：`tools/list` 与 dispatch 同源的那份 registry。
+         open.atlas/toolkit          {:local/root "../../common/toolkit"}
+         ;; DuckDB is NOT here. duckdb-spill v1 names it by contract, so this
+         ;; module's code targets it and nothing else — but a JDBC driver is
+         ;; supplied by the ASSEMBLY POINT, exactly as connector-sql says of
+         ;; connectors: 「engine 也不直接依赖它——连接器是可插拔的,
+         ;; 由装配处（app）决定加载哪些」。Declared here it became a transitive
+         ;; dependency of every app mounting /mcp, hence 225 MB inside two
+         ;; uberjars, unswappable without rebuilding this repository (8.13).
+         ;; The apps declare it now: apps/server ships it in `drivers/`,
+         ;; apps/studio in its :deps. The :test alias keeps it — those tests
+         ;; really do execute it.
+         open.atlas/engine           {:local/root "../../common/engine"}
+         ;; doc 106 §106.5 (P8a): the «what is a thing» criterion is ONE
+         ;; function, and both this face and the Builder's `inspect_graph`
+         ;; call it. Required directly, so the classpath states the dependency
+         ;; rather than leaning on engine's (D1.8: boundaries are classpath
+         ;; facts).
+         open.atlas/dialect          {:local/root "../../common/dialect"}
+         ;; doc 106 §106.14 item 18: part of a thing's key may be an attribute
+         ;; CARRIED into its rows, and which attributes those are is a
+         ;; source-dialect fact behind the SPI seam. `list_entities` therefore
+         ;; asks `spi/carried-attributes` exactly as the engine does — one
+         ;; answer, or `[host id]` here and `[id]` in the Builder. Declared
+         ;; directly so the classpath states it rather than leaning on
+         ;; engine's (D1.8).
+         open.atlas/connector-spi    {:local/root "../../common/connector-spi"}
+         ;; D7.10: server carries the real search index, rebuilt from the
+         ;; loaded artifact. The `search_attributes` tool calls this module
+         ;; instead of the substring scan it inherited from `attr-search` —
+         ;; one match layer, not two (common/search 裁定 ③).
+         open.atlas/search           {:local/root "../../common/search"}
+         open.atlas/runtime-env      {:local/root "../../runtime/env"}
+         open.atlas/runtime-graph    {:local/root "../../runtime/graph"}
+         open.atlas/runtime-instance {:local/root "../../runtime/instance"}
+         open.atlas/runtime-token    {:local/root "../../runtime/token"}
+         open.atlas/http-stack       {:local/root "../http-stack"}}
+ :aliases
+ {:test {:extra-paths ["test" "../../../fixtures/demo"]
+         :extra-deps  {io.github.cognitect-labs/test-runner
+                       {:git/tag "v0.5.1" :git/sha "dfb30dd"}
+                       ;; The executor under test — supplied here, not in :deps.
+                       org.duckdb/duckdb_jdbc {:mvn/version "1.3.1.0"}}
+         :main-opts   ["-m" "cognitect.test-runner"]}}}

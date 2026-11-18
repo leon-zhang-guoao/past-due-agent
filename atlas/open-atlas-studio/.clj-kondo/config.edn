@@ -1,0 +1,347 @@
+{:linters
+ {;; 模块公共接口纪律（借自 Polylith，不引其工具）：
+  ;; impl.* 私有，跨模块只许 require 接口 ns open.atlas.dialect。
+  ;; 模块内部（open.atlas.dialect.impl.* 之间）互相 require 合法——
+  ;; kondo 无法按「调用方 ns」区分，先全局 discourage、模块内以
+  ;; ns 级 {:clj-kondo/ignore …} 放行；模块增多后换 namespace-restrictions。
+  :discouraged-namespace
+  ;; 跨模块只许 require 接口 ns（CLAUDE.md「每个模块的公共接口是单一 ns」）。
+  ;;
+  ;; **这份清单由测试守着**，见 modules/integration/test/.../module_boundary_test.clj：
+  ;; 磁盘上每一个 `.impl.` ns 都必须在这里有一条，多写一条不存在的 ns 也报错。
+  ;; 理由是这份清单**曾经整份失效过**：条目写的是 `open.atlas.dialect.impl.*`,
+  ;; 而实际 ns 是 `open.atlas.common.dialect.impl.*`——七条规则一条都没匹配上,
+  ;; 另外 44 个 impl ns 从未登记，而 CLAUDE.md 一直把它当作执法手段在引用。
+  ;; 「写了却没生效、没人知道」——手工维护的清单迟早会这样，所以现在它不再手工维护。
+  {
+   open.atlas.common.artifact.impl.canonical
+   {:message "private — require open.atlas.common.artifact instead"}
+   open.atlas.common.artifact.impl.envelope
+   {:message "private — require open.atlas.common.artifact instead"}
+   open.atlas.common.artifact.impl.finding
+   {:message "private — require open.atlas.common.artifact instead"}
+   open.atlas.common.artifact.impl.graph
+   {:message "private — require open.atlas.common.artifact instead"}
+   open.atlas.common.artifact.impl.reader
+   {:message "private — require open.atlas.common.artifact instead"}
+   open.atlas.common.artifact.impl.seal
+   {:message "private — require open.atlas.common.artifact instead"}
+   open.atlas.common.artifact.impl.store
+   {:message "private — require open.atlas.common.artifact instead"}
+   open.atlas.common.connector.derived.impl.run
+   {:message "private — require open.atlas.common.connector.derived instead"}
+   open.atlas.common.connector.derived.impl.sandbox
+   {:message "private — require open.atlas.common.connector.derived instead"}
+   open.atlas.common.connector.derived.impl.validate
+   {:message "private — require open.atlas.common.connector.derived instead"}
+   open.atlas.common.connector.spi.impl.batch
+   {:message "private — require open.atlas.common.connector.spi instead"}
+   open.atlas.common.connector.spi.impl.failure
+   {:message "private — require open.atlas.common.connector.spi instead"}
+   open.atlas.common.connector.spi.impl.mapping
+   {:message "private — require open.atlas.common.connector.spi instead"}
+   open.atlas.common.connector.spi.impl.values
+   {:message "private — require open.atlas.common.connector.spi instead"}
+   open.atlas.common.connector.spi.impl.policy
+   {:message "private — require open.atlas.common.connector.spi instead"}
+   open.atlas.common.connector.spi.impl.guard
+   {:message "private — require open.atlas.common.connector.spi instead"}
+   open.atlas.common.connector.spi.impl.deadline
+   {:message "private — require open.atlas.common.connector.spi instead"}
+   open.atlas.common.connector.spi.impl.redact
+   {:message "private — require open.atlas.common.connector.spi instead"}
+   open.atlas.common.connector.api.impl.conn
+   {:message "private — require open.atlas.common.connector.api instead"}
+   open.atlas.common.connector.api.impl.interp
+   {:message "private — require open.atlas.common.connector.api instead"}
+   open.atlas.common.connector.api.impl.jsonpath
+   {:message "private — require open.atlas.common.connector.api instead"}
+   open.atlas.common.connector.api.impl.oauth
+   {:message "private — require open.atlas.common.connector.api instead"}
+   open.atlas.common.connector.api.impl.request
+   {:message "private — require open.atlas.common.connector.api instead"}
+   open.atlas.common.connector.api.impl.resilience
+   {:message "private — require open.atlas.common.connector.api instead"}
+   open.atlas.common.connector.api.impl.paging
+   {:message "private — require open.atlas.common.connector.api instead"}
+   open.atlas.common.connector.api.impl.rows
+   {:message "private — require open.atlas.common.connector.api instead"}
+   open.atlas.common.connector.api.impl.run
+   {:message "private — require open.atlas.common.connector.api instead"}
+   open.atlas.common.connector.api.impl.nifi
+   {:message "private — require open.atlas.common.connector.api instead"}
+   open.atlas.common.connector.api.impl.stream
+   {:message "private — require open.atlas.common.connector.api instead"}
+   open.atlas.common.connector.api.impl.validate
+   {:message "private — require open.atlas.common.connector.api instead"}
+   open.atlas.common.connector.api.impl.values
+   {:message "private — require open.atlas.common.connector.api instead"}
+   open.atlas.common.connector.api-kit.impl.conformance
+   {:message "private — require open.atlas.common.connector.api-kit instead"}
+   open.atlas.common.connector.api-kit.impl.fixture
+   {:message "private — require open.atlas.common.connector.api-kit instead"}
+   open.atlas.common.connector.api-kit.impl.record
+   {:message "private — require open.atlas.common.connector.api-kit instead"}
+   open.atlas.common.connector.api-kit.impl.redact
+   {:message "private — require open.atlas.common.connector.api-kit instead"}
+   open.atlas.common.connector.api-kit.impl.replay
+   {:message "private — require open.atlas.common.connector.api-kit instead"}
+   open.atlas.common.connector.sql.impl.describe
+   {:message "private — require open.atlas.common.connector.sql instead"}
+   open.atlas.common.connector.sql.impl.envsub
+   {:message "private — require open.atlas.common.connector.sql instead"}
+   open.atlas.common.connector.sql.impl.exec
+   {:message "private — require open.atlas.common.connector.sql instead"}
+   open.atlas.common.connector.sql.impl.narrow
+   {:message "private — require open.atlas.common.connector.sql instead"}
+   open.atlas.common.connector.sql.impl.paths
+   {:message "private — require open.atlas.common.connector.sql instead"}
+   open.atlas.common.connector.sql.impl.pool
+   {:message "private — require open.atlas.common.connector.sql instead"}
+   open.atlas.common.connector.sql.impl.query
+   {:message "private — require open.atlas.common.connector.sql instead"}
+   open.atlas.common.connector.sql.impl.run
+   {:message "private — require open.atlas.common.connector.sql instead"}
+   open.atlas.common.connector.sql.impl.validate
+   {:message "private — require open.atlas.common.connector.sql instead"}
+   open.atlas.common.connector.sql.impl.values
+   {:message "private — require open.atlas.common.connector.sql instead"}
+   open.atlas.runtime.env.impl.semantic
+   {:message "private — require open.atlas.runtime.env instead"}
+   open.atlas.runtime.env.impl.cache
+   {:message "private — require open.atlas.runtime.env instead"}
+   open.atlas.runtime.env.impl.closure
+   {:message "private — require open.atlas.runtime.env instead"}
+   open.atlas.runtime.env.impl.finding
+   {:message "private — require open.atlas.runtime.env instead"}
+   open.atlas.runtime.obs.impl.audit
+   {:message "private — require open.atlas.runtime.obs instead"}
+   open.atlas.runtime.obs.impl.log
+   {:message "private — require open.atlas.runtime.obs instead"}
+   open.atlas.runtime.obs.impl.webhook
+   {:message "private — require open.atlas.runtime.obs instead"}
+   open.atlas.runtime.obs.impl.jsonl
+   {:message "private — require open.atlas.runtime.obs instead"}
+   open.atlas.runtime.obs.impl.metrics
+   {:message "private — require open.atlas.runtime.obs instead"}
+   open.atlas.runtime.obs.impl.otlp
+   {:message "private — require open.atlas.runtime.obs instead"}
+   open.atlas.runtime.obs.impl.prometheus
+   {:message "private — require open.atlas.runtime.obs instead"}
+   open.atlas.runtime.obs.impl.ratelimit
+   {:message "private — require open.atlas.runtime.obs instead"}
+   open.atlas.runtime.obs.impl.retention
+   {:message "private — require open.atlas.runtime.obs instead"}
+   open.atlas.runtime.obs.impl.ring
+   {:message "private — require open.atlas.runtime.obs instead"}
+   open.atlas.runtime.obs.impl.ship
+   {:message "private — require open.atlas.runtime.obs instead"}
+   open.atlas.runtime.obs.impl.subject
+   {:message "private — require open.atlas.runtime.obs instead"}
+   open.atlas.runtime.obs.impl.trace
+   {:message "private — require open.atlas.runtime.obs instead"}
+   open.atlas.runtime.token.impl.ledger
+   {:message "private — require open.atlas.runtime.token instead"}
+   open.atlas.runtime.token.impl.secret
+   {:message "private — require open.atlas.runtime.token instead"}
+   open.atlas.runtime.store.impl.finding
+   {:message "private — require open.atlas.runtime.store instead"}
+   open.atlas.runtime.store.impl.fs
+   {:message "private — require open.atlas.runtime.store instead"}
+   open.atlas.runtime.store.impl.lease
+   {:message "private — require open.atlas.runtime.store instead"}
+   open.atlas.runtime.graph.impl.command
+   {:message "private — require open.atlas.runtime.graph instead"}
+   open.atlas.studio.deploy.impl.plan
+   {:message "private — require open.atlas.studio.deploy instead"}
+   open.atlas.studio.deploy.impl.client
+   {:message "private — require open.atlas.studio.deploy instead"}
+   open.atlas.studio.deploy.impl.finding
+   {:message "private — require open.atlas.studio.deploy instead"}
+   open.atlas.server.http.impl.handler
+   {:message "private — require open.atlas.server.http instead"}
+   open.atlas.server.mcp.impl.catalog
+   {:message "private — require open.atlas.server.mcp instead"}
+   open.atlas.server.mcp.impl.duck
+   {:message "private — require open.atlas.server.mcp instead"}
+   open.atlas.server.mcp.impl.metrics
+   {:message "private — require open.atlas.server.mcp instead"}
+   open.atlas.server.mcp.impl.saved-query
+   {:message "private — require open.atlas.server.mcp instead"}
+   open.atlas.server.mcp.impl.results
+   {:message "private — require open.atlas.server.mcp instead"}
+   open.atlas.server.mcp.impl.rows
+   {:message "private — require open.atlas.server.mcp instead"}
+   open.atlas.server.mcp.impl.instructions
+   {:message "private — require open.atlas.server.mcp instead"}
+   open.atlas.server.mcp.impl.tools
+   {:message "private — require open.atlas.server.mcp instead"}
+   open.atlas.runtime.graph.impl.store
+   {:message "private — require open.atlas.runtime.graph instead"}
+   open.atlas.runtime.graph.impl.finding
+   {:message "private — require open.atlas.runtime.graph instead"}
+   open.atlas.common.control-protocol.impl.envelope
+   {:message "private — require open.atlas.common.control-protocol instead"}
+   open.atlas.common.control-protocol.impl.finding
+   {:message "private — require open.atlas.common.control-protocol instead"}
+   open.atlas.common.control-protocol.impl.signature
+   {:message "private — require open.atlas.common.control-protocol instead"}
+   open.atlas.common.candidates.impl.finding
+   {:message "private — require open.atlas.common.candidates instead"}
+   open.atlas.common.candidates.impl.propose
+   {:message "private — require open.atlas.common.candidates instead"}
+   open.atlas.common.dialect.impl.carry
+   {:message "private — require open.atlas.common.dialect instead"}
+   open.atlas.common.dialect.impl.finding
+   {:message "private — require open.atlas.common.dialect instead"}
+   open.atlas.common.dialect.impl.invariants
+   {:message "private — require open.atlas.common.dialect instead"}
+   open.atlas.common.dialect.impl.jsonkeys
+   {:message "private — require open.atlas.common.dialect instead"}
+   open.atlas.common.dialect.impl.key-docs
+   {:message "private — require open.atlas.common.dialect instead"}
+   open.atlas.common.dialect.impl.merge
+   {:message "private — require open.atlas.common.dialect instead"}
+   open.atlas.common.dialect.impl.need
+   {:message "private — require open.atlas.common.dialect instead"}
+   open.atlas.common.dialect.impl.read
+   {:message "private — require open.atlas.common.dialect instead"}
+   open.atlas.common.dialect.impl.schema
+   {:message "private — require open.atlas.common.dialect instead"}
+   open.atlas.common.dialect.impl.vocab
+   {:message "private — require open.atlas.common.dialect instead"}
+   open.atlas.common.dialect.impl.write
+   {:message "private — require open.atlas.common.dialect instead"}
+   open.atlas.common.engine.impl.compile
+   {:message "private — require open.atlas.common.engine instead"}
+   open.atlas.common.engine.impl.gate
+   {:message "private — require open.atlas.common.engine instead"}
+   open.atlas.common.engine.impl.limits
+   {:message "private — require open.atlas.common.engine instead"}
+   open.atlas.common.engine.impl.model
+   {:message "private — require open.atlas.common.engine instead"}
+   open.atlas.common.engine.impl.spi
+   {:message "private — require open.atlas.common.engine instead"}
+   open.atlas.common.search.impl.docs
+   {:message "private — require open.atlas.common.search instead"}
+   open.atlas.common.search.impl.finding
+   {:message "private — require open.atlas.common.search instead"}
+   open.atlas.common.search.impl.fuzzy
+   {:message "private — require open.atlas.common.search instead"}
+   open.atlas.common.search.impl.gram
+   {:message "private — require open.atlas.common.search instead"}
+   open.atlas.common.search.impl.index
+   {:message "private — require open.atlas.common.search instead"}
+   open.atlas.common.search.impl.match
+   {:message "private — require open.atlas.common.search instead"}
+   open.atlas.common.search.impl.scoped
+   {:message "private — require open.atlas.common.search instead"}
+   open.atlas.common.oidc.impl.config
+   {:message "private — require open.atlas.common.oidc instead"}
+   open.atlas.common.oidc.impl.finding
+   {:message "private — require open.atlas.common.oidc instead"}
+   open.atlas.common.oidc.impl.flow
+   {:message "private — require open.atlas.common.oidc instead"}
+   open.atlas.common.oidc.impl.http
+   {:message "private — require open.atlas.common.oidc instead"}
+   open.atlas.common.oidc.impl.jws
+   {:message "private — require open.atlas.common.oidc instead"}
+   open.atlas.common.oidc.impl.resolve
+   {:message "private — require open.atlas.common.oidc instead"}
+   open.atlas.common.token.impl.finding
+   {:message "private — require open.atlas.common.token instead"}
+   open.atlas.common.token.impl.format
+   {:message "private — require open.atlas.common.token instead"}
+   open.atlas.common.token.impl.grant
+   {:message "private — require open.atlas.common.token instead"}
+   open.atlas.common.toolkit.impl.finding
+   {:message "private — require open.atlas.common.toolkit instead"}
+   open.atlas.common.toolkit.impl.registry
+   {:message "private — require open.atlas.common.toolkit instead"}
+   open.atlas.common.mcp-transport.impl.jsonrpc
+   {:message "private — require open.atlas.common.mcp-transport instead"}
+   open.atlas.common.mcp-transport.impl.transport
+   {:message "private — require open.atlas.common.mcp-transport instead"}
+   open.atlas.studio.graph.impl.export
+   {:message "private — require open.atlas.studio.graph instead"}
+   open.atlas.studio.graph.impl.finding
+   {:message "private — require open.atlas.studio.graph instead"}
+   open.atlas.studio.graph.impl.projection
+   {:message "private — require open.atlas.studio.graph instead"}
+   open.atlas.studio.graph.impl.registry
+   {:message "private — require open.atlas.studio.graph instead"}
+   open.atlas.studio.graph.impl.rename
+   {:message "private — require open.atlas.studio.graph instead"}
+   open.atlas.studio.graph.impl.saved-queries
+   {:message "private — require open.atlas.studio.graph instead"}
+   open.atlas.studio.graph.impl.report
+   {:message "private — require open.atlas.studio.graph instead"}
+   open.atlas.studio.graph.impl.schema
+   {:message "private — require open.atlas.studio.graph instead"}
+   open.atlas.studio.graph.impl.selector
+   {:message "private — require open.atlas.studio.graph instead"}
+   open.atlas.studio.graph.impl.store
+   {:message "private — require open.atlas.studio.graph instead"}
+   open.atlas.studio.graph.impl.sync
+   {:message "private — require open.atlas.studio.graph instead"}
+   open.atlas.studio.pool.impl.semantic
+   {:message "private — require open.atlas.studio.pool instead"}
+   open.atlas.studio.pool.impl.action
+   {:message "private — require open.atlas.studio.pool instead"}
+   open.atlas.studio.pool.impl.audit
+   {:message "private — require open.atlas.studio.pool instead"}
+   open.atlas.studio.pool.impl.batch
+   {:message "private — require open.atlas.studio.pool instead"}
+   open.atlas.studio.pool.impl.confirm
+   {:message "private — require open.atlas.studio.pool instead"}
+   open.atlas.studio.pool.impl.export
+   {:message "private — require open.atlas.studio.pool instead"}
+   open.atlas.studio.pool.impl.finding
+   {:message "private — require open.atlas.studio.pool instead"}
+   open.atlas.studio.pool.impl.migrate
+   {:message "private — require open.atlas.studio.pool instead"}
+   open.atlas.studio.pool.impl.maintenance
+   {:message "private — require open.atlas.studio.pool instead"}
+   open.atlas.studio.pool.impl.ownership
+   {:message "private — require open.atlas.studio.pool instead"}
+   open.atlas.studio.pool.impl.model
+   {:message "private — require open.atlas.studio.pool instead"}
+   open.atlas.studio.pool.impl.removal
+   {:message "private — require open.atlas.studio.pool instead"}
+   open.atlas.studio.pool.impl.schema
+   {:message "private — require open.atlas.studio.pool instead"}
+   open.atlas.studio.pool.impl.store
+   {:message "private — require open.atlas.studio.pool instead"}
+   open.atlas.studio.tools.impl.semantic-declarations
+   {:message "private — require open.atlas.studio.tools instead"}
+   open.atlas.studio.tools.impl.declarations
+   {:message "private — require open.atlas.studio.tools instead"}
+   open.atlas.studio.tools.impl.graph-declarations
+   {:message "private — require open.atlas.studio.tools instead"}
+   open.atlas.studio.tools.impl.publish-declarations
+   {:message "private — require open.atlas.studio.tools instead"}
+   open.atlas.studio.tools.impl.finding
+   {:message "private — require open.atlas.studio.tools instead"}
+   open.atlas.studio.tools.impl.intent
+   {:message "private — require open.atlas.studio.tools instead"}
+   open.atlas.studio.tools.impl.intent-declarations
+   {:message "private — require open.atlas.studio.tools instead"}
+   open.atlas.studio.tools.impl.query-model
+   {:message "private — require open.atlas.studio.tools instead"}
+   open.atlas.studio.tools.impl.repair
+   {:message "private — require open.atlas.studio.tools instead"}
+   open.atlas.studio.tools.impl.resolve-target
+   {:message "private — require open.atlas.studio.tools instead"}
+   open.atlas.studio.version.impl.closure
+   {:message "private — require open.atlas.studio.version instead"}
+   open.atlas.studio.version.impl.cut
+   {:message "private — require open.atlas.studio.version instead"}
+   open.atlas.studio.version.impl.finding
+   {:message "private — require open.atlas.studio.version instead"}
+   open.atlas.studio.version.impl.health
+   {:message "private — require open.atlas.studio.version instead"}
+   open.atlas.studio.version.impl.semantic
+   {:message "private — require open.atlas.studio.version instead"}
+   open.atlas.studio.version.impl.store
+   {:message "private — require open.atlas.studio.version instead"}}}
+ :config-paths []}

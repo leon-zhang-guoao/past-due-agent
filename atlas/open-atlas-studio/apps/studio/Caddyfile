@@ -1,0 +1,22 @@
+# TLS termination for the `proxy` compose profile. The builder container speaks
+# HTTPS with its self-signed certificate on the internal network, so the
+# upstream hop skips verification; clients see Caddy's trusted certificate.
+(studio_upstream) {
+	transport http {
+		tls_insecure_skip_verify
+	}
+}
+
+{$STUDIO_DOMAIN} {
+	tls {$STUDIO_TLS}
+	reverse_proxy https://builder:9631 {
+		import studio_upstream
+	}
+}
+
+{$STUDIO_DOMAIN}:9443 {
+	tls {$STUDIO_TLS}
+	reverse_proxy https://builder:9632 {
+		import studio_upstream
+	}
+}

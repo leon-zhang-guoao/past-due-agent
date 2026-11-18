@@ -1,0 +1,22 @@
+;; open.atlas.common.candidates —— **机器提议**：从一份模型里挖出组/词条/`:curated?`/
+;; 档位的候选，交 owner 处置。
+;;
+;; **为什么单独一个模块**：立它的时候有**两个**调用方——B2 的一次性转换器与
+;; B4 的池——两份实现总有一天分叉，而这里分叉意味着**同一份模型在两条路上得到
+;; 不同的候选**，候选却是 owner 逐条过目的东西（S5.4）。
+;; 2026-08-24 转换器退休（fixtures/demo/README.md），**只剩池一个调用方**。
+;; 它仍然留在 common，理由换成了依赖方向：池是 studio，本模块是 common，
+;; D1.8 不许 common 反过来依赖 studio——放这里与 toolkit / search 同则。
+;;
+;; **只做提议，不做处置。** 签字文件的解析、合并与拒绝留在调用方——
+;; B4 是 `confirm_candidates` action（B2 当年是 `signoff.edn`）。提议是机器的活,
+;; 处置是人的活，两者住在一起就会有人顺手让它们互相看一眼（B2 已经拒绝过一次
+;; 「让候选回头看 additions」，理由见 README「只做提议，不做处置」）。
+{:paths ["src"]
+ :deps  {org.clojure/clojure {:mvn/version "1.12.0"}
+         open.atlas/dialect  {:local/root "../dialect"}}
+ :aliases
+ {:test {:extra-paths ["test"]
+         :extra-deps  {io.github.cognitect-labs/test-runner
+                       {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
+         :main-opts   ["-m" "cognitect.test-runner"]}}}

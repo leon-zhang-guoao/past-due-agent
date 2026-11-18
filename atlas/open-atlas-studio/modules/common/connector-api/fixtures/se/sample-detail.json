@@ -1,0 +1,105 @@
+{
+  "customerID": "TDSYNNEX_US",
+  "products": [
+    {
+      "identifiers": {
+        "commercialReference": "NSYMM86",
+        "manufacturerPID": "NSYMM86",
+        "gtin": "3606480183430"
+      },
+      "descriptions": [
+        {
+          "short": "Plain mounting plate H800xW600mm made of galvanised sheet steel",
+          "long": "SAMPLE long description — the vendor returns full marketing and technical copy here."
+        }
+      ],
+      "manufacturer": {
+        "brand": "SAMPLE-BRAND"
+      },
+      "etim": [
+        {
+          "class": "EC000213",
+          "className": [
+            {
+              "value": "Mounting plate for distribution board"
+            }
+          ]
+        }
+      ],
+      "unspsc": [
+        {
+          "unspscClassificationV23": "SAMPLE-UNSPSC-V23"
+        }
+      ],
+      "status": {
+        "commercialStatus": [
+          {
+            "value": "Commercialised"
+          }
+        ]
+      },
+      "pricing": {
+        "pricesDetails": [
+          {
+            "price": [
+              {
+                "amount": 74.82,
+                "currency": "USD",
+                "type": "Net_list"
+              }
+            ]
+          }
+        ]
+      },
+      "logistics": {
+        "customsTariff": [
+          {
+            "customsNumber": "SAMPLE-HS-CODE"
+          }
+        ],
+        "packingUnits": [
+          {
+            "weight": "17.637 lb(US) (8.000 kg)"
+          }
+        ]
+      },
+      "sustainability": [
+        {
+          "reachRegulation": "SAMPLE REACH declaration text",
+          "rohsEurStatus": "Compliant"
+        }
+      ],
+      "mimeInfos": [
+        {
+          "type": "datasheet",
+          "fileName": "SAMPLE-datasheet.pdf",
+          "sources": ["https://example.invalid/sample-datasheet.pdf"],
+          "publicationDate": "2024-03-11"
+        }
+      ]
+    },
+    {
+      "identifiers": {
+        "commercialReference": "NSYPLM108G",
+        "manufacturerPID": "NSYPLM108G",
+        "gtin": "SAMPLE-GTIN-2"
+      },
+      "descriptions": [
+        {
+          "short": "SAMPLE second product — proves batch alignment groups by manufacturerPID",
+          "long": "SAMPLE long description for the second reference."
+        }
+      ],
+      "manufacturer": {
+        "brand": "SAMPLE-BRAND"
+      },
+      "status": {
+        "commercialStatus": [
+          {
+            "value": "Commercialised"
+          }
+        ]
+      }
+    }
+  ]
+}

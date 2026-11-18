@@ -1,0 +1,22 @@
+;; open.atlas.studio.tools —— **建模面**的工具（§7.3 那张表的下半部分）：
+;; `execute_action` / `query_model` / `resolve_target`。
+;;
+;; 机制在 common/toolkit（理由见那边的 deps.edn）；这里只声明工具本身。
+{:paths ["src"]
+ :deps  {org.clojure/clojure {:mvn/version "1.12.0"}
+         open.atlas/dialect  {:local/root "../../common/dialect"}
+         open.atlas/toolkit  {:local/root "../../common/toolkit"}
+         ;; `describe_source` 走 SPI 的第七个分派点读 source 的结构。依赖的是
+         ;; **接缝**不是某个连接器：装载哪些连接器是宿主（app）的事，这里只
+         ;; 保证「没装那个连接器」会得到结构化拒绝而不是空库。
+         open.atlas/connector-spi {:local/root "../../common/connector-spi"}
+         open.atlas/pool     {:local/root "../pool"}
+         ;; B4.3 抽出的**匹配层**（common/search README 裁定 ③）：标识符折叠、
+         ;; 缩写展开、词条 label/synonym 查找只有一份，`resolve_target` 与
+         ;; `search_attrs` 共用它，裁决层各自保留。
+         open.atlas/search   {:local/root "../../common/search"}}
+ :aliases
+ {:test {:extra-paths ["test" "../../../fixtures/demo"]
+         :extra-deps  {io.github.cognitect-labs/test-runner
+                       {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
+         :main-opts   ["-m" "cognitect.test-runner"]}}}

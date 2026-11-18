@@ -1,0 +1,37 @@
+;; open.atlas.runtime.obs —— 一台 instance 的**记录机械**：滚动 JSON-lines、
+;; 有界内存环、异步 shipper、请求关联、进程内指标、Prometheus 暴露、OTLP 导出
+;; （[8.10](../../../docs/design/91-observability-migration.md)）。
+;;
+;; **为什么在 runtime 而不在 common**：这里每一样东西都带本机状态——文件与轮转
+;; 世代、内存环、守护线程、instance 目录（D1.13）。common 是出厂内核，纯判定、
+;; 不落盘。
+;;
+;; **不认识配置文件**：OTLP 的端点与请求头由 app 通过 `otlp-configure!` 注入一个
+;; provider fn。本模块不读 config.edn，也不认识 `${VAR}` 解析——那是 app 的事,
+;; 在这里再写一份就是第二处配置语义。
+{:paths ["src"]
+ :deps  {org.clojure/clojure      {:mvn/version "1.12.0"}
+         ;; JSON 行与 OTLP 载荷的编解码。
+         cheshire/cheshire        {:mvn/version "5.11.0"}
+         ;; OTLP/HTTP 导出——**直接用到就直接声明**，不靠别处传递。
+         clj-http/clj-http        {:mvn/version "3.12.3"}
+         ;; shipper 与 metrics 的失败路径记日志。
+         org.clojure/tools.logging {:mvn/version "1.3.0"}
+         ;; 结构化日志的两个出口（控制台 + app.jsonl）都是 timbre appender。
+         ;; SLF4J→timbre 的桥接**留在 app**：那是进程级的装配，不是本模块的事。
+         com.taoensso/timbre      {:mvn/version "6.5.0"}
+         ;; 主体索引的原子写、路径段白名单与 EDN 读回。**只用它的文件原语**——
+         ;; 本模块不开 instance、不持租约（8.10 P2 的裁定：锚由调用方传入）。
+         open.atlas/runtime-store {:local/root "../store"}
+         ;; 主体 id 的哈希：principal 是两段自由文本，路径段是白名单，所以哈希
+         ;; 而不是清洗（D4.8）。哈希用共用实现，不在这里再写一份。
+         open.atlas/crypto        {:local/root "../../common/crypto"}}
+ :aliases
+ {:test {:extra-paths ["test"]
+         :extra-deps  {io.github.cognitect-labs/test-runner
+                       {:git/tag "v0.5.1" :git/sha "dfb30dd"}
+                       ;; **仅测试**：trace 的 run-stats 提取是对 Pathom 真实形状
+                       ;; 的容错，拿手写的假 map 测它等于没测。src 不依赖 pathom,
+                       ;; 模块本身也不认识它。
+                       com.wsscode/pathom3 {:mvn/version "2025.01.16-alpha"}}
+         :main-opts   ["-m" "cognitect.test-runner"]}}}

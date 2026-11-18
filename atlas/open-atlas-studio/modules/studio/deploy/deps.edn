@@ -1,0 +1,26 @@
+;; open.atlas.studio.deploy —— 授权链在 **studio 这一半**（D3.12 / D5.7）。
+;;
+;; D3.12 的授权链只有一条：**studio 先以自己的成员表校验 actor 是该 graph 的
+;; owner，再以受限 service principal 调 server 控制面，并携带已签名的 actor
+;; principal**。server 校验 service 有对应 instance 权限，审计同时记两者;
+;; 它**不凭 actor 自报字段重建 workspace 角色**——那张表在 studio，复制过去就会
+;; 有两份会漂移的成员关系（D3.12 明说 server 不复制成员表）。
+;;
+;; 所以 owner 那一半只能在这里。没有本模块，「双主体可审计」只成立一半：
+;; server 记得下是谁**声称**触发的，但没有任何地方真的判过他是不是 owner。
+;;
+;; **不依赖 server**（D1.8）：它与 server 之间只有 common/control-protocol 定义的
+;; 信封，以及 HTTP。HTTP 客户端用 JDK 自带的 `java.net.http`——不引依赖。
+{:paths ["src"]
+ :deps  {org.clojure/clojure         {:mvn/version "1.12.0"}
+         open.atlas/control-protocol {:local/root "../../common/control-protocol"}
+         open.atlas/artifact         {:local/root "../../common/artifact"}
+         open.atlas/dialect          {:local/root "../../common/dialect"}
+         ;; 成员表与 graph 登记（owner 校验），以及版本登记（plan 里的两种 digest）。
+         open.atlas/studio-graph     {:local/root "../graph"}
+         open.atlas/studio-version   {:local/root "../version"}}
+ :aliases
+ {:test {:extra-paths ["test"]
+         :extra-deps  {io.github.cognitect-labs/test-runner
+                       {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
+         :main-opts   ["-m" "cognitect.test-runner"]}}}

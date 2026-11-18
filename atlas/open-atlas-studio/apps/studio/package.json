@@ -1,0 +1,26 @@
+{
+  "name": "open-atlas-platform-studio",
+  "private": true,
+  "version": "1.4.4",
+  "scripts": {"dev": "shadow-cljs watch builder", "release": "shadow-cljs release builder",
+              "test:ui": "shadow-cljs --force-spawn compile ui-test && node out/ui-tests.js"},
+  "dependencies": {
+    "@codemirror/autocomplete": "^6.18.1",
+    "@codemirror/commands": "^6.7.1",
+    "@codemirror/language": "^6.10.3",
+    "@codemirror/legacy-modes": "^6.4.1",
+    "@codemirror/state": "^6.4.1",
+    "@codemirror/view": "^6.34.1",
+    "@fontsource/ibm-plex-mono": "^5.1.1",
+    "@fontsource/ibm-plex-sans-condensed": "^5.1.0",
+    "cytoscape": "^3.30.2",
+    "cytoscape-dagre": "^2.5.0",
+    "d3-drag": "^3.0.0",
+    "d3-force": "^3.0.0",
+    "d3-selection": "^3.0.0",
+    "d3-zoom": "^3.0.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {"shadow-cljs": "2.28.20"}
+}

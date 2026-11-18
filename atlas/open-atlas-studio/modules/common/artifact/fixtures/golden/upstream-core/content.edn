@@ -1,0 +1,4 @@
+{:artifact/format-version 1
+ :objects {:attributes {:core.upstream/id {:label "ID" :type :string}}
+           :namespaces {"core.upstream" {:kind :master :label "Upstream core"}}}
+ :references []}

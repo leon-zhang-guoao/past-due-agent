@@ -1,0 +1,27 @@
+;; open.atlas.runtime.instance —— 把一台 Server Runtime Instance **装起来**。
+;;
+;; D1.13 说只有一种运行时：独立 Server 是它的单独部署，studio 是 Builder 加一台
+;; 内嵌的它。那句话要成立，装配就只能有**一条**路径——两个 app 各接一遍线,
+;; 就是「为 studio 再写一条物化路径」（owner 裁定 2026-08-25 明令禁止），而且
+;; 那两遍线迟早会在某个能力上接得不一样。
+;;
+;; 本模块就是那一条路径。两个 app 各自的 composition 只负责**它们自己那一半**：
+;; server 加控制面 HTTP 壳，studio 加 Builder。
+{:paths ["src"]
+ :deps  {open.atlas/artifact {:local/root "../../common/artifact"}
+         org.clojure/clojure          {:mvn/version "1.12.0"}
+         open.atlas/runtime-store     {:local/root "../store"}
+         open.atlas/runtime-graph     {:local/root "../graph"}
+         ;; 数据面执法只有这一份，所以「谁读了哪些数据」的审计也发在这里（8.10 P6）。
+         open.atlas/runtime-obs      {:local/root "../obs"}
+         ;; 语句回执的形状与「哪些可以进审计」都由 spi 定义——**直接用到就直接声明**。
+         open.atlas/connector-spi    {:local/root "../../common/connector-spi"}
+         open.atlas/runtime-token     {:local/root "../token"}
+         open.atlas/runtime-env       {:local/root "../env"}
+         open.atlas/runtime-retention {:local/root "../retention"}
+         open.atlas/runtime-rowsec    {:local/root "../rowsec"}}
+ :aliases
+ {:test {:extra-paths ["test"]
+         :extra-deps  {io.github.cognitect-labs/test-runner
+                       {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
+         :main-opts   ["-m" "cognitect.test-runner"]}}}

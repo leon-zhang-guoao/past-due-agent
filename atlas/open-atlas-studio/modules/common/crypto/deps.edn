@@ -1,0 +1,21 @@
+;; open.atlas.common.crypto —— 密码学原语，**零依赖**。
+;;
+;; hex 编解码、SHA-256、HMAC-SHA-256、以及**恒时比较**。就这些，不做协议、
+;; 不做密钥管理、不认识信封也不认识 token。
+;;
+;; **为什么单独成模块**：这四样至少有两个消费者——控制面的两个签名
+;; （control-protocol，D3.16）与数据面 token 的 keyed digest（common/token，S5.9）。
+;; 各写一份的那天，症状不会是「编译不过」，而是某一处的恒时比较悄悄退化成 `=`
+;; ——而 `=` 在第一个不同的字节上短路，耗时因此泄漏「你猜对了前几位」。
+;; 这正是 CLAUDE.md 点名的「redact 与档位词表出现过两份逐字节相同的实现」那类事故,
+;; 只是这一份的后果在安全面上。
+;;
+;; 零依赖 = 谁都能引它、它引不了任何人（同 common/security 的理由）：不可能被
+;; 某个上层「顺手扩展一个分支」。
+{:paths ["src"]
+ :deps  {org.clojure/clojure {:mvn/version "1.12.0"}}
+ :aliases
+ {:test {:extra-paths ["test"]
+         :extra-deps  {io.github.cognitect-labs/test-runner
+                       {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
+         :main-opts   ["-m" "cognitect.test-runner"]}}}

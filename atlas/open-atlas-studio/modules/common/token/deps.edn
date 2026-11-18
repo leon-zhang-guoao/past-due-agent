@@ -1,0 +1,23 @@
+;; open.atlas.common.token —— 数据面 token 的**共用定义**（S5.1 / S5.8 / S5.9）。
+;;
+;; **为什么在 common**：签发在每台 instance 的 runtime 上（S5.8：token 只在签发它
+;; 的那台机器上有效），而 studio 的治理面要能读懂同一份 grants 描述、workbench 的
+;; 台账也按同一套词汇登记条目。归属判据是 D1.8 那句：凡是各方必须表现一致的行为,
+;; 实现属于 common；带本机状态的那一半（台账、pepper、吊销）在 runtime/token。
+;;
+;; **本模块不碰存储、不认识时钟、不生成随机数**：它只回答「一张 token 长什么样」
+;; 「digest 算在哪串字节上」「这张 token 对这张 graph 有没有 grant」。签发要的
+;; CSPRNG 与 pepper 在 runtime——那两样都不是纯的，也都不该有第二处实现。
+{:paths ["src"]
+ :deps  {org.clojure/clojure {:mvn/version "1.12.0"}
+         ;; 规范 EDN 是 **digest 输入**的定义（S5.9）：自定界，没有裸拼接的边界
+         ;; 歧义。redact 用于 finding——但 secret 连 redact 都不进（S5.2）。
+         open.atlas/dialect  {:local/root "../dialect"}
+         ;; 三档词表与偏序。档位判定全系统只有这一份（D1.8）。
+         ;; HMAC 与恒时比较。与控制面两个签名同一份原语。
+         open.atlas/crypto   {:local/root "../crypto"}}
+ :aliases
+ {:test {:extra-paths ["test"]
+         :extra-deps  {io.github.cognitect-labs/test-runner
+                       {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
+         :main-opts   ["-m" "cognitect.test-runner"]}}}

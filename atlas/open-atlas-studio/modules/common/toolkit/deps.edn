@@ -1,0 +1,17 @@
+;; open.atlas.common.toolkit —— 工具面的**机制**：一份 registry 同时生成
+;; `tools/list` 与 dispatch（principles「MCP 与工具面」）。
+;;
+;; **为什么在 common 而不是 studio**：B7 的读面工具（list_entities /
+;; describe_entities / search / execute_eql）跑在 **server** 上，而 D3.8 的 server
+;; 是「版本架」、D1.8 禁止它依赖 studio。机制若住在 studio，server 就只能再写一份
+;; ——而「在一处声明、在另一处分派会漂移」正是这条规则要防的那种失败，写两份是它的
+;; 加强版。工具**本身**分别住在 studio / server，机制只有这一份。
+{:paths ["src"]
+ :deps  {org.clojure/clojure {:mvn/version "1.12.0"}
+         ;; finding 形状与 redact：拒绝一律结构化且不含配置值。
+         open.atlas/dialect  {:local/root "../dialect"}}
+ :aliases
+ {:test {:extra-paths ["test"]
+         :extra-deps  {io.github.cognitect-labs/test-runner
+                       {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
+         :main-opts   ["-m" "cognitect.test-runner"]}}}

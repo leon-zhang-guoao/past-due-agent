@@ -1,0 +1,235 @@
+{;; ONE source root. `src-runtime` is the standalone Server:
+ ;; `open.atlas.server.main` plus, from 8.12 P3/P4, the operator console.
+ ;;
+ ;; There used to be a second one — `src`, the inherited `ent.dx.*` stack —
+ ;; and this file's whole shape was built around keeping it OUT of production
+ ;; while it still ran in development. It was retired in
+ ;; 8.16 (docs/design/97-server-legacy-stack-retirement.md); `:paths` and
+ ;; `:deps` below are now the runtime's own needs and nothing else.
+ ;;
+ ;; `:prod` is kept because it is the documented production basis (README,
+ ;; scripts/build-server.sh, dev/start-server.sh, the Dockerfile all name it),
+ ;; but note what changed: with the second stack gone its `:replace-*` no
+ ;; longer REMOVES anything — it now merely restates this same set. It is a
+ ;; guard against a future second stack, not today's isolation mechanism.
+ :paths ["src-runtime" "resources-console"]
+
+ ;; No :mvn/repos override — use tools.deps defaults (Maven Central + the official
+ ;; clojars https://repo.clojars.org/). A regional mirror (e.g. Tsinghua/aliyun) sped
+ ;; local downloads but 403'd intermittently from CI runners, breaking dep resolution.
+ ;; Want a fast local mirror? Put it in your personal ~/.clojure/deps.edn, not here.
+
+ :deps {org.clojure/clojure            {:mvn/version "1.11.4"}
+        ;; The listeners, the runtime, and the recording machinery.
+        open.atlas/runtime-instance    {:local/root "../../modules/runtime/instance"}
+        open.atlas/runtime-env         {:local/root "../../modules/runtime/env"}
+        open.atlas/engine              {:local/root "../../modules/common/engine"}
+        open.atlas/runtime-obs         {:local/root "../../modules/runtime/obs"}
+        open.atlas/server-http         {:local/root "../../modules/server/http"}
+        open.atlas/server-data         {:local/root "../../modules/server/data"}
+        ;; `/mcp` is the data plane's second skin — same graph token, same
+        ;; `instance/answer`, different wire language. Studio mounts it; the
+        ;; standalone Server must too, or an agent CAN tell which one it is
+        ;; talking to and the two shapes have stopped behaving alike (D1.13).
+        open.atlas/server-mcp          {:local/root "../../modules/server/mcp"}
+        ;; CONNECTORS ARE NOT OPTIONAL HERE. A connector registers itself into
+        ;; the engine SPI by `defmethod`: off the classpath it does not fail
+        ;; loudly — every resolver of that source type compiles to a warning,
+        ;; is excluded, and `/eql` answers 200 with no rows (8.12.3). Required
+        ;; for effect in `open.atlas.server.main`.
+        open.atlas/connector-sql       {:local/root "../../modules/common/connector-sql"}
+        open.atlas/connector-derived   {:local/root "../../modules/common/connector-derived"}
+        open.atlas/connector-api       {:local/root "../../modules/common/connector-api"}
+        ;; Directly required by the console (8.12 P3): the artifact reader for
+        ;; an import's manifest, cheshire for reading back the JSON-lines log,
+        ;; and the token ledger for the tokens page. Reachable transitively
+        ;; through runtime-instance — declared anyway, because a dependency you
+        ;; require is one the classpath should say you have (D1.8).
+        open.atlas/artifact            {:local/root "../../modules/common/artifact"}
+        open.atlas/runtime-token       {:local/root "../../modules/runtime/token"}
+        open.atlas/control-protocol    {:local/root "../../modules/common/control-protocol"}
+        ;; Enterprise SSO for the console (doc 8.16). The protocol lives in
+        ;; `common` because studio is the other relying party and the id_token
+        ;; checks must not exist twice; the operator STORE stays in this app.
+        open.atlas/oidc                {:local/root "../../modules/common/oidc"}
+        open.atlas/dialect             {:local/root "../../modules/common/dialect"}
+        ;; The console's install plan reads a package's :compat against what
+        ;; this instance implements — `spi/contract-version` (doc 104 §8.17.7 C).
+        ;; Reachable through connector-sql; declared because it is required
+        ;; directly (D1.8).
+        open.atlas/connector-spi       {:local/root "../../modules/common/connector-spi"}
+        cheshire/cheshire              {:mvn/version "5.11.0"}
+        ;; The console's operator accounts are one SQLite file under the
+        ;; instance root (8.12 P2) — used DIRECTLY by
+        ;; open.atlas.server.identity, so declared here rather than reached
+        ;; through connector-sql (D1.8). NOT one JDBC DRIVER here: they live in
+        ;; the `:drivers` alias and ship BESIDE the jar (8.13).
+        com.github.seancorfield/next.jdbc {:mvn/version "1.3.909"}
+        ;; SLF4J MUST have a provider on the 2.x line (Jetty, pulled in through
+        ;; server-http, resolves slf4j-api to 2.0.x). Without one, tools.logging
+        ;; and every library log silently fall into NOP — not "fewer logs",
+        ;; NONE. slf4j-timbre 0.4.x ships the slf4j-2.x SLF4JServiceProvider;
+        ;; the old 0.3.21 was a 1.7-era StaticLoggerBinder, ignored under 2.x.
+        ;;
+        ;; The ring/Jetty CVE floors are NOT pinned here on purpose: they live
+        ;; in ONE place, modules/server/http-stack. Copying those version
+        ;; numbers into a second file is how one of the two gets patched and
+        ;; the other does not. (Until 8.16 they had to be pinned here too —
+        ;; the inherited stack ran its own Jetty off this :deps map.)
+        org.clojure/tools.logging      {:mvn/version "1.3.0"}
+        com.taoensso/timbre            {:mvn/version "6.5.0"}
+        com.fzakaria/slf4j-timbre      {:mvn/version "0.4.1"}}
+
+ :aliases
+ {:runtime {:main-opts ["-m" "open.atlas.server.main"]}
+
+  ;; ── The production basis (8.12 P1) ───────────────────────────────────────
+  ;;
+  ;; `clojure -M:prod:runtime` locally; `clojure -T:build uber :aliases
+  ;; '[:prod]'` for the image (8.12 P5 rewires build.clj's :main).
+  ;;
+  ;; It REPLACES rather than trims. That was load-bearing until 8.16: a trimmed
+  ;; dep list still left `src` on the classpath, so `ent.dx.*` stayed one
+  ;; require away and "the image has no second stack" stayed a thing someone
+  ;; had to remember. With that stack retired this set equals `:deps` above,
+  ;; and the replace is a guard rather than today's isolation mechanism.
+  :prod
+  {;; `resources-console` carries index.html, console.css and the compiled
+   ;; main.js. It is a separate directory from `resources` on purpose: that one
+   ;; belongs to the inherited stack (its admin SPA, its vendored driver), and
+   ;; putting the console's three files in it would put all of that in the
+   ;; image too.
+   :replace-paths ["src-runtime" "resources-console"]
+   :replace-deps
+   {org.clojure/clojure            {:mvn/version "1.11.4"}
+    ;; The listeners, the runtime, and the recording machinery.
+    open.atlas/runtime-instance    {:local/root "../../modules/runtime/instance"}
+        open.atlas/runtime-env         {:local/root "../../modules/runtime/env"}
+        open.atlas/engine              {:local/root "../../modules/common/engine"}
+    open.atlas/runtime-obs         {:local/root "../../modules/runtime/obs"}
+    open.atlas/server-http         {:local/root "../../modules/server/http"}
+    open.atlas/server-data         {:local/root "../../modules/server/data"}
+    open.atlas/server-mcp          {:local/root "../../modules/server/mcp"}
+    ;; Required for effect by the composition root — see the note in :deps.
+    open.atlas/connector-sql       {:local/root "../../modules/common/connector-sql"}
+    open.atlas/connector-derived   {:local/root "../../modules/common/connector-derived"}
+    open.atlas/connector-api       {:local/root "../../modules/common/connector-api"}
+    ;; Directly required by the console (8.12 P3): the artifact reader for an
+    ;; import's manifest, cheshire for reading back the JSON-lines log, and the
+    ;; token ledger for the tokens page. Reachable transitively through
+    ;; runtime-instance — declared anyway, because a dependency you require is
+    ;; one the classpath should say you have (D1.8).
+    open.atlas/artifact            {:local/root "../../modules/common/artifact"}
+    open.atlas/runtime-token       {:local/root "../../modules/runtime/token"}
+    open.atlas/control-protocol    {:local/root "../../modules/common/control-protocol"}
+    ;; Enterprise SSO for the console (doc 8.16) — see the note in :deps.
+    open.atlas/oidc                {:local/root "../../modules/common/oidc"}
+    open.atlas/dialect             {:local/root "../../modules/common/dialect"}
+    ;; Required directly by the console's install plan — see the note in :deps.
+    open.atlas/connector-spi       {:local/root "../../modules/common/connector-spi"}
+    cheshire/cheshire              {:mvn/version "5.11.0"}
+    ;; The console's operator accounts are one SQLite file under the instance
+    ;; root (8.12 P2) — used DIRECTLY by open.atlas.server.identity, so both
+    ;; halves are declared here rather than reached through connector-sql (D1.8).
+    com.github.seancorfield/next.jdbc {:mvn/version "1.3.909"}
+    ;; NOTE: not one JDBC DRIVER here. They live in the `:drivers` alias and
+    ;; ship BESIDE the jar (8.13) — including the SQLite one this identity
+    ;; database itself needs, because "the package always carries drivers/" is
+    ;; a smaller promise than "some drivers are special".
+    ;; SLF4J MUST have a provider on the 2.x line (Jetty pulls 2.0.x). Without
+    ;; one, tools.logging and every library log silently fall into NOP — not
+    ;; "fewer logs", NONE. The full account of that incident is in :deps above.
+    org.clojure/tools.logging      {:mvn/version "1.3.0"}
+    com.taoensso/timbre            {:mvn/version "6.5.0"}
+    com.fzakaria/slf4j-timbre      {:mvn/version "0.4.1"}}}
+
+  ;; Retained for existing launch commands; 0.6.5 is now also the default.
+  :clickhouse-legacy {:override-deps {com.clickhouse/clickhouse-jdbc {:mvn/version "0.6.5"}}}
+
+  ;; Dev REPL. Portal (djblue/portal) is a DEV-ONLY data navigator — it lives here,
+  ;; NOT in :deps, so it never reaches the uberjar / :run / :mcp-headless / :test.
+  ;; Use it from a connected REPL: (require '[portal.api :as p]) (add-tap #'p/submit)
+  ;; (p/open), then (tap> some-value). See README "Navigating data with Portal".
+  :repl  {:extra-deps {nrepl/nrepl                 {:mvn/version "1.1.1"}
+                       cider/cider-nrepl            {:mvn/version "0.47.1"}
+                       djblue/portal               {:mvn/version "0.65.0"}}
+           :main-opts ["-m" "nrepl.cmdline"
+                       "--middleware" "[cider.nrepl/cider-middleware]"]}
+
+  ;; ── The drivers, deliberately outside the jar (8.13) ─────────────────────
+  ;;
+  ;; A JDBC driver on the classpath is the whole of what it takes to support an
+  ;; engine: discovery is `META-INF/services/java.sql.Driver`, and nothing in
+  ;; this codebase names a driver class. Baked into the uberjar, the drivers
+  ;; WERE the artifact — 262 MB of driver classes, 225 of them DuckDB, which is
+  ;; not even a business engine (it is the analyze_result executor the
+  ;; duckdb-spill contract names). And swapping one for the version an
+  ;; operator's server actually needs meant rebuilding this repository.
+  ;;
+  ;; The package therefore ships them in `drivers/`, which the launcher puts on
+  ;; the classpath. It carries ALL of them by default — one-click usable — and
+  ;; an operator can now remove, add or upgrade one without us.
+  ;;
+  ;; Locally: `clojure -M:prod:drivers:runtime`, and the tests run the same way
+  ;; production does. The four engines are the owner ruling of 2026-08-26
+  ;; (SQLite, PostgreSQL, MySQL, ClickHouse); versions match apps/studio on
+  ;; purpose, since two bases reading one database through two driver versions
+  ;; is a difference nobody thinks to look for.
+  :drivers
+  {:extra-deps
+   {;; Same version as everywhere else in this repository — see the note in
+    ;; :deps above.
+    org.xerial/sqlite-jdbc            {:mvn/version "3.46.1.0"}
+    org.postgresql/postgresql         {:mvn/version "42.7.13"}
+    com.mysql/mysql-connector-j       {:mvn/version "8.3.0"}
+    ;; mysql-connector-j 8.3.0 pulls protobuf-java 3.25.1 (CVE-2024-7254).
+    com.google.protobuf/protobuf-java {:mvn/version "3.25.5"}
+    ;; Match the original deployment for ClickHouse 22.8; ship in drivers/.
+    com.clickhouse/clickhouse-jdbc    {:mvn/version "0.6.5"}
+    org.duckdb/duckdb_jdbc            {:mvn/version "1.3.1.0"}}}
+
+  ;; The console's ClojureScript (8.12 P4). uix + shadow-cljs, matching
+  ;; apps/studio's stack; `src-ui` compiles against the runtime classpath, not
+  ;; the inherited one — see the note in shadow-cljs.edn.
+  :ui {:extra-paths ["src-ui"]
+       :extra-deps {open.atlas/ui {:local/root "../../modules/common/ui"}
+                    org.clojure/clojurescript {:mvn/version "1.11.132"}
+                    com.pitch/uix.core {:mvn/version "1.1.1"}
+                    com.pitch/uix.dom {:mvn/version "1.1.1"}
+                    thheller/shadow-cljs {:mvn/version "2.28.23"}}}
+
+  ;; One-time operator bootstrap (8.12 P2). Separate command, not a server
+  ;; flag: it takes the instance lease, and two writers on one instance root is
+  ;; what the lease exists to prevent. The password is read from stdin.
+  :bootstrap-admin {:main-opts ["-m" "open.atlas.server.identity.bootstrap"]}
+
+  ;; 8.12 P1's exit condition. Still invoked as `clojure -M:prod:drivers:test-prod`
+  ;; — that is what the README and the scripts say, and running the tests on the
+  ;; basis production runs is the point. (Until 8.16 the `:prod` half also did
+  ;; real work here: it kept the inherited stack's own connectors off the
+  ;; classpath, without which the guard below proved nothing. That stack is
+  ;; gone, so today the two bases agree.) fixtures/demo is on the path because the test reads the
+  ;; committed demo model and its database, the same pair modules/integration
+  ;; reads: an assertion over a hand-written fake would not have caught the
+  ;; missing connector, which is the whole reason this alias exists.
+  :test-prod {:extra-paths ["test-runtime" "../../fixtures/demo"
+                             ;; The fake IdP of doc 8.16.5, REUSED rather than
+                             ;; copied: a second fake is a second set of
+                             ;; assumptions about what an IdP does, and the
+                             ;; round trip here is only worth what its IdP is.
+                             "../../modules/common/oidc/test"]
+              :extra-deps {io.github.cognitect-labs/test-runner
+                           {:git/tag "v0.5.1" :git/sha "dfb30dd"}
+                           ;; Directly required by the tests → directly
+                           ;; declared, rather than leaned on transitively
+                           ;; through runtime-instance (D1.8).
+                           open.atlas/dialect {:local/root "../../modules/common/dialect"}
+                           open.atlas/engine  {:local/root "../../modules/common/engine"}}
+              :main-opts ["-m" "cognitect.test-runner" "-d" "test-runtime"]}
+
+   ;; sqlite-jdbc is here because the build BUILDS the bundled demo database
+   ;; from the committed schema.sql + seed.sql (8.14). A build-time tool, not a
+   ;; runtime driver — those are in :drivers.
+   :build {:deps      {io.github.clojure/tools.build {:mvn/version "0.10.6"}
+                       org.xerial/sqlite-jdbc {:mvn/version "3.46.1.0"}}
+          :ns-default build}}}

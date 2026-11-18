@@ -1,0 +1,15 @@
+;; ONE build: the standalone Server's own console (8.12 P4), uix, from `src-ui`.
+;;
+;; There used to be a second one — `:admin`, the inherited Fulcro SPA compiled
+;; from `src` — removed with the legacy stack (8.16 §8.16.4 第 2 刀).
+{:deps {:aliases [:ui]}
+ :builds
+ {:console
+  {:target    :browser
+   :output-dir "resources-console/js"
+   :asset-path "/js"
+   :modules   {:main {:init-fn open.atlas.server.ui.app/init}}
+   ;; 9631 is the Studio Builder's own port — a watch here would have raced it.
+   :devtools  {:http-port 9633
+               :watch-dir "resources-console"}
+   :release   {:compiler-options {:optimizations :advanced}}}}}

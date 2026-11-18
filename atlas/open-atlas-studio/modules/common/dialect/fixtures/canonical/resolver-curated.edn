@@ -1,0 +1,17 @@
+{:curated? true
+ :description "SKU 目录全集——小型主档，量级由作者签字；可按 :prod_code 收窄。"
+ :eql-params {:prod_code {:attribute :cis.master.part/prod_code
+                          :description "只取该产品码的 part。"
+                          :op :eq}}
+ :id "demo_all_parts"
+ :input []
+ :label "All parts (SKU catalog)"
+ :limit {:default 50 :max 500}
+ :order {:allowed [:cis.master.part/sku_no :cis.master.part/part_no :cis.master.part/ave_cost]
+         :default [:cis.master.part/sku_no :asc]}
+ :output [{:cis.master.part/all_parts [:cis.master.part/sku_no :cis.master.part/part_no
+                                       :cis.master.part/short_desc :cis.master.part/ave_cost
+                                       :cis.master.part/prod_code]}]
+ :result_type "list"
+ :source {:query "SELECT sku_no, part_no, short_desc, ave_cost, prod_code FROM parts" :type "sql"}
+ :source-ref "cis-demo-db"}

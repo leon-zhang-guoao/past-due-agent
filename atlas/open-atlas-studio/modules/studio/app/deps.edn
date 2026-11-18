@@ -1,0 +1,38 @@
+;; open.atlas.studio.app —— studio 这个 app 的**装配点**：Builder + 一台内嵌的
+;; Server Runtime Instance（D1.13）。
+;;
+;; 它自己不实现任何运行时语义。运行时整台由 `runtime/instance` 装（那是唯一
+;; 一条装配路径），本模块只加 studio 自己那一半：池、圈图、切版本、发布,
+;; 以及**同进程的控制面传输**。
+;;
+;; **不为 studio 再写一条物化路径**（owner 裁定 2026-08-25）：内嵌 runtime 走的
+;; load/activate、发牌、latest、执法，与独立 Server 逐条是同一份实现。这里省掉的
+;; 只有一次 HTTP 往返。
+{:paths ["src"]
+ :deps  {org.clojure/clojure        {:mvn/version "1.12.0"}
+         open.atlas/control-protocol {:local/root "../../common/control-protocol"}
+         open.atlas/studio-pool     {:local/root "../pool"}
+         open.atlas/studio-graph    {:local/root "../graph"}
+         open.atlas/studio-version  {:local/root "../version"}
+         open.atlas/studio-deploy   {:local/root "../deploy"}
+         open.atlas/runtime-instance {:local/root "../../runtime/instance"}
+         open.atlas/runtime-graph   {:local/root "../../runtime/graph"}
+         open.atlas/runtime-store   {:local/root "../../runtime/store"}
+         ;; 端到端要证「数据面的读进了审计」，读的是 obs 的主体索引。
+         open.atlas/runtime-obs     {:local/root "../../runtime/obs"}}
+ :aliases
+ ;; 测试要直接问内嵌 runtime 的三个子系统「你现在是什么状态」——那正是这条
+ ;; 端到端要证的东西。**直接 require 就直接声明**，不靠 runtime/instance 传递。
+ {:test {:extra-deps {open.atlas/runtime-token     {:local/root "../../runtime/token"}
+                      open.atlas/runtime-env       {:local/root "../../runtime/env"}
+                      open.atlas/runtime-retention {:local/root "../../runtime/retention"}
+                      ;; E1 / D5.14：切版本的接线核对问连接器「这条语句绑了哪些
+                      ;; 名字」。**宿主决定加载哪些连接器**（connector-sql 的 ns
+                      ;; docstring），apps/studio 在生产里 require 了它；这条端到端
+                      ;; 也要一个真的在场，否则每张带声明的图都只能得到
+                      ;; `:rowsec.wiring/unverifiable`。
+                      open.atlas/connector-sql     {:local/root "../../common/connector-sql"}
+                      io.github.cognitect-labs/test-runner
+                      {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
+         :extra-paths ["test" "../../common/dialect/fixtures"]
+         :main-opts   ["-m" "cognitect.test-runner"]}}}

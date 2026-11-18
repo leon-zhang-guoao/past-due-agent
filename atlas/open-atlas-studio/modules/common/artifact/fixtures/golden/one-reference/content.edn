@@ -1,0 +1,8 @@
+{:artifact/format-version 1
+ :objects {:attributes {:ref.demo/id {:label "ID" :type :string}}
+           :namespaces {"ref.demo" {:kind :master :label "Reference demo"}}}
+ :references [{:content-hash "sha256:5732e6633d2af2c331935eb12e0a416c1735708b1c1ac72dc7509ec597ce2fad"
+               :graph "core"
+               :up-to :sensitive
+               :version 3
+               :workspace "core-team"}]}

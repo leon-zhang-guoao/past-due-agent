@@ -1,0 +1,76 @@
+{:api-kit/version 1,
+ :api-kit/provenance
+ {:connector-version "v1",
+  :contract "api-v1",
+  :operation "se-gtin-api",
+  :recorded-at "2026-09-18T12:50:31.686553Z",
+  :redaction-rules "sha256:8c8f5a7791f2bb0a",
+  :source "se-catalog-api"},
+ :api-kit/samples [{:inputs [{:vendor.schneider.gtin-query/gtin "3606480183430"}]}],
+ :api-kit/rules
+ {:detectors [:email :jwt :bearer :api-key-prefix :private-key :unresolved-var :high-entropy],
+  :keep-paths
+  [["identifiers" "gtin"]
+   ["identifiers" "manufacturerPID"]
+   ["manufacturer" "brand"]
+   ["descriptions" "*" "short"]
+   ["etim" "*" "class"]
+   ["status" "commercialStatus" "*" "value"]
+   ["etim" "*" "className" "*" "value"]
+   ["pricing" "pricesDetails" "*" "price" "*" "amount"]
+   ["pricing" "pricesDetails" "*" "price" "*" "currency"]
+   ["pricing" "pricesDetails" "*" "price" "*" "type"]],
+  :max-string 64,
+  :secret-paths []},
+ :api-kit/exchanges
+ [{:method "GET",
+   :endpoint "/v2/reference-data/product/product-catalog/products",
+   :query-param-names
+   ["customerid"
+    "customerid-type"
+    "etim-version"
+    "product-reference"
+    "supplierid"
+    "supplierid-type"],
+   :body-param-names [],
+   :match
+   {:method "GET",
+    :path "/v2/reference-data/product/product-catalog/products",
+    :query
+    {"customerid" "TDSYNNEX_US",
+     "customerid-type" "specific",
+     "etim-version" "ETIM-9.0",
+     "product-reference" "3606480183430",
+     "supplierid" "Schneider_US",
+     "supplierid-type" "specific"}},
+   :status 200,
+   :headers {"Content-Type" "application/json"},
+   :body
+   {:customerID "TDSYNNEX_US",
+    :products
+    [{:descriptions
+      [{:long "<len:84>",
+        :short "Plain mounting plate H800xW600mm made of galvanised sheet steel"}],
+      :etim [{:class "EC000213", :className [{:value "Mounting plate for distribution board"}]}],
+      :identifiers
+      {:commercialReference "NSYMM86", :gtin "3606480183430", :manufacturerPID "NSYMM86"},
+      :logistics
+      {:customsTariff [{:customsNumber "SAMPLE-HS-CODE"}],
+       :packingUnits [{:weight "17.637 lb(US) (8.000 kg)"}]},
+      :manufacturer {:brand "SAMPLE-BRAND"},
+      :mimeInfos
+      [{:fileName "SAMPLE-datasheet.pdf",
+        :publicationDate "2024-03-11",
+        :sources ["https://example.invalid/sample-datasheet.pdf"],
+        :type "datasheet"}],
+      :pricing {:pricesDetails [{:price [{:amount 74.82, :currency "USD", :type "Net_list"}]}]},
+      :status {:commercialStatus [{:value "Commercialised"}]},
+      :sustainability
+      [{:reachRegulation "SAMPLE REACH declaration text", :rohsEurStatus "Compliant"}],
+      :unspsc [{:unspscClassificationV23 "SAMPLE-UNSPSC-V23"}]}
+     {:descriptions
+      [{:long "SAMPLE long description for the second reference.", :short "<len:72>"}],
+      :identifiers
+      {:commercialReference "NSYPLM108G", :gtin "SAMPLE-GTIN-2", :manufacturerPID "NSYPLM108G"},
+      :manufacturer {:brand "SAMPLE-BRAND"},
+      :status {:commercialStatus [{:value "Commercialised"}]}}]}}]}

@@ -1,0 +1,24 @@
+;; open.atlas.server.data —— 数据面的**传输壳**（EQL 入口）。
+;;
+;; **与控制面分开**（D3.12）：不同的入口、不同的认证。数据面的凭据是一张
+;; graph token，控制面的权限是「能改这台机器装什么」——放同一个入口，就等于让
+;; 一张查询 token 的泄漏变成一次部署权泄漏。
+;;
+;; 它**一条业务判断都不做**：解出 bearer、解出目标 graph 与 EQL、交给
+;; `runtime/instance` 的 `answer`、把应答写成规范 EDN。grant 判断在
+;; `common/token`，物化在 `runtime/env`，执法在 `common/engine`——本模块
+;; **不得重新实现其中任何一样**（owner 裁定 2026-08-25）。
+{:paths ["src"]
+ :deps  {org.clojure/clojure         {:mvn/version "1.12.0"}
+         open.atlas/dialect          {:local/root "../../common/dialect"}
+         open.atlas/runtime-instance {:local/root "../../runtime/instance"}
+         ;; 请求关联：数据面在 studio 内嵌与独立 Server 两种形态下是同一个
+         ;; handler，关联挂在这里才能保证两边一致（8.10 P4）。
+         open.atlas/runtime-obs      {:local/root "../../runtime/obs"}
+         ;; HTTP 栈与 CVE 钉法与控制面壳**同一份**（server/http-stack）。
+         open.atlas/http-stack       {:local/root "../http-stack"}}
+ :aliases
+ {:test {:extra-paths ["test"]
+         :extra-deps  {io.github.cognitect-labs/test-runner
+                       {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
+         :main-opts   ["-m" "cognitect.test-runner"]}}}

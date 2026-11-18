@@ -1,0 +1,1695 @@
+/* Open Atlas Studio — an instrument, not a website.
+ *
+ * The model this reads can hold 500 resolvers, 3,000 attributes and 100
+ * entities, so the interface is built for density: hairline rules instead of
+ * boxes, condensed type for chrome, monospace for every identifier, and colour
+ * reserved entirely for meaning. Amber is the operator's own colour — selection,
+ * focus, the primary action — and appears nowhere else.
+ *
+ * Palette mirrors src-ui/open/atlas/studio/ui/theme.cljs, which the canvas reads.
+ */
+
+@font-face {
+  font-family: "Plex Mono"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("/fonts/ibm-plex-mono-latin-400-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Plex Mono"; font-style: normal; font-weight: 500; font-display: swap;
+  src: url("/fonts/ibm-plex-mono-latin-500-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Plex Mono"; font-style: normal; font-weight: 600; font-display: swap;
+  src: url("/fonts/ibm-plex-mono-latin-600-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Plex Cond"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("/fonts/ibm-plex-sans-condensed-latin-400-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Plex Cond"; font-style: normal; font-weight: 500; font-display: swap;
+  src: url("/fonts/ibm-plex-sans-condensed-latin-500-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Plex Cond"; font-style: normal; font-weight: 600; font-display: swap;
+  src: url("/fonts/ibm-plex-sans-condensed-latin-600-normal.woff2") format("woff2");
+}
+
+/* Two grounds, one design. The light theme is the same instrument on paper:
+   identical hierarchy, identical accent, only the ground and the ink swap. The
+   canvas cannot read these variables, so ui.theme carries the same two sets. */
+:root, :root[data-theme="dark"] {
+  --ground: #0e0c0a;
+  --panel: #17140f;
+  --raised: #201c15;
+  --rule: #2a2419;
+  --rule-2: #3d3527;
+  --ink: #f0e8d9;
+  --muted: #a99e8a;   /* >= 7:1 on --panel: running text */
+  --faint: #8f8471;   /* >= 4.5:1 on every ground: hints, captions — was 3:1 */
+  --accent: #e8a93f;
+  --accent-dim: #7d5817;
+  /* A hairline is two lines: the light that catches the top edge of a panel and
+     the shadow under it. One flat rule reads as a diagram; two read as material. */
+  --edge-hi: rgba(255, 240, 210, .045);
+  --edge-lo: rgba(0, 0, 0, .5);
+  --sunk: rgba(0, 0, 0, .28);
+  --ok: #6fbf6a;
+  --warn: #d8a13c;
+  --error: #e2706b;
+
+  --mono: "Plex Mono", ui-monospace, Menlo, monospace;
+  --cond: "Plex Cond", system-ui, sans-serif;
+
+  --row: 26px;
+  --gap: 1px;          /* panels are separated by rules, not by air */
+
+  /* Page frame. Every page shell reads these, so a title sits at the same
+     height and the same left edge whichever page the operator moves to. */
+  --page-max: 1280px;
+  --page-gutter: clamp(14px, 2.2vw, 32px);
+  --page-top: 18px;
+  --form-max: 600px;   /* a form is read down a column, not across a page */
+  --ctl: 28px;         /* the height of every control that sits in a row */
+  --ring: 0 0 0 2px color-mix(in srgb, var(--accent) 38%, transparent);
+
+  /* Native controls (scrollbars, select arrows, date pickers) take their
+     colours from this. Without it a dark page drew white scrollbar tracks. */
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  --ground: #e4ddcc;
+  --panel: #fcfaf4;
+  --raised: #f2ede0;
+  --rule: #d5cdb9;
+  --rule-2: #b9ad94;
+  --ink: #191510;
+  --muted: #574e43;
+  --faint: #665e4f;
+  --accent: #9a5405;
+  --accent-dim: #dcb87e;
+  --edge-hi: rgba(255, 255, 255, .85);
+  --edge-lo: rgba(60, 48, 30, .10);
+  --sunk: rgba(90, 74, 48, .07);
+  --ok: #2c6526;
+  --warn: #8a5a08;
+  --error: #a52a24;
+  color-scheme: light;
+}
+:root[data-theme="light"] body {
+  /* Paper, lit from above — the same gesture as the dark theme's horizon. */
+  background-image: radial-gradient(120% 60% at 50% -12%, #f6f2e8 0%, var(--ground) 64%);
+}
+:root[data-theme="light"] .btn.primary { color: #fdf8ec; }
+:root[data-theme="light"] .pane { box-shadow: 0 1px 0 rgba(28, 24, 20, .04); }
+/* On paper the editor is the one large ink surface: give it its own leaf so it
+   reads as a document rather than as a hole in the panel. */
+:root[data-theme="light"] .editor .cm-editor { background: #fffdf6; }
+:root[data-theme="light"] .editor .cm-gutters { background: #f6f1e5; }
+:root[data-theme="light"] .editor .cm-activeLine { background: #f4efe1; }
+:root[data-theme="light"] .editor .cm-activeLineGutter { background: #ece5d4; }
+:root[data-theme="light"] pre.out { background: #fffdf6; }
+/* A read-only entry does not get the document leaf: on paper too it sits a
+   shade back from the box that is typed into, so "not editable" reads at a
+   glance without a label saying so. */
+:root[data-theme="light"] .editor.editor-read-only .cm-editor { background: #f7f3e9; }
+:root[data-theme="light"] .editor.editor-read-only .cm-gutters { background: #f0ebdd; }
+:root[data-theme="light"] .editor.editor-read-only .cm-activeLine,
+:root[data-theme="light"] .editor.editor-read-only .cm-activeLineGutter { background: transparent; }
+
+* { box-sizing: border-box; }
+::selection { background: var(--accent-dim); color: var(--ink); }
+
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font: 400 13px/1.45 var(--cond);
+  -webkit-font-smoothing: antialiased;
+  /* A faint horizon keeps the ground from reading as flat black. */
+  background-image: radial-gradient(120% 60% at 50% -10%, #1b1815 0%, var(--ground) 62%);
+}
+
+/* ── Frame ─────────────────────────────────────────────────────────────── */
+
+.app { display: flex; flex-direction: column; height: 100vh; }
+
+.top {
+  display: flex; align-items: center; gap: 22px;
+  padding: 0 16px; height: 46px; flex: none;
+  border-bottom: 1px solid var(--rule);
+  background: var(--panel);
+}
+.top h1 {
+  margin: 0; font: 600 12px/46px var(--cond);
+  letter-spacing: .18em; text-transform: none; color: var(--ink);
+  white-space: nowrap;
+}
+.top h1 span { color: var(--accent); }
+.top nav { display: flex; gap: 2px; align-self: stretch; }
+.top nav button {
+  font: 500 12px/1 var(--cond); letter-spacing: .09em; text-transform: none;
+  background: none; border: 0; border-bottom: 2px solid transparent;
+  padding: 0 14px; color: var(--muted); cursor: pointer; white-space: nowrap;
+}
+.top .spacer { flex: 1; }
+.top nav button:hover { color: var(--ink); }
+.top nav button.selected { color: var(--accent); border-bottom-color: var(--accent); }
+.graph-picker { display: inline-flex; align-items: center; gap: 7px; color: var(--faint); font-size: 10px; letter-spacing: .12em; text-transform: none; }
+.graph-picker select { min-width: 124px; border: 1px solid var(--rule-2); border-radius: 3px; padding: 6px 25px 6px 8px; background: var(--raised); color: var(--ink); font: inherit; letter-spacing: .04em; }
+.graph-picker select:focus-visible { outline: 1px solid var(--accent); outline-offset: 2px; }
+
+main { flex: 1; min-height: 0; display: grid; gap: var(--gap); background: var(--rule); }
+/* Browse, look, read — left to right. The dossier gets its own tall column so a
+   resolver with forty outputs is just a longer scroll, not a squeezed panel; the
+   graph gets the full height of the middle. */
+.page-index { display: flex; grid-template-columns: none; }
+.page-index > .pane { min-width: 0; }
+.page-index > .pane-graph, .page-index > * > .pane-graph { flex: 1 1 auto; }
+@media (max-width: 1180px) {
+  /* Below this the third column starves the graph; the dossier goes back on top. */
+  .page-index { grid-template-columns: 264px minmax(0, 1fr); }
+  .page-index .pane-dossier { grid-column: 2; grid-row: 1; }
+  .page-index .pane-graph { grid-column: 2; grid-row: 2; }
+  .page-index { grid-template-rows: minmax(180px, 32%) minmax(0, 1fr); }
+  .page-index .pane-rail { grid-row: 1 / span 2; }
+}
+.page-lab { grid-template-columns: minmax(360px, 34%) minmax(0, 1fr); }
+/* The result is the answer, so it gets room even when it is one line — and it
+   stops at half the column, because the plan and the trace are the other half of
+   the answer. Sized `auto`, a 13 KB result took the whole column and left them
+   at zero height: present in the DOM, invisible on screen. */
+.page-lab > .stack.rows-auto-1 { grid-template-rows: minmax(150px, 50%) minmax(0, 1fr); }
+
+.pane { background: var(--panel); min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+.pane-head {
+  display: flex; align-items: center; gap: 10px; flex: none;
+  height: 32px; padding: 0 12px; white-space: nowrap;
+  border-bottom: 1px solid var(--rule);
+  font: 600 10px/1 var(--cond); letter-spacing: .16em; text-transform: none;
+  color: var(--faint);
+}
+.pane-head > * { flex: none; }
+.pane-head .count {
+  color: var(--muted); letter-spacing: .04em; font-weight: 400;
+  min-width: 0; flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis;
+}
+.pane-head .spacer { flex: 1 1 auto; min-width: 8px; }
+/* The legend is the first thing to go when the header runs out of room: it
+   explains the picture, it is not part of it. */
+.pane-head .legend { flex: 0 1 auto; overflow: hidden; min-width: 0; }
+.pane-body { flex: 1; min-height: 0; overflow: auto; }
+.pane-body.pad { padding: 12px; }
+.stack { display: grid; gap: var(--gap); background: var(--rule); min-height: 0; }
+.rows-2 { grid-template-rows: minmax(0, 1fr) minmax(0, 1fr); }
+.rows-auto-1 { grid-template-rows: auto minmax(0, 1fr); }
+
+/* ── Controls ──────────────────────────────────────────────────────────── */
+
+button, input, textarea { font-family: inherit; }
+
+.btn {
+  font: 500 11px/1 var(--cond); letter-spacing: .08em; text-transform: none;
+  white-space: nowrap;
+  background: var(--raised); color: var(--muted);
+  border: 1px solid var(--rule-2); border-radius: 2px;
+  padding: 5px 10px; cursor: pointer;
+}
+.btn:hover:not(:disabled) { color: var(--ink); border-color: var(--faint); }
+.btn.on { color: var(--accent); border-color: var(--accent-dim); }
+.btn.primary { background: var(--accent); color: #17130d; border-color: var(--accent); font-weight: 600; }
+.btn.primary:hover:not(:disabled) { background: #f2b45a; color: #17130d; }
+.btn:disabled { opacity: .38; cursor: default; }
+
+.seg { display: inline-flex; border: 1px solid var(--rule-2); border-radius: 2px; overflow: hidden; }
+.seg button {
+  font: 500 11px/1 var(--cond); letter-spacing: .07em; text-transform: none;
+  white-space: nowrap;
+  background: none; border: 0; border-right: 1px solid var(--rule-2);
+  padding: 5px 9px; color: var(--muted); cursor: pointer;
+}
+.seg button:last-child { border-right: 0; }
+.seg button:hover { color: var(--ink); }
+.seg button.on { background: var(--raised); color: var(--accent); }
+
+/* One tab per level of a nested query. It scrolls rather than wraps: three joins
+   deep is four tabs, and the pane below is the thing that needs the height. */
+.levels {
+  display: flex; flex: none; gap: 2px; align-items: center;
+  padding: 5px 10px; overflow-x: auto;
+  border-bottom: 1px solid var(--rule);
+}
+.levels button {
+  font: 400 11px/1 var(--mono); white-space: nowrap;
+  background: none; border: 1px solid transparent; border-radius: 2px;
+  padding: 4px 7px; color: var(--muted); cursor: pointer;
+}
+.levels button:hover { color: var(--ink); }
+.levels button.on { border-color: var(--rule-2); background: var(--raised); color: var(--accent); }
+.levels .count { color: var(--faint); }
+
+.search {
+  display: block; width: 100%;
+  background: var(--ground); color: var(--ink);
+  border: 0; border-bottom: 1px solid var(--rule);
+  padding: 9px 12px; font: 400 13px/1 var(--mono);
+}
+.search::placeholder { color: var(--faint); font-family: var(--cond); }
+.search:focus { outline: none; border-bottom-color: var(--accent); }
+
+.check { display: inline-flex; align-items: center; gap: 5px; color: var(--muted); font-size: 11px;
+  letter-spacing: .07em; text-transform: none; cursor: pointer; }
+.check input { accent-color: var(--accent); }
+
+/* ── Lists (virtualised) ───────────────────────────────────────────────── */
+
+.vlist { position: relative; }
+.vrow {
+  position: absolute; left: 0; right: 0; height: var(--row);
+  display: flex; align-items: center; gap: 6px;
+  padding: 0 12px; cursor: pointer;
+  border-left: 2px solid transparent;
+  white-space: nowrap;
+}
+.vrow:hover { background: var(--raised); }
+.vrow.on { background: var(--raised); border-left-color: var(--accent); }
+.vrow .name { font: 400 12.5px/1 var(--mono); color: var(--ink); overflow: hidden; text-overflow: ellipsis; }
+.vrow.on .name { color: var(--accent); }
+/* The namespace gives up space before the attribute name does. */
+.vrow .ns {
+  font: 400 12.5px/1 var(--mono); color: var(--faint);
+  flex: none; white-space: nowrap;
+}
+.vrow .leaf {
+  font: 400 12.5px/1 var(--mono); color: var(--ink);
+  min-width: 0; flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; margin-left: -4px;
+}
+.vrow.on .leaf { color: var(--accent); }
+.vrow.on .ns { color: var(--accent-dim); }
+.vrow .meta { margin-left: auto; font-size: 11px; color: var(--faint); flex: none; }
+.vrow .dot { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+.empty-note { padding: 14px 12px; color: var(--faint); font-size: 12px; }
+
+/* ── Dossier ───────────────────────────────────────────────────────────── */
+
+.dossier { padding: 14px 16px 18px; }
+.dossier h2 {
+  margin: 0; font: 500 19px/1.2 var(--mono); color: var(--ink);
+  word-break: break-all;
+}
+.dossier .sub { margin: 6px 0 0; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.tag {
+  font: 500 10px/1 var(--cond); letter-spacing: .1em; text-transform: none;
+  padding: 4px 7px; border: 1px solid var(--rule-2); border-radius: 2px; color: var(--muted);
+}
+.tag.hue { border-color: currentColor; }
+.tag.warn { color: var(--warn); border-color: var(--warn); }
+
+/* What a chart says an attribute *is*: its business name, its prose, and the
+   other names people call it. The label leads because a modeller arrives
+   knowing it and not the attribute id. */
+.dossier .lead {
+  margin: 10px 0 0; font-size: 14px; line-height: 1.45; color: var(--ink);
+}
+.dossier .hint { padding: 8px 0 0; border-top: 0; font-size: 12px; line-height: 1.5; }
+.dossier .synonyms {
+  margin: 10px 0 0; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+}
+.dossier .synonyms .k {
+  font: 500 10px/1 var(--cond); letter-spacing: .1em; text-transform: none;
+  color: var(--faint);
+}
+.dossier .synonyms .tag { text-transform: none; letter-spacing: 0; font-family: inherit; }
+
+.ledgers { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 18px; margin-top: 16px; }
+/* In the dossier column the ledgers stack; each keeps its own scroll so one long
+   list cannot push the others out of sight. */
+.pane-dossier .ledgers { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+.pane-dossier .dossier { padding: 12px 14px 18px; }
+.pane-dossier .dossier h2 { font-size: 16px; line-height: 1.3; }
+.pane-dossier .ledger ul { max-height: 168px; }
+.pane-dossier .ledger ul.chips { max-height: none; }
+.pane-dossier .ledger ul.chips.expanded { max-height: 176px; }
+.ledger h3 {
+  margin: 0 0 6px; font: 600 10px/1 var(--cond); letter-spacing: .16em; text-transform: none;
+  color: var(--faint); padding-bottom: 6px; border-bottom: 1px solid var(--rule);
+}
+.ledger.lead h3 { color: var(--accent); border-bottom-color: var(--accent-dim); }
+.ledger ul { list-style: none; margin: 0; padding: 0; max-height: 200px; overflow: auto; }
+/* A resolver with forty outputs is normal. As a list it is a wall; as chips with
+   the shared namespace lifted into the heading it is one glance. */
+/* Collapsed chips are a fixed preview with no scrollbar — the "+N more" is the
+   affordance. Only the expanded list scrolls. */
+.ledger ul.chips { display: flex; flex-wrap: wrap; gap: 4px; max-height: none; overflow: visible; }
+.ledger ul.chips.expanded { max-height: 200px; overflow: auto; }
+.ledger ul.chips li { padding: 0; }
+.ledger ul.chips button.link {
+  font-size: 12px; padding: 2px 7px; border: 1px solid var(--rule); border-radius: 2px;
+  background: var(--raised);
+}
+.ledger ul.chips button.link:hover { border-color: var(--accent); }
+.ledger .prefix { color: var(--faint); font-family: var(--mono); font-size: 11px; margin-left: 6px; }
+.ledger .more {
+  background: none; border: 0; padding: 2px 0; margin-top: 4px; cursor: pointer;
+  font: 500 10px/1 var(--cond); letter-spacing: .1em; text-transform: none; color: var(--accent);
+}
+.ledger li { display: flex; align-items: baseline; gap: 8px; padding: 3px 0; }
+.ledger button.link {
+  background: none; border: 0; padding: 0; cursor: pointer; text-align: left;
+  font: 400 12.5px/1.35 var(--mono); color: var(--ink);
+}
+.ledger button.link:hover { color: var(--accent); }
+.ledger .via { font-size: 11px; color: var(--faint); margin-left: auto; flex: none; }
+.ledger .none { color: var(--faint); font-size: 12px; padding: 3px 0; }
+
+dl.spec { display: grid; grid-template-columns: 104px minmax(0, 1fr); gap: 5px 14px; margin: 0; }
+.pane-dossier dl.spec { grid-template-columns: 84px minmax(0, 1fr); }
+dl.spec dt { font-size: 11px; letter-spacing: .08em; text-transform: none; color: var(--faint); }
+dl.spec dd { margin: 0; font: 400 12.5px/1.4 var(--mono); word-break: break-all; }
+dl.spec dd.plain { font-family: var(--cond); font-size: 13px; }
+
+/* ── Graph ─────────────────────────────────────────────────────────────── */
+
+/* The canvas is recessed on the dark ground and a drawing sheet on the light one:
+   the same relationship, but paper reads as lighter, not dirtier. */
+/* The plan graph takes the theme's ground. Only two of Pathom Viz's plan values
+   are neutrals — the sequencing edge and the root border — and those flip in
+   `plan-style`; the hues carry on either ground unchanged. */
+.cy { flex: 1; min-height: 0; background: var(--panel); }
+:root[data-theme="light"] .cy { background: #fff; }
+.legend { display: flex; align-items: center; gap: 12px; font-size: 10px; white-space: nowrap;
+  letter-spacing: .08em; text-transform: none; color: var(--faint); }
+.legend i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; vertical-align: -1px; margin-right: 4px; }
+.legend i.ring { background: none; border: 2px solid var(--muted); }
+.legend i.line { width: 14px; height: 0; border-radius: 0; border-top: 2px solid #000; }
+.legend i.dash { width: 14px; height: 0; border-radius: 0; border-top: 2px dashed var(--muted); }
+.legend i.box { width: 12px; height: 9px; border-radius: 2px; border: 1px dashed var(--rule-2); background: var(--raised); }
+.legend i.branch { width: 14px; height: 0; border-radius: 0; border-top: 2px solid #ff7f0e; }
+
+/* ── Tables ────────────────────────────────────────────────────────────── */
+
+table { border-collapse: collapse; width: 100%; font-size: 12px; }
+thead th {
+  position: sticky; top: 0; background: var(--panel); text-align: left;
+  font: 600 10px/1 var(--cond); letter-spacing: .14em; text-transform: none; color: var(--faint);
+  padding: 7px 10px; border-bottom: 1px solid var(--rule);
+}
+td { padding: 5px 10px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+tbody tr:hover { background: var(--raised); }
+td.mono, .mono { font-family: var(--mono); }
+
+/* ── Trace ─────────────────────────────────────────────────────────────── */
+
+/* The bar labels sit outside the bar, so the track reserves room for the widest
+   of them; otherwise the last step's duration runs off the pane. */
+.trace { padding: 10px 74px 14px 12px; }
+.trace-axis { position: relative; height: 14px; margin-left: 148px; border-bottom: 1px solid var(--rule); }
+.trace-axis span { position: absolute; top: 0; font-size: 10px; color: var(--faint); transform: translateX(-50%); }
+.trace-axis span:last-child { transform: translateX(-100%); }
+.trace-axis span { background: var(--panel); padding: 0 2px; }
+.trace-row { display: flex; align-items: center; height: 22px; gap: 8px; }
+.trace-row .label {
+  width: 140px; flex: none; font: 400 11.5px/1 var(--mono); color: var(--muted);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: right;
+}
+.trace-row .track { position: relative; flex: 1; height: 100%; }
+.trace-row .track::before {
+  content: ""; position: absolute; inset: 50% 0 auto; border-top: 1px dashed var(--rule);
+}
+/* The duration sits just past its bar; give it the pane's ground so it is read as
+   a label rather than as part of the baseline it crosses. */
+.trace-bar {
+  position: absolute; top: 5px; height: 12px; min-width: 2px; border-radius: 1px;
+  background: var(--ok);
+}
+.trace-bar.empty-output { background: var(--warn); }
+.trace-bar.error { background: var(--error); }
+.trace-bar.not-run { background: var(--faint); }
+.trace-bar span {
+  position: absolute; left: calc(100% + 6px); top: -1px;
+  font-size: 10.5px; color: var(--muted); white-space: nowrap;
+  background: var(--panel); padding: 0 3px; border-radius: 2px;
+}
+
+/* ── Editors, results ──────────────────────────────────────────────────── */
+
+.editor { flex: 1; min-height: 0; overflow: hidden; }
+.editor .cm-editor { height: 100%; background: var(--ground); }
+.editor .cm-editor.cm-focused { outline: none; }
+.editor .cm-scroller { font-family: var(--mono); }
+.editor .cm-gutters { background: var(--ground); border-right: 1px solid var(--rule); color: var(--faint); }
+.editor .cm-activeLineGutter { background: var(--raised); color: var(--muted); }
+pre.out { background: var(--ground); border-radius: 0; }
+.editor .cm-cursor { border-left-color: var(--accent); }
+.editor .cm-selectionBackground, .editor ::selection { background: var(--accent-dim) !important; }
+.editor .cm-tooltip { background: var(--raised); border: 1px solid var(--rule-2); color: var(--ink); }
+.editor .cm-tooltip-autocomplete ul li[aria-selected] { background: var(--accent-dim); color: var(--ink); }
+
+/* A read-only entry must not read as a box someone forgot to type in: it sits
+   on the panel rather than in the sunken input ground, takes no caret and no
+   focus ring, and shows no active line. Selection and copy still work, so the
+   selection colour stays. */
+.editor.editor-read-only .cm-editor { background: var(--raised); }
+.editor.editor-read-only .cm-gutters { background: var(--raised); }
+.editor.editor-read-only .cm-activeLine,
+.editor.editor-read-only .cm-activeLineGutter { background: transparent; }
+.editor.editor-read-only .cm-cursor { display: none; }
+.editor.editor-read-only .cm-editor.cm-focused,
+.editor.editor-read-only .cm-content:focus,
+.editor.editor-read-only .cm-content:focus-visible { outline: none; }
+
+pre.out {
+  margin: 0; padding: 12px; font: 400 12.5px/1.5 var(--mono); color: var(--ink);
+  white-space: pre-wrap; word-break: break-word;
+}
+.hint { padding: 7px 12px; font-size: 11.5px; color: var(--faint); border-top: 1px solid var(--rule); }
+.hint kbd { font: 500 11px/1 var(--mono); color: var(--muted); }
+.hint.bad { color: var(--error); }
+
+.status-pill {
+  font: 500 10px/1 var(--cond); letter-spacing: .1em; text-transform: none;
+  padding: 3px 6px; border-radius: 2px; border: 1px solid currentColor;
+}
+.status-pill.success { color: var(--ok); }
+.status-pill.empty-output { color: var(--warn); }
+.status-pill.error { color: var(--error); }
+.status-pill.not-run { color: var(--faint); }
+
+/* ── Footer ────────────────────────────────────────────────────────────── */
+
+.status {
+  flex: none; display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+  height: 26px; padding: 0 16px;
+  border-top: 1px solid var(--rule); background: var(--panel);
+  font-size: 11px; color: var(--faint);
+}
+.status .live { color: var(--ok); }
+.status .live.down { color: var(--error); }
+.status .rejected { color: var(--error); }
+.status .mono { font-size: 11px; }
+/* The model/server revision gap (ADR-034): `.ahead` marks whichever side of
+   the pair is stale — today that is always the server label, since the model
+   can only ever be ahead of it, never behind. */
+.status .mono.ahead { color: var(--warn); }
+.status .warn { color: var(--warn); font-weight: 600; }
+.status .btn { height: 20px; padding: 0 8px; font-size: 10.5px; }
+
+/* Persistent sync-failure banner (plan D4): shown exactly when the last sync
+   attempt failed, cleared the moment a later poll reports otherwise — never a
+   button the user has to remember to dismiss. */
+.sync-banner {
+  flex: none; padding: 6px 16px; background: rgba(226, 112, 107, .14);
+  border-bottom: 1px solid var(--error); color: var(--ink); font-size: 12px;
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px;
+}
+.sync-banner strong { color: var(--error); text-transform: none; font: 600 11px/1 var(--cond); letter-spacing: .06em; }
+.sync-banner ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; flex: 1 1 100%; }
+.sync-banner li { font-size: 11.5px; color: var(--muted); }
+.sync-banner .code { color: var(--error); }
+.sync-banner .more { color: var(--faint); font-size: 11px; }
+
+/* ── Entrance ──────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: no-preference) {
+  .pane { animation: rise .5s cubic-bezier(.2, .7, .3, 1) both; }
+  .pane:nth-child(2) { animation-delay: .06s; }
+  .pane:nth-child(3) { animation-delay: .12s; }
+  @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+}
+
+/* ── Index graph (Pathom Viz port) ──────────────────────────────────────────
+   Colours copied from AttributeGraph's :css block in index_explorer.cljs (MIT,
+   Copyright (c) Wilker Lúcio da Rocha Silva). The ground is light on both
+   themes: these values are chosen against white, and #000A on near-black is an
+   invisible node. */
+.attr-graph { flex: 1; min-height: 0; background: #fff; overflow: hidden; }
+.attr-graph svg { display: block; }
+
+.ag-node { fill: #000A; cursor: pointer; }
+.ag-node.ag-node-multi { fill: #00000021; stroke: #101010; stroke-width: 5px; }
+.ag-node.ag-node-main { fill: #f9e943e3; }
+.ag-node.ag-node-highlight { fill: #de2b34; }
+
+.ag-arrow-provides path, .ag-arrow-reaches path { fill: #666; }
+
+.ag-link { stroke: #999; stroke-opacity: 0.6; stroke-width: 1.5px; fill: none; }
+.ag-link.ag-link-focus  { stroke: #4242e0db; stroke-width: 3px; }
+.ag-link.ag-link-target { stroke: #0c0;      stroke-width: 3px; }
+.ag-link.ag-link-source { stroke: #cc1a9d;   stroke-width: 2px; }
+.ag-link.ag-link-deep   { stroke-dasharray: 3px; }
+
+.attr-graph text { font: bold 18px Verdana, Helvetica, Arial, sans-serif; fill: #111; }
+
+/* ── EQL Lab, laid out as Pathom Viz's query editor ─────────────────────────
+   A toolbar, then History | Request over Entity | Result, then the plan graph
+   over the trace. */
+.page-lab { grid-template-rows: auto minmax(180px, 46%) minmax(0, 1fr); grid-template-columns: minmax(0, 1fr); }
+.lab-toolbar {
+  display: flex; align-items: center; gap: 8px;
+  padding: 0 12px; height: 38px; flex: none;
+  background: var(--panel); border-bottom: 1px solid var(--rule);
+}
+.lab-toolbar .spacer { flex: 1; }
+.lab-row { display: grid; gap: var(--gap); background: var(--rule); min-height: 0;
+           grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.lab-row:has(.pane-history) { grid-template-columns: 240px minmax(0, 1fr) minmax(0, 1fr); }
+.lab-bottom { min-height: 0; }
+
+/* The title bar of the document that will not parse, as Pathom Viz marks it. */
+.pane-head.bad { background: #f7d774; color: #4a3b00; }
+.pane-head .count.bad { color: #7a1d17; letter-spacing: .02em; }
+
+.pane-history .pane-body { padding: 0; }
+.history-item {
+  border-bottom: 1px solid var(--rule); padding: 6px 8px; cursor: pointer; position: relative;
+}
+.history-item:hover { background: var(--raised); }
+.history-item pre {
+  margin: 0; font: 400 11px/1.35 var(--mono); color: var(--muted);
+  white-space: pre-wrap; word-break: break-all;
+  max-height: 58px; overflow: hidden;
+}
+.history-item pre.entity { color: var(--faint); margin-top: 3px; }
+.history-item .x {
+  position: absolute; top: 4px; right: 4px; opacity: 0;
+  background: none; border: 0; color: var(--faint); cursor: pointer; font-size: 14px; line-height: 1;
+}
+.history-item:hover .x { opacity: 1; }
+.history-item .x:hover { color: var(--error); }
+
+/* ── Draggable dividers ─────────────────────────────────────────────────────
+   The rule between two panes is the handle. It stays a hairline until the
+   pointer is on it, so the layout does not grow chrome for a thing that is used
+   occasionally; the hit area is padded past the line by a couple of pixels. */
+.gutter { flex: none; background: var(--rule); position: relative; z-index: 2; }
+.gutter-x { width: var(--gap); cursor: col-resize; }
+.gutter-y { height: var(--gap); cursor: row-resize; }
+.gutter::after {
+  content: ""; position: absolute; inset: -3px;
+}
+.gutter-x::after { inset: 0 -3px; }
+.gutter-y::after { inset: -3px 0; }
+.gutter:hover { background: var(--accent); }
+/* Once a drag starts the pointer leaves the line; keep the cursor and stop the
+   editors and lists from selecting text under it. */
+body.resizing-x, body.resizing-x * { cursor: col-resize !important; user-select: none !important; }
+body.resizing-y, body.resizing-y * { cursor: row-resize !important; user-select: none !important; }
+
+/* The Lab is a column of rows now, sized by the dividers rather than by CSS. */
+.page-lab { display: flex; flex-direction: column; grid-template-rows: none; }
+.lab-row { display: flex; flex: none; min-height: 0; grid-template-columns: none; }
+.lab-request { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+.lab-request > .pane { min-height: 0; }
+.lab-request > .pane:last-child { flex: 1 1 auto; }
+.lab-row > .pane-result { flex: 1 1 auto; min-width: 0; }
+.lab-bottom { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+.lab-bottom > .pane { min-height: 0; }
+.lab-bottom > .pane:last-child { flex: 1 1 auto; }
+
+/* ═══ Query page — finish ═══════════════════════════════════════════════════
+ *
+ * The instrument was correct and flat: every surface the same panel colour,
+ * every division the same 1px rule, every control the same weight. Density
+ * without hierarchy reads as a wireframe of itself. This pass adds material —
+ * edges that catch light, surfaces that sit at different depths, and one clear
+ * order of loudness among the controls — without changing the palette's mind or
+ * touching the two ported graph canvases, whose colours belong to Pathom Viz.
+ */
+
+/* ── Ground ─────────────────────────────────────────────────────────────────
+   A fine grain over the whole app. At 3% it is invisible as texture and does
+   the one thing a flat fill cannot: it stops large areas of near-black and
+   near-white from banding, and it gives the panels something to sit *on*. */
+body::before {
+  content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  opacity: .035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.app { position: relative; z-index: 1; }
+
+/* ── Panels ─────────────────────────────────────────────────────────────────
+   Lit from above, as the ground's horizon already implies. */
+.pane { box-shadow: inset 0 1px 0 var(--edge-hi); }
+
+/* ── Chrome type ────────────────────────────────────────────────────────────
+   The pane titles were all shouting at one volume. The name of a pane is
+   structural and quiet; the number beside it is data and gets the monospace it
+   deserves, so the eye can tell a label from a measurement without reading. */
+.pane-head { letter-spacing: .17em; font-size: 9.5px; color: var(--faint); }
+.pane-head > span:first-child { color: var(--muted); font-weight: 600; }
+.pane-head .count {
+  font: 400 10.5px/1 var(--mono); letter-spacing: 0; text-transform: none;
+  color: var(--faint);
+}
+.pane-head.bad { background: linear-gradient(var(--accent-dim), transparent 140%); }
+
+/* ── Toolbar ────────────────────────────────────────────────────────────────
+   The one band of chrome that sits above everything, so it gets the one
+   gradient in the interface and a firmer bottom edge. */
+.lab-toolbar {
+  height: 42px;
+  background: linear-gradient(180deg, var(--raised), var(--panel));
+  box-shadow: inset 0 1px 0 var(--edge-hi), 0 1px 0 var(--edge-lo);
+  padding: 0 14px;
+}
+.lab-toolbar .check {
+  font: 500 10.5px/1 var(--cond); letter-spacing: .14em; text-transform: none;
+  color: var(--muted); display: inline-flex; align-items: center; gap: 7px; cursor: pointer;
+}
+.lab-toolbar .check:hover { color: var(--ink); }
+
+/* ── Controls ───────────────────────────────────────────────────────────────
+   Three volumes, and only three: run is the act, the rest are adjustments, and
+   a toggle that is on wears the operator's amber. A control that can be pressed
+   should move when it is. */
+.btn {
+  font-size: 10.5px; letter-spacing: .13em; padding: 6px 12px; border-radius: 3px;
+  background: linear-gradient(180deg, var(--raised), var(--panel));
+  box-shadow: inset 0 1px 0 var(--edge-hi), 0 1px 1px var(--edge-lo);
+  transition: color .12s ease, border-color .12s ease, transform .06s ease, box-shadow .12s ease;
+}
+.btn:hover:not(:disabled) { border-color: var(--faint); }
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: inset 0 1px 2px var(--sunk);
+}
+.btn.on {
+  color: var(--accent); border-color: var(--accent-dim);
+  box-shadow: inset 0 1px 0 var(--edge-hi), 0 0 0 1px var(--accent-dim) inset;
+}
+.btn.primary {
+  background: linear-gradient(180deg, #f0b755, var(--accent) 62%, #c9862a);
+  color: #191207; border-color: #9c6a19;
+  letter-spacing: .15em;
+  box-shadow: inset 0 1px 0 rgba(255, 244, 214, .55), 0 1px 2px var(--edge-lo);
+}
+.btn.primary:hover:not(:disabled) { background: linear-gradient(180deg, #f6c169, #eeb14a 62%, #d0902f); }
+.btn:focus-visible, .seg button:focus-visible, .search:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: 1px;
+}
+.seg { border-radius: 3px; box-shadow: inset 0 1px 0 var(--edge-hi); }
+.seg button { font-size: 10.5px; letter-spacing: .12em; padding: 6px 11px; }
+.seg button.on { box-shadow: inset 0 -2px 0 var(--accent); }
+
+/* ── The result ─────────────────────────────────────────────────────────────
+   The largest reading surface in the workbench and it was a bare pre on a flat
+   panel. It becomes a document: its own leaf, a rule down the gutter to anchor
+   the ragged left edge of pretty-printed EDN, and line-height enough to read a
+   nested map without losing the row. */
+.pane-result .pane-body { padding: 0; }
+.pane-result pre.out {
+  margin: 0; padding: 14px 16px 20px 18px;
+  border-left: 1px solid var(--rule);
+  background: none;
+  font: 400 12.5px/1.62 var(--mono);
+  color: var(--ink);
+  letter-spacing: .002em;
+}
+.pane-result .empty-note, .pane-body > .empty-note { padding: 16px 18px; }
+
+/* ── History ────────────────────────────────────────────────────────────────
+   A stack of past requests is a list of *documents*, so each gets a spine — an
+   amber one when the pointer is on it, which is the only place amber appears
+   here besides the run button. */
+.history-item { padding: 8px 10px 8px 12px; border-left: 2px solid transparent; }
+.history-item:hover { border-left-color: var(--accent); background: var(--raised); }
+.history-item pre { font-size: 10.5px; line-height: 1.45; }
+
+/* ── Editors ────────────────────────────────────────────────────────────────
+   Input surfaces sit *below* the panel, not level with it. */
+.editor .cm-editor { box-shadow: inset 0 1px 3px var(--sunk); }
+/* ...except a read-only one: nothing is typed into it, so it is not an input
+   surface and does not sit below the panel. */
+.editor.editor-read-only .cm-editor { box-shadow: none; }
+.search {
+  box-shadow: inset 0 1px 3px var(--sunk);
+  letter-spacing: .01em;
+}
+.search::placeholder { color: var(--faint); letter-spacing: .04em; }
+
+/* ── Dividers ───────────────────────────────────────────────────────────────
+   Idle they are the rule between panels; live they are amber and thicker than
+   they look, because a two-pixel target is a cruel one. */
+.gutter { transition: background .12s ease; }
+.gutter:hover { background: var(--accent); box-shadow: 0 0 0 1px var(--accent-dim); }
+
+/* ── Status bar ─────────────────────────────────────────────────────────────
+   The one line that is always true, so it reads as an instrument's own readout:
+   monospace, dim, with the live dot the only colour. */
+.status { box-shadow: inset 0 1px 0 var(--edge-hi); }
+.status .mono, .status span { font-family: var(--mono); letter-spacing: .01em; }
+.status .live { letter-spacing: .06em; }
+
+/* ── The editors, on paper ──────────────────────────────────────────────────
+ *
+ * `-webkit-font-smoothing: antialiased` is set on the body, and on a light
+ * ground it is actively harmful: it thins dark-on-light glyphs, and this is a
+ * 12px monospace carrying two hundred namespaced keywords. Subpixel rendering
+ * comes back for the light theme's reading surfaces — the editors and the
+ * result — where the stems need the weight. The dark theme keeps antialiasing,
+ * which is what it is for: light-on-dark, where the stems bloom instead.
+ */
+:root[data-theme="light"] .editor .cm-content,
+:root[data-theme="light"] pre.out,
+:root[data-theme="light"] .history-item pre {
+  -webkit-font-smoothing: auto;
+  -moz-osx-font-smoothing: auto;
+}
+.editor .cm-content, .editor .cm-line {
+  font: 400 12.5px/1.65 var(--mono);
+  letter-spacing: .004em;
+}
+:root[data-theme="light"] .editor .cm-editor { background: #fffefb; }
+:root[data-theme="light"] .editor .cm-gutters { background: #f5f0e3; color: var(--faint); }
+:root[data-theme="light"] .editor .cm-activeLine { background: #f7f2e4; }
+:root[data-theme="light"] .editor .cm-activeLineGutter { background: #ece5d2; }
+:root[data-theme="light"] pre.out { background: none; }
+/* The cursor is the one thing that must never be subtle. */
+.editor .cm-cursor { border-left-width: 2px; border-left-color: var(--accent); }
+.editor .cm-selectionBackground, .editor ::selection { background: var(--accent-dim) !important; }
+
+/* Weight, not just colour. At 12.5px a monospace stem on paper is one pixel
+   wide, and one pixel of #0a2f56 reads as grey however dark the value is —
+   which is why darkening the blue twice did not fix it. 500 gives the stem a
+   second pixel to stand on. The dark theme keeps 400: light-on-dark blooms, and
+   the same weight there would read as bold. */
+:root[data-theme="light"] .editor .cm-content,
+:root[data-theme="light"] .editor .cm-line { font-weight: 500; }
+:root[data-theme="light"] pre.out { font-weight: 450; color: #16120c; }
+
+/* ── Zoom ───────────────────────────────────────────────────────────────────
+   The control is the quietest thing in the header until the pointer is in the
+   pane — a button that is always visible in five places at once becomes five
+   pieces of noise. Pressed, it takes the operator's amber like every other
+   engaged toggle. */
+.zoom {
+  flex: none; background: none; border: 0; cursor: pointer; padding: 2px 4px;
+  color: var(--faint); line-height: 1; border-radius: 2px;
+  opacity: 0; transition: opacity .12s ease, color .12s ease, background .12s ease;
+}
+.pane:hover .zoom, .zoom:focus-visible, .zoom[aria-pressed="true"] { opacity: 1; }
+.zoom:hover { color: var(--ink); background: var(--raised); }
+.zoom[aria-pressed="true"] { color: var(--accent); }
+.zoom-glyph { font: 500 13px/1 var(--mono); display: block; }
+
+/* A zoomed pane takes the page below the toolbar, and nothing else is drawn. */
+.lab-solo { flex: 1 1 auto; min-height: 0; display: flex; }
+.lab-solo > .pane { flex: 1 1 auto; min-width: 0; min-height: 0; }
+
+/* Shared step, filter, and checkbox controls for explicit authoring flows. */
+
+.wizard-step { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--rule); }
+.wizard-step h3 {
+  margin: 0 0 6px; font: 600 10px/1 var(--cond); letter-spacing: .16em; text-transform: none;
+  color: var(--accent);
+}
+.wizard-step h4 { margin: 0 0 4px; font: 400 12.5px/1.3 var(--mono); color: var(--ink); }
+.wizard-step .none { color: var(--faint); font-size: 12px; padding: 4px 0; }
+.wizard-step .via { font-size: 11px; color: var(--faint); }
+.wizard-step .meta { font-size: 11px; color: var(--faint); }
+
+/* The filter is the only way through 300 rows, so it leads the step and its
+   readout sits with it: a count that lives elsewhere is a count nobody reads. */
+.wizard-filter {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  margin: 6px 0 8px;
+}
+.wizard-filter .search { flex: 1 1 180px; width: auto; border: 1px solid var(--rule-2); border-radius: 3px; padding: 6px 9px; font-size: 12px; }
+.wizard-filter .count { font: 400 10.5px/1 var(--mono); color: var(--faint); white-space: nowrap; }
+.wizard-filter .btn { padding: 5px 9px; }
+
+/* The selected count is what stands between the modeller and a refused run, so
+   it stays put above the list and turns to the error colour at the limit. */
+.wizard-check { display: flex; align-items: center; gap: 6px; margin-top: 6px; font-size: 12px; color: var(--muted); cursor: pointer; }
+.wizard-check input { accent-color: var(--accent); flex: none; }
+
+/* The sorting/filtering block on an expanded relation. The offers are chips
+   rather than a list because a wide table has forty of them and forty rows
+   would bury the two fields above. */
+/* Graphs register: bulk bar, per-plate pick, and the destructive action.
+   Delete is the only button here that leaves nothing behind, so it is the only
+   one that looks different. */
+.plate-bulk {
+  display: flex; align-items: center; gap: 8px; margin: 0 0 12px;
+  padding: 8px 12px; border: 1px solid var(--accent); border-radius: 6px;
+  background: var(--panel);
+}
+.plate-bulk .count { font-size: 12px; color: var(--muted); }
+
+/* --- Graphs page, in the open-atlas admin idiom -------------------------------
+   page header → stats row → one table → per-graph card. The vocabulary is the
+   original admin surface's (.page-header/.stat-card/.badge/.table); the palette
+   stays the studio's own tokens so the page belongs to this app. */
+.page-graphs { padding: 20px 24px; overflow-y: auto; max-width: 1200px; }
+.page-header { margin-bottom: 18px; }
+.page-header-row { display: flex; align-items: center; gap: 12px; }
+.page-header-row h2 { margin: 0; font-family: var(--cond); letter-spacing: .01em; }
+.page-header-row .btn { margin-left: auto; }
+.page-desc { color: var(--muted); font-size: 13px; margin-top: 5px; line-height: 1.55; max-width: 820px; }
+
+.stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 180px)); gap: 12px; margin-bottom: 20px; }
+.stat-card { background: var(--panel); border: 1px solid var(--rule); border-radius: 6px; padding: 12px 16px; }
+.stat-value { font-size: 26px; font-weight: 700; color: var(--ink); font-family: var(--cond); }
+.stat-label { font-size: 11px; color: var(--muted); margin-top: 2px; text-transform: none; letter-spacing: .05em; }
+
+.bulk-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; padding: 8px 12px;
+  border: 1px solid var(--accent); border-radius: 6px; background: var(--panel); font-size: 13px; }
+.bulk-bar .spacer { flex: 1; }
+
+.g-table { width: 100%; border-collapse: collapse; font-size: 13px;
+  background: var(--panel); border: 1px solid var(--rule); border-radius: 6px; }
+.g-table th { text-align: left; font-size: 11px; text-transform: none; letter-spacing: .05em;
+  color: var(--muted); font-weight: 600; padding: 8px 10px; border-bottom: 1px solid var(--rule-2); }
+.g-table td { padding: 8px 10px; border-bottom: 1px solid var(--rule); vertical-align: middle; }
+.g-table tbody tr { cursor: pointer; }
+.g-table tbody tr:hover td { background: color-mix(in srgb, var(--raised) 55%, transparent); }
+/* The open row and its panel are one object: the row keeps the accent spine and
+   loses its bottom rule so the eye runs straight down into the detail. */
+.g-table tr.open td { background: var(--raised); box-shadow: inset 0 2px 0 var(--accent); }
+.g-table tr.prefix-row, .g-table tr.prefix-row td { cursor: default; }
+.g-table tr:last-child td { border-bottom: none; }
+.g-table tr.archived td { opacity: .55; }
+.g-table .pick { width: 28px; }
+.g-table .pick input { accent-color: var(--accent); }
+.g-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+.g-table .dim { color: var(--muted); }
+.g-table .mono { font-family: var(--mono); font-size: 12px; }
+.g-table .actions { text-align: right; white-space: nowrap; width: 36px; }
+
+/* One quiet affordance per row. It stays nearly invisible until the row is
+   under the pointer — the data is what the eye should find first — and the
+   sheet it opens is a plain list of verbs, not a rank of buttons. */
+.row-menu { position: relative; display: inline-block; }
+.row-menu-trigger {
+  border: 1px solid transparent; background: none; cursor: pointer;
+  color: var(--faint); font-size: 15px; line-height: 1;
+  padding: 1px 7px 4px; border-radius: 3px;
+}
+.g-table tr:hover .row-menu-trigger { color: var(--muted); }
+.row-menu-trigger:hover,
+.row-menu-trigger.on { color: var(--accent); border-color: var(--rule-2); background: var(--raised); }
+
+.row-menu-veil { position: fixed; inset: 0; z-index: 40; }
+.row-menu-sheet {
+  position: absolute; right: 0; top: calc(100% + 3px); z-index: 41;
+  min-width: 178px; padding: 3px;
+  background: var(--panel);
+  border: 1px solid var(--rule-2); border-radius: 4px;
+  box-shadow: 0 6px 20px var(--edge-lo), 0 0 0 1px var(--edge-hi) inset;
+  text-align: left;
+}
+.row-menu-sheet button {
+  display: block; width: 100%; text-align: left;
+  padding: 5px 9px; border: 0; border-radius: 2px; background: none; cursor: pointer;
+  font: 400 12px/1.35 var(--cond); letter-spacing: .02em; color: var(--ink);
+}
+.row-menu-sheet button:hover { background: var(--raised); color: var(--accent); }
+.row-menu-sheet button.danger { color: var(--error); }
+.row-menu-sheet button.danger:hover { background: var(--error); color: var(--panel); }
+.row-menu-sheet hr { margin: 3px 6px; border: 0; border-top: 1px solid var(--rule); }
+.g-name { display: flex; align-items: center; gap: 8px; }
+.g-name .linkish { background: none; border: none; padding: 0; cursor: pointer;
+  color: var(--ink); font-weight: 600; font-size: 13px; font-family: inherit; }
+.g-name .linkish:hover { color: var(--accent); text-decoration: underline; }
+.g-sub { font-size: 11px; color: var(--faint); margin-top: 1px; }
+
+/* The prefix row belongs to the graph above it: no top rule, a left spine in
+   the accent, and it shares the row's background so the two read as one block. */
+.g-table tr.amending td { background: var(--raised); }
+.g-table tr.prefix-row td { border-top: 0; background: var(--raised); padding-top: 0; }
+.prefix-form {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  padding: 2px 0 8px; box-shadow: inset 2px 0 0 var(--accent); padding-left: 10px;
+}
+.prefix-form .k { font: 600 10px/1 var(--cond); letter-spacing: .16em;
+  text-transform: none; color: var(--accent); }
+.prefix-form input {
+  flex: 1 1 260px; min-width: 0; padding: 5px 9px; font: 400 12px/1.3 var(--mono);
+  border: 1px solid var(--rule-2); border-radius: 3px;
+  background: var(--panel); color: var(--ink);
+}
+.prefix-form .btn { padding: 4px 11px; }
+.prefix-form .hint { flex: 1 1 100%; padding: 0; border: 0; font-size: 11px; color: var(--faint); }
+.g-table th.num { text-align: right; }
+
+.badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 1px 8px; border-radius: 10px; }
+.badge--ok { background: color-mix(in srgb, var(--ok) 18%, transparent); color: var(--ok); }
+.badge--neutral { background: var(--raised); color: var(--muted); }
+.badge--info { background: var(--accent-dim); color: var(--accent); }
+
+.btn--primary { background: var(--accent); border-color: var(--accent); color: var(--ground); }
+.btn--primary:hover:not(:disabled) { opacity: .9; }
+.btn--danger { border-color: var(--error); color: var(--error); background: transparent; }
+.btn--danger:hover { background: var(--error); color: var(--panel); }
+
+.card { background: var(--panel); border: 1px solid var(--rule); border-radius: 6px; padding: 16px 20px; }
+.card-header { font-size: 12px; font-weight: 600; text-transform: none; letter-spacing: .5px;
+  color: var(--muted); margin-bottom: 12px; }
+.g-detail { margin-top: 20px; }
+.g-detail .card-header { display: flex; align-items: center; gap: 10px; }
+.g-detail .card-header .spacer { flex: 1; }
+.g-detail-panels { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 900px) { .g-detail-panels { grid-template-columns: 1fr; } }
+
+.empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; gap: 5px; padding: 36px 24px; border: 1px dashed var(--rule-2); border-radius: 6px; }
+.empty-state-icon { font-size: 24px; color: var(--faint); line-height: 1; }
+.empty-state-title { color: var(--muted); font-size: 14px; }
+.empty-state-hint { color: var(--faint); font-size: 12px; max-width: 340px; line-height: 1.5; }
+/* The one thing to do next, offered where the absence is noticed rather than
+   described in prose the reader has to act on elsewhere (owner, 2026-09-03). */
+.empty-state-action { margin-top: 10px; }
+
+/* The recipe panel covers the Blueprint while it is open: choosing what a graph
+   holds is a different act from browsing it. */
+.pane-recipe {
+  position: absolute; inset: 0; z-index: 20;
+  display: flex; flex-direction: column;
+  /* `--panel`, not `--surface`: the latter is not a variable this theme
+     declares, so it resolved to nothing and the panel was TRANSPARENT — the
+     rail and the blueprint read straight through it, which looked like a
+     layout bug and was a palette typo. */
+  background: var(--panel); border: 1px solid var(--accent);
+}
+.pane-recipe .pane-head .spacer { flex: 1; }
+.pane-recipe .pane-body { overflow: auto; padding: 12px; }
+.recipe-rows { list-style: none; margin: 8px 0 0; padding: 0; }
+.recipe-rows > li {
+  padding: 3px 6px; border-bottom: 1px solid var(--rule);
+}
+.recipe-rows > li.on { background: var(--raised); }
+.recipe-rows > li label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.recipe-rows > li input { accent-color: var(--accent); flex: none; }
+.recipe-rows .mono { font-size: 12px; word-break: break-all; }
+
+/* Grouped by entity — the unit a modeller actually decides in. The three
+   states are visually distinct because **partial** is the one that bites: an
+   entity whose attributes came in but whose resolvers did not looks present
+   and answers nothing, so it must not read as either "in" or "out". */
+.recipe-rows.by-entity > li.in      { background: var(--raised); }
+.recipe-rows.by-entity > li.partial { border-left: 2px solid var(--accent); }
+.recipe-rows.by-entity > li.out     { opacity: .82; }
+.recipe-rows.by-entity .via { margin-left: auto; font-size: 11px; color: var(--muted); }
+/* The panel is page-wide, but a tick-list is not: without a measure every row
+   flings its count to the far edge and the eye has to travel the whole screen
+   to pair a name with its number. */
+.pane-recipe .recipe-rows { max-width: 780px; }
+.pane-recipe .wizard-filter { max-width: 780px; }
+.pane-recipe .wizard-filter .btn { font-size: 11px; padding: 2px 8px; }
+.page-index { position: relative; }
+.plate-pick { accent-color: var(--accent); margin: 0 0 4px; }
+.btn.danger { border-color: var(--error); color: var(--error); }
+.btn.danger:hover { background: var(--error); color: var(--panel); }
+
+/* The statements a run actually sent. Collapsed by default: it is the answer
+   to a question you only sometimes ask. */
+.statements { margin-top: 10px; border-top: 1px dashed var(--rule); padding-top: 8px; }
+.statements > summary { cursor: pointer; font-size: 11px; color: var(--muted); }
+.statement { margin-top: 8px; }
+.statement-head { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); }
+.statement-head .spacer { flex: 1; }
+.statement .out { margin: 4px 0 2px; white-space: pre-wrap; word-break: break-word; }
+/* ── Sources register ─────────────────────────────────────────────────── */
+
+.sources-page { display: flex; flex-direction: column; min-height: 0; flex: 1 1 auto; }
+
+
+.sources-body { display: flex; flex: 1 1 auto; min-height: 0; }
+
+.sources-register {
+  flex: 0 0 300px; min-width: 0; display: flex; flex-direction: column;
+  border-right: 1px solid var(--rule); overflow-y: auto;
+}
+.source-plates { list-style: none; margin: 0; padding: 0; }
+.source-plate { border-bottom: 1px solid var(--rule); }
+.plate-face {
+  display: flex; flex-direction: column; gap: 6px; width: 100%;
+  padding: 12px 14px; background: none; border: 0; cursor: pointer;
+  text-align: left; color: inherit;
+}
+.plate-face:hover { background: var(--raised); }
+/* One control per plate: the face IS the selection (owner, 2026-09-05). The
+   floated «edit» affordance is gone with the second gesture it served. */
+.source-plate { position: relative; }
+.sources-stage .source-edit { padding: 14px 18px; overflow: auto; }
+/* The plate is one button now: selecting a source IS reading it. */
+.source-plate > .plate-face:focus-visible { outline: 1px solid var(--accent); outline-offset: -2px; }
+.source-plate.on .plate-face { background: var(--raised); box-shadow: inset 2px 0 0 var(--accent); }
+/* owner 2026-10-04: per-row remove; quiet until the row is hovered, focused or open. */
+.source-plate > .plate-remove { position: absolute; top: 6px; right: 6px; opacity: 0; }
+.source-plate:hover > .plate-remove, .source-plate.on > .plate-remove,
+.source-plate > .plate-remove:focus-visible { opacity: 1; }
+.plate-id { font: 500 14px/1.2 var(--mono); color: var(--ink); word-break: break-all; }
+.plate-meta { display: flex; gap: 6px; flex-wrap: wrap; }
+.plate-sub { font-size: 11px; color: var(--faint); }
+
+/* The pane scrolls; the long lists inside it do not.
+   
+   The wheel fought itself because a `max-height` list nested in a scrolling
+   pane is two scrollers under one pointer: the inner one takes the wheel until
+   it hits its end, then the page lurches. The fix is to leave exactly one
+   scroller — this pane — and let the lists grow to their full height inside
+   it. A hundred relations then make one long page, which is what a page is
+   for, instead of a short box inside a long page.
+   
+   The previous attempt went the other way: pin the panel to the viewport and
+   scroll only the list. That needs every other part of the panel to fit in
+   what is left, and four stacked steps do not — with `overflow: hidden` on the
+   panel, everything below the first step was simply clipped away. */
+.sources-stage {
+  flex: 1 1 auto; min-width: 0; min-height: 0;
+  display: flex; flex-direction: column; overflow-y: auto;
+}
+/* The editor fills the stage rather than the stage growing to the editor. */
+.sources-stage > .source-edit,
+.sources-stage > .source-view { flex: 1 1 auto; min-height: 0; }
+
+/* The selected source: its id and what reads it on one line, its entry under
+   that. The head does not scroll away from the entry it names. */
+.source-view { display: flex; flex-direction: column; min-height: 0; }
+.source-view > .pane-head { flex: none; }
+.source-view-body { flex: 1 1 auto; min-height: 0; overflow: auto; padding: 12px 16px 16px; }
+.source-view-body .asset-editor:not(.maximized) { margin-top: 0; }
+/* Removing sits under the entry, behind its own plan, and never beside Save:
+   one of them changes a source and the other ends it. */
+.source-archive {
+  margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--rule);
+}
+.source-archive > .hint { margin: 0 0 8px; }
+/* The removal panel replaces the editor (owner 2026-10-04): one verdict
+   sentence, then compact groups — blockers tinted, what goes with it plain. */
+.source-removal { display: flex; flex-direction: column; min-height: 0; }
+.source-removal > .pane-head { flex: none; }
+.source-removal-body { flex: 1 1 auto; min-height: 0; overflow: auto; padding: 12px 16px 16px; max-width: 720px; }
+.removal-verdict { margin: 0 0 12px; font-size: 13px; line-height: 1.5; color: var(--ink); }
+.removal-verdict.bad { color: var(--error); }
+.removal-group { margin: 0 0 10px; }
+.removal-group h4 {
+  display: flex; gap: 8px; align-items: baseline; margin: 0 0 2px;
+  font: 500 11px/1.4 var(--cond); letter-spacing: .08em; color: var(--muted);
+}
+.removal-group.bad h4 { color: var(--error); }
+.removal-group .dim { color: var(--muted); font-size: 11px; }
+.removal-group .linkish {
+  border: 0; background: transparent; padding: 0; cursor: pointer; text-align: left; color: var(--accent);
+}
+.removal-group .linkish:hover { text-decoration: underline; }
+
+/* The empty state carries the page's one sentence of philosophy; everything
+   else on this page is procedure. */
+.sources-empty { max-width: 560px; padding: 48px 40px; }
+.sources-empty .lead { font-size: 15px; line-height: 1.6; color: var(--ink); margin: 0 0 10px; }
+.sources-empty .hint { padding: 0; border: 0; }
+
+.connect-card { max-width: 560px; padding: 20px 24px; }
+.connect-card h3 {
+  margin: 0 0 4px; font: 500 12px/1 var(--cond); letter-spacing: .12em;
+  text-transform: none; color: var(--muted);
+}
+.connect-card .hint { padding: 0 0 12px; border: 0; }
+
+/* Removal: the blast radius, before it is one. Destructive actions take the
+   error colour only on the button — the lists above them are information, and
+   colouring those too would make every removal read as a fault. */
+.remove-object { margin: 14px 0 0; padding: 12px 0 0; border-top: 1px solid var(--rule); }
+.btn.danger { color: var(--error); border-color: var(--error); }
+.btn.danger:hover:not(:disabled) { background: var(--error); color: var(--panel); }
+.removal-list { list-style: none; margin: 4px 0 10px; padding: 0; max-height: 220px; overflow-y: auto; }
+.removal-list li { display: flex; align-items: baseline; gap: 8px; padding: 2px 0; }
+.removal-list .mono { font: 400 11.5px/1.4 var(--mono); color: var(--ink); word-break: break-all; }
+
+/* Right-click a rail row to put it in the graph. The backdrop is what closes
+   the menu — including on a second right-click, which is where a menu that
+   only listened for left-clicks would strand the user. */
+.ctx-backdrop { position: fixed; inset: 0; z-index: 60; }
+.ctx-menu {
+  position: fixed; min-width: 220px; max-width: 380px;
+  background: var(--panel); border: 1px solid var(--rule-2); border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .35);
+  padding: 4px; display: flex; flex-direction: column;
+}
+.ctx-head {
+  padding: 5px 8px 6px; border-bottom: 1px solid var(--rule);
+  margin-bottom: 4px; overflow: hidden;
+}
+.ctx-head .mono { font-size: 11px; color: var(--muted); word-break: break-all; }
+.ctx-menu > button {
+  text-align: left; padding: 6px 8px; font: inherit; font-size: 12px;
+  color: var(--ink); background: transparent; border: 0; border-radius: 4px;
+  cursor: pointer;
+}
+.ctx-menu > button:hover { background: var(--raised); color: var(--accent); }
+
+/* What a create will do BESIDES creating the thing. Shown before the button,
+   because a side effect announced afterwards is just a surprise with a
+   receipt. */
+.create-side-effects {
+  margin: 10px 0 0; padding: 8px 10px;
+  border: 1px dashed var(--rule-2); border-radius: 6px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.create-side-effects .check { font-size: 12px; }
+.needed-navs { list-style: none; margin: 0 0 0 22px; padding: 0; }
+.needed-navs > li { font-size: 11px; padding: 1px 0; }
+.needed-navs .mono { color: var(--ink); }
+.needed-navs .via { color: var(--muted); }
+
+/* ---------------------------------------------------------------------------
+   Workspace — the disposal bay.
+
+   Everything the workspace owns, and the only screen where objects leave the
+   POOL. It borrows the app's language (rules instead of air, 26px rows, mono)
+   and departs from it in exactly one way: the tick is `--error`, never the
+   membership amber. The gesture is identical to the recipe list's and the
+   consequence is not, so the colour carries the difference — a modeller who
+   learned "amber tick = in this graph" must not read this one the same way.
+   --------------------------------------------------------------------------- */
+
+/* One page, four tabs (8.4.15): Assets, Sources, Team and Tokens all answer a
+   question about the workspace rather than about a graph. The rail is its own
+   class and not `.pane-tabs` — that one belongs to the graph pane, and reading
+   it here would suggest a graph is in scope. */
+.ws-page {
+  display: flex; flex-direction: column; min-height: 0; height: 100%; flex: 1 1 auto;
+  overflow: hidden;
+}
+.ws-header { flex: none; padding: 18px 24px 0; }
+.ws-header .eyebrow { font-family: var(--cond); color: var(--accent); }
+.ws-header h2 { margin: 4px 0; font-family: var(--cond); font-size: 24px; }
+.ws-header .page-desc { margin-top: 4px; }
+.ws-sections { flex: 1; min-height: 0; overflow: auto; padding: 16px 24px 24px; }
+.ws-section { background: var(--panel); border: 1px solid var(--rule); border-radius: 6px; margin-bottom: 20px; }
+.ws-section > h3 { margin: 0; padding: 16px 20px; border-bottom: 1px solid var(--rule); font-family: var(--cond); font-size: 20px; }
+.ws-section .workspace-team-page { padding: 20px; background: transparent; }
+.ws-section .workspace-plate { display: none; }
+.ws-sources > .sources-page { height: 600px; max-height: 80vh; min-height: 360px; background: transparent; }
+@media (max-width: 700px) {
+  .ws-sections { padding: 12px; }
+  .ws-section .workspace-team-page { padding: 12px; }
+}
+
+/* Assets: the type rail on the left, the list and the definition on the right
+   (owner, 2026-09-05). One type at a time — the rail is where «which kind of
+   object am I looking at» is answered, and the search below it narrows only
+   that kind. "everything" is a position on the rail like the rest, so coming
+   back to it is the same gesture as leaving it. */
+.ws-split { display: flex; flex: 1 1 auto; min-height: 0; }
+.ws-kinds {
+  flex: 0 0 170px; display: flex; flex-direction: column; min-height: 0;
+  overflow-y: auto; padding: 6px 0;
+  border-right: 1px solid var(--rule); background: var(--raised);
+}
+.ws-kinds > button {
+  display: flex; align-items: center; gap: 8px;
+  appearance: none; background: none; border: 0; cursor: pointer;
+  padding: 5px 12px; min-height: var(--row); text-align: left;
+  font-size: 12px; color: var(--faint);
+  border-left: 2px solid transparent;
+}
+.ws-kinds > button > span:first-child { flex: 1 1 auto; }
+.ws-kinds > button:hover:not(:disabled) { color: var(--ink); background: var(--panel); }
+.ws-kinds > button.on {
+  color: var(--ink); background: var(--panel); border-left-color: var(--accent);
+}
+.ws-kinds > button:disabled { opacity: .4; cursor: default; }
+.ws-kinds > button:focus-visible { outline: 1px solid var(--accent); outline-offset: -1px; }
+.ws-kind-count {
+  flex: none; font-family: var(--cond); font-size: 10.5px; color: var(--faint);
+  font-variant-numeric: tabular-nums;
+}
+.ws-kind-pane {
+  flex: 1 1 auto; min-width: 0; min-height: 0;
+  display: flex; flex-direction: column;
+}
+
+/* Type chips: a filter over one result set, never a mode. "all" is a chip like
+   the rest so returning to it is the same gesture as leaving it. */
+.ws-chips {
+  display: flex; flex-wrap: wrap; gap: 5px;
+  padding: 8px 10px; border-bottom: 1px solid var(--rule); background: var(--sunk);
+}
+.ws-chips button {
+  appearance: none; cursor: pointer; white-space: nowrap;
+  font-family: var(--cond); font-size: 11px; letter-spacing: .06em;
+  text-transform: none; padding: 3px 8px; border-radius: 10px;
+  color: var(--muted); background: var(--panel); border: 1px solid var(--rule-2);
+}
+.ws-chips button:hover { color: var(--ink); }
+.ws-chips button.on { color: var(--error); border-color: var(--error); background: var(--raised); }
+.ws-chips button:disabled { opacity: .32; cursor: default; }
+.ws-chips button:focus-visible { outline: 1px solid var(--accent); outline-offset: 1px; }
+
+/* The list and the definition side by side. The drawer is a column and not an
+   overlay: what an object *is* is read while deciding about the rows around
+   it, so covering them would be the wrong trade. */
+.ws-results-split {
+  display: flex; align-items: stretch; min-height: 0; flex: 1 1 auto; overflow: hidden;
+}
+.ws-results-split > .pane-body { flex: 1 1 auto; min-width: 0; overflow: auto; }
+
+/* The entity column of the attributes view (owner, 2026-09-05): one namespace
+   per row with how many attributes it holds — or, with a query on, how many
+   answered. Attributes are read one entity at a time; this is what keeps a
+   ten-thousand-attribute pool to a render of hundreds. */
+.ws-entities {
+  /* 320px, and the name also gets a tooltip: a namespace like
+     demo.ch.users.rolling was hitting the ellipsis at 240 (owner, 2026-09-05). */
+  flex: 0 0 320px; min-width: 0; min-height: 0; overflow-y: auto;
+  display: flex; flex-direction: column; padding: 4px 0;
+  border-right: 1px solid var(--rule);
+}
+.ws-entities > button {
+  display: flex; align-items: center; gap: 8px;
+  appearance: none; background: none; border: 0; cursor: pointer;
+  padding: 0 10px; min-height: var(--row); text-align: left; color: inherit;
+  border-left: 2px solid transparent;
+}
+.ws-entities > button > .mono {
+  flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: 12px; color: var(--faint);
+}
+.ws-entities > button:hover { background: var(--raised); }
+.ws-entities > button.on { background: var(--raised); border-left-color: var(--accent); }
+.ws-entities > button.on > .mono { color: var(--ink); }
+.ws-entities > button:focus-visible { outline: 1px solid var(--accent); outline-offset: -1px; }
+
+/* Pool rows are windowed `vrow`s: the tick first (in the hazard colour, as
+   before — this is removal, not membership), the label, the note at the end. */
+/* With the drawer open the LIST is the fixed column and the drawer takes the
+   rest (owner, 2026-09-05): the list is names, the drawer is the definition,
+   and the definition is what there is to read. With it closed the list fills. */
+.pane-assets .ws-results-split:has(> .ws-drawer) > .pane-body { flex: 0 0 360px; }
+.pane-assets .ws-drawer { flex: 1 1 auto; width: auto; max-width: none; min-width: 0; }
+.pane-assets .vrow > input { accent-color: var(--error); flex: none; margin: 0; }
+.pane-assets .vrow .note { margin-left: auto; font-size: 11px; color: var(--faint); flex: none; }
+.pane-assets .vrow .name { min-width: 0; flex: 0 1 auto; }
+/* The drawer's editor sits in the drawer's own scroller, so it needs no
+   frame of its own and no ceiling on the EDN. */
+.ws-drawer-body .asset-editor:not(.maximized) { margin: 0; padding: 0; border: 0; background: none; }
+.ws-drawer-body .asset-entry, .asset-editor.maximized .asset-entry { max-height: none; }
+/* Removal at the foot of the drawer, under its own rule: it reads after the
+   definition, never beside «edit». */
+.ws-drawer-remove { margin-top: 16px; padding-top: 10px; border-top: 1px solid var(--rule); }
+.ws-drawer-remove > .hint { margin: 0 0 8px; }
+
+.ws-results > li { display: flex; align-items: center; gap: 8px; padding: 0 10px; }
+.ws-results > li > input { accent-color: var(--error); flex: none; }
+.ws-results > li.open { background: var(--raised); }
+.ws-row {
+  display: flex; align-items: center; gap: 8px; flex: 1 1 auto; min-width: 0;
+  appearance: none; background: none; border: 0; cursor: pointer; text-align: left;
+  padding: 3px 0; min-height: var(--row); color: inherit;
+}
+.ws-row:focus-visible { outline: 1px solid var(--accent); outline-offset: -1px; }
+.ws-row-type {
+  flex: none; font-family: var(--cond); font-size: 10px; letter-spacing: .08em;
+  text-transform: none; color: var(--muted);
+  min-width: 68px;
+}
+.ws-row .mono { font-size: 12px; word-break: break-all; }
+.ws-row-id { color: var(--faint); font-size: 11px; margin-left: auto; padding-left: 10px; }
+.ws-results > li.on .ws-row .mono { color: var(--error); text-decoration: line-through; }
+
+.ws-drawer {
+  flex: none; width: 420px; max-width: 46vw;
+  display: flex; flex-direction: column; min-height: 0;
+  background: var(--panel); border-left: 1px solid var(--rule-2);
+  box-shadow: -1px 0 0 var(--edge-hi);
+}
+.ws-drawer-head {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 10px; border-bottom: 1px solid var(--rule); background: var(--raised);
+}
+.ws-drawer-head .spacer { flex: 1 1 auto; }
+.ws-drawer-id { font-size: 11.5px; color: var(--ink); word-break: break-all; }
+.ws-drawer-body { flex: 1 1 auto; min-height: 0; overflow: auto; padding: 10px; }
+
+@media (max-width: 900px) {
+  .ws-results-split { flex-direction: column; }
+  /* The rail becomes a strip: a 170px column plus a list plus a drawer does
+     not fit, and the rail is the cheapest of the three to lay on its side. */
+  .ws-split { flex-direction: column; }
+  .ws-kinds {
+    flex: none; flex-direction: row; overflow-x: auto; padding: 4px 6px;
+    border-right: 0; border-bottom: 1px solid var(--rule);
+  }
+  .ws-entities { flex: 0 0 auto; max-height: 160px; border-right: 0; border-bottom: 1px solid var(--rule); }
+  .ws-kinds > button { border-left: 0; border-bottom: 2px solid transparent; }
+  .ws-kinds > button.on { border-left-color: transparent; border-bottom-color: var(--accent); }
+  .ws-drawer { width: auto; max-width: none; border-left: 0; border-top: 1px solid var(--rule-2); }
+}
+
+/* The hazard dress is worn only while removing (owner, 2026-09-05): the rest
+   of the time this is the workspace's object manager and looks like one. */
+.pane-assets.removing { border-top: 2px solid var(--error); }
+.pane-assets.removing .pane-head { color: var(--error); }
+
+/* The one hazard mark in the app. A 4px band, not a banner: it marks the pane
+   without competing with the rows, which are what the eye is here for. */
+.pane-assets.removing .pane-head::before {
+  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 3px;
+  background: repeating-linear-gradient(
+    -45deg, var(--error) 0 5px, transparent 5px 10px);
+  opacity: .5;
+}
+.pane-assets .pane-head { position: relative; }
+
+.disposal-warning {
+  padding: 8px 10px; font-size: 11.5px; line-height: 1.5;
+  color: var(--muted); background: var(--sunk);
+  border-bottom: 1px solid var(--rule);
+}
+.disposal-warning strong { color: var(--error); font-weight: 600; }
+.disposal-warning em { color: var(--ink); font-style: normal; text-decoration: underline; }
+
+.disposal-tools {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+  padding: 8px 10px; border-bottom: 1px solid var(--rule);
+}
+.disposal-filter {
+  flex: 1 1 140px; min-width: 0;
+  font-family: var(--mono); font-size: 12px; padding: 3px 7px;
+  color: var(--ink); background: var(--ground);
+  border: 1px solid var(--rule-2); border-radius: 2px;
+}
+.disposal-filter:focus { outline: 0; border-color: var(--accent); }
+.pane-assets.removing .disposal-filter:focus { border-color: var(--error); }
+.disposal-all {
+  display: flex; align-items: center; gap: 6px; cursor: pointer;
+  font-family: var(--cond); font-size: 11px; letter-spacing: .04em;
+  text-transform: none; color: var(--muted); white-space: nowrap;
+}
+.disposal-all input { accent-color: var(--error); }
+.disposal-all:hover { color: var(--ink); }
+
+.disposal-rows { list-style: none; margin: 0; padding: 0; }
+.disposal-rows > li { border-bottom: 1px solid var(--rule); }
+.disposal-rows > li label {
+  display: flex; align-items: center; gap: 8px; cursor: pointer;
+  padding: 3px 10px; min-height: var(--row);
+}
+.disposal-rows > li input { accent-color: var(--error); flex: none; }
+.disposal-rows > li .mono { font-size: 12px; word-break: break-all; }
+.disposal-rows > li .note {
+  margin-left: auto; padding-left: 10px; flex: none;
+  font-family: var(--cond); font-size: 11px; color: var(--faint);
+}
+.disposal-rows > li:hover { background: var(--raised); }
+/* Struck through, not merely tinted: picked means "on its way out", and the
+   list is long enough that a background alone is easy to lose track of. */
+.disposal-rows > li.on { background: var(--sunk); }
+.disposal-rows > li.on .mono { color: var(--error); text-decoration: line-through; }
+
+.disposal-bar {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
+  padding: 8px 10px; border-top: 2px solid var(--error);
+  background: var(--raised);
+}
+.disposal-count {
+  font-family: var(--mono); font-size: 15px; font-weight: 600;
+  color: var(--error); font-variant-numeric: tabular-nums;
+}
+.disposal-say { flex: 1 1 160px; font-size: 11.5px; line-height: 1.45; color: var(--muted); }
+.disposal-say strong { color: var(--error); font-weight: 600; }
+.disposal-bar .remove-object { flex: 1 1 100%; }
+
+
+.btn.tiny { padding: 2px 7px; font-size: 11px; line-height: 1.4; }
+
+/* The api source's wizard (8.4.22 裁定十六 ③). The steps themselves reuse
+   .wizard-step and .field-row from the SQL wizard — only the three things that
+   path has no equivalent of are styled here: the choice of records inside a
+   response tree, the field table the record expands into, and the plan. */
+.api-record-paths { display: flex; flex-direction: column; gap: 4px; margin: 6px 0 8px; }
+.api-record-path { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+.api-response-tree { margin-top: 8px; }
+.api-response-tree > summary { cursor: pointer; font-size: 11px; color: var(--faint); }
+.api-response-tree pre,
+.api-plan pre {
+  max-height: 240px; overflow: auto; margin: 6px 0 0; padding: 8px;
+  background: var(--raised); border: 1px solid var(--rule-2); border-radius: 3px;
+  font-size: 11.5px; white-space: pre-wrap; word-break: break-all;
+}
+.api-fields { width: 100%; border-collapse: collapse; margin: 6px 0 8px; font-size: 12px; }
+.api-fields th {
+  text-align: left; font: 600 10px/1 var(--cond); letter-spacing: .12em;
+  text-transform: none; color: var(--faint); padding: 4px 8px 4px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.api-fields td { padding: 4px 8px 4px 0; border-bottom: 1px solid var(--rule-2); vertical-align: middle; }
+.api-fields td .tag { margin-left: 6px; }
+.api-plan > summary { cursor: pointer; font-size: 11px; color: var(--faint); }
+.api-fill { list-style: none; margin: 4px 0 8px; padding: 0; font-size: 11.5px; color: var(--faint); }
+
+/* The need-grammar forms (doc 106 §106.16): «有一种东西叫 X», «每个 B 有很多 A»,
+   a second source on a thing, concepts and metrics. They reuse .wizard-step,
+   .field-row, .api-fields and .api-plan from the two wizards they replace —
+   only what those had no equivalent of is styled here: the choice of where the
+   records come from, the multi-select that a compound key needs, the sample
+   slots one per placeholder, and the plan summary a person reads before apply. */
+.thing-origins { display: flex; flex-direction: column; gap: 4px; margin: 8px 0 10px; }
+.thing-origins .wizard-check { margin-top: 0; }
+.thing-origins .field-hint { margin-left: 6px; }
+.thing-identity { display: flex; flex-wrap: wrap; gap: 4px 18px; margin: 6px 0 8px; }
+.thing-identity .wizard-check { margin-top: 0; }
+.thing-sample { margin: 8px 0; padding-left: 10px; border-left: 2px solid var(--rule-2); }
+.thing-rows textarea {
+  width: 100%; margin-top: 6px; padding: 8px; background: var(--raised);
+  border: 1px solid var(--rule-2); border-radius: 3px; font-size: 11.5px;
+  color: var(--ink); resize: vertical;
+}
+.thing-confirm { margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--rule); }
+.thing-summary { list-style: none; margin: 0 0 8px; padding: 0; font-size: 12.5px; color: var(--ink); }
+.thing-summary li { padding: 3px 0 3px 12px; position: relative; }
+.thing-summary li::before { content: "›"; position: absolute; left: 0; color: var(--accent); }
+.relation-kinds { display: flex; flex-direction: column; gap: 4px; margin: 8px 0 10px; }
+.relation-kinds .wizard-check { margin-top: 0; }
+.need-view { min-width: 0; overflow-wrap: anywhere; }
+.need-form { min-width: 0; overflow-wrap: anywhere; }
+.need-form > .dossier { overflow: visible; }
+.need-form h2 { white-space: normal; overflow-wrap: anywhere; }
+.need-form input, .need-form select, .need-form textarea { max-width: 100%; }
+.need-view .hint { white-space: normal; line-height: 1.5; }
+.need-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: 18px;
+  align-items: start;
+}
+.need-column { min-width: 0; }
+.need-view .need-columns { display: block; }
+.need-section-entities > .need-column:not(:nth-child(1)),
+.need-section-concepts > .need-column:not(:nth-child(2)),
+.need-section-findings > .need-column:not(:nth-child(3)) { display: none; }
+.need-toolbar { display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: center; }
+.need-sections { display: flex; flex-wrap: wrap; gap: 4px; }
+.need-sections button { border: 0; border-radius: 5px; padding: 9px 12px; background: transparent; color: var(--muted); cursor: pointer; }
+.need-sections button.on { background: var(--raised); color: var(--ink); box-shadow: inset 0 -2px var(--accent); }
+.need-count { margin-left: 8px; color: var(--faint); font-variant-numeric: tabular-nums; }
+.need-search { min-width: 0; width: 250px; max-width: 100%; padding: 8px 10px; border: 1px solid var(--rule-2); border-radius: 5px; background: var(--panel); color: var(--ink); }
+.need-intro { margin: 14px 0 20px; color: var(--muted); font-size: 12px; line-height: 1.6; }
+.need-entity { padding: 0 !important; margin: 0 !important; }
+.need-entity summary { cursor: pointer; padding: 15px 10px; line-height: 1.6; }
+.need-entity summary:hover { background: var(--raised); }
+.need-entity summary .mono { font-size: 13px; }
+.need-meta { display: block; margin-left: 15px; font-size: 11px; color: var(--muted); }
+.need-entity[open] { background: var(--raised); }
+.need-entity-body { padding: 0 24px 18px; }
+.need-entity-body > .via { margin: 8px 0 14px; }
+.need-entity-body .need-repair { margin-top: 16px; }
+.entity-browser { display: grid; grid-template-columns: minmax(260px, 34%) minmax(0, 1fr); gap: 18px; align-items: start; }
+.entity-list, .entity-detail, .entity-fragments { border: 1px solid var(--rule); background: var(--panel); min-width: 0; }
+.entity-list { max-height: min(68vh, 760px); overflow: auto; }
+.entity-list-head { position: sticky; top: 0; z-index: 1; display: flex; justify-content: space-between; padding: 12px; background: var(--panel); border-bottom: 1px solid var(--rule); }
+.entity-list-row { display: grid; width: 100%; gap: 4px; padding: 11px 12px; border: 0; border-bottom: 1px solid var(--rule); text-align: left; background: transparent; color: var(--ink); cursor: pointer; }
+.entity-list-row:hover, .entity-list-row.on { background: var(--raised); }
+.entity-list-row.on { box-shadow: inset 3px 0 var(--accent); }
+.entity-more { width: calc(100% - 20px); margin: 10px; }
+.entity-detail { padding: 18px; max-height: min(68vh, 760px); overflow: auto; }
+.entity-detail-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.entity-detail-head h3 { margin: 0 auto 0 0; }
+.entity-attribute-list { columns: 2; column-gap: 28px; padding-left: 20px; }
+.entity-attribute-list li { break-inside: avoid; padding: 3px 0; overflow-wrap: anywhere; }
+.entity-attribute-list li > span { display: block; }
+.entity-relations { display: grid; gap: 8px; }
+.entity-relations .linkish { border: 0; background: transparent; color: var(--accent); cursor: pointer; text-align: left; }
+.entity-fragments { grid-column: 1 / -1; padding: 14px; }
+.need-column.single { max-width: 900px; }
+@media (max-width: 900px) {
+  .entity-browser { grid-template-columns: 1fr; }
+  .entity-list, .entity-detail { max-height: none; }
+  .entity-attribute-list { columns: 1; }
+}
+.need-column > h4 {
+  margin: 0 0 6px; font: 600 10px/1 var(--cond); letter-spacing: .12em;
+  text-transform: none; color: var(--faint);
+}
+.need-thing { margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--rule-2); }
+.need-thing > .mono { font-size: 12.5px; }
+.need-thing .mono, .need-thing .code { white-space: normal; overflow-wrap: anywhere; }
+.need-view .tag { display: inline-block; white-space: nowrap; margin-left: 4px; }
+.need-relation { margin-top: 8px; padding-left: 10px; border-left: 2px solid var(--rule-2); }
+.need-thing .via { display: block; font-size: 11px; color: var(--faint); }
+.need-repair { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+
+/* The declare-attributes gate: one EDN block, pre-filled per output leaf the
+   catalog lacks (owner ruling 2026-09-05 — every pool object is authored as
+   EDN, this one included). */
+.missing-attrs { margin: 8px 0; }
+
+/* Optional model documentation with persistent writing examples. */
+.usage-guide-form { width: 100%; max-width: 1400px; margin: 0 auto; padding: 20px 24px; box-sizing: border-box; }
+.guide-header { display: flex; justify-content: space-between; align-items: start; gap: 20px; margin-bottom: 18px; }
+.guide-header h3 { margin: 0 0 6px; font-family: var(--cond); font-size: 24px; }
+.guide-header p { margin: 0; color: var(--muted); }
+.guide-optional { white-space: nowrap; color: var(--muted); font-size: 13px; border: 1px solid var(--rule); border-radius: 20px; padding: 5px 10px; }
+.guide-guideline { border-left: 3px solid var(--accent); background: var(--raised); padding: 12px 16px; margin-bottom: 22px; }
+.guide-guideline p { margin: 5px 0; }
+.guide-guideline > span { color: var(--muted); font-size: 13px; }
+.guide-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.guide-field { border: 1px solid var(--rule); border-radius: 6px; padding: 18px; min-width: 0; background: var(--panel); }
+.guide-field > label { display: block; font-weight: 600; margin: 0; }
+.guide-field-hint { color: var(--muted); font-size: 14px; margin: 6px 0 12px; }
+.usage-guide-form .guide-field textarea { width: 100%; min-height: 100px; box-sizing: border-box; padding: 10px 12px; font-family: var(--cond); font-size: 16px; line-height: 1.5; color: var(--ink); background: var(--panel); border: 1px solid var(--rule); border-radius: 4px; resize: vertical; }
+.guide-field textarea:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+.guide-example { margin-top: 12px; font-size: 13px; color: var(--muted); }
+.guide-example > span { font-weight: 600; }
+.guide-example p { margin: 4px 0 0; white-space: pre-line; line-height: 1.5; }
+.guide-actions { position: sticky; bottom: 0; padding: 14px 0; margin-top: 20px; background: var(--panel); border-top: 1px solid var(--rule); display: flex; gap: 8px; align-items: center; }
+.guide-save-status { margin-right: auto; color: var(--muted); font-size: 14px; }
+@media (max-width: 900px) { .guide-fields { grid-template-columns: 1fr; } .guide-header { flex-direction: column; gap: 10px; } .usage-guide-form { padding: 16px; } }
+
+/* Workspace maintenance: restrained surfaces and aligned controls.
+   The page sits on the same ground as every other page and its sections are
+   filed plates on it (panel, hairline, 6px) — not a second, larger design.
+   Header, tab bar and sections share one centred column (`--page-max`) via the
+   `max(gutter, (100% - max) / 2)` inset, so the bands still run edge to edge
+   while the content lines up with the pages either side of it. */
+.ws-page { background: var(--ground); --ws-inset: max(var(--page-gutter), calc((100% - var(--page-max)) / 2)); }
+.ws-page .ws-header { padding: var(--page-top) var(--ws-inset) 10px; border-bottom: 0; }
+.ws-heading-row { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.ws-page .ws-header h2 { margin: 4px 0 4px; font: 600 22px/1.15 var(--cond); letter-spacing: .01em; overflow-wrap: anywhere; }
+.ws-page .ws-header .page-desc { margin: 0; color: var(--muted); }
+.ws-access-badge, .ws-section-count { font-family: var(--cond); font-size: 11px; letter-spacing: .06em; color: var(--muted); white-space: nowrap; padding: 4px 9px; border-radius: 3px; background: var(--raised); border: 1px solid var(--rule-2); }
+.ws-page .ws-sections { padding: 14px var(--ws-inset) 28px; background: transparent; }
+.ws-page .ws-section { border-color: var(--rule-2); border-radius: 5px; margin-bottom: 14px; box-shadow: inset 0 1px 0 var(--edge-hi); overflow: hidden; }
+.ws-section-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 14px; border-bottom: 1px solid var(--rule); }
+.ws-section-heading h3 { margin: 0; font: 600 15px/1.2 var(--cond); letter-spacing: .02em; }
+.ws-section-heading p { margin: 3px 0 0; color: var(--muted); font-size: 12px; }
+.ws-page .workspace-team-page { padding: 14px; }
+.ws-page .team-layout { max-width: none; margin: 0; }
+.ws-page .team-note { padding: 10px 12px; background: var(--raised); border: 1px solid var(--rule); border-radius: 4px; }
+.ws-page .team-note h3 { font-size: 13px; letter-spacing: 0; margin: 0; }
+.ws-page .team-note p { font-size: 12px; margin: 3px 0 0; }
+.ws-page .workspace-member-form { max-width: none; grid-template-columns: minmax(180px, 1fr) minmax(150px, 240px) auto; }
+.ws-page .workspace-member-form select { height: var(--ctl); font-family: var(--cond); font-size: 12.5px; background: var(--panel); }
+.ws-page .team-main .team-members { margin-top: 14px; }
+.ws-page .team-section-head { padding-bottom: 10px; }
+.ws-page .team-section-head h3 { font-size: 13px; letter-spacing: .04em; }
+.ws-page .team-section-head .graphs-count { display: none; }
+.ws-page .team-member { grid-template-columns: 30px minmax(0, 1fr) 110px 56px 86px; gap: 10px; padding: 8px 10px; }
+.ws-page .member-index { display: none; }
+.ws-page .member-avatar { grid-column: 1; width: 28px; height: 28px; border-radius: 50%; }
+.ws-page .member-identity { grid-column: 2; }
+.ws-page .member-identity h4 { font-size: 13px; }
+.ws-page .member-identity p { font-size: 11px; margin-top: 2px; }
+.ws-page .member-role { grid-column: 3; justify-self: stretch; }
+.ws-page .member-current { grid-column: 4; justify-self: center; }
+.ws-page .member-remove { grid-column: 5; }
+.ws-page .member-role, .ws-page .member-current, .ws-page .member-remove { grid-row: 1; }
+.ws-page .sources-register { flex: 0 0 30%; min-width: 240px; max-width: 380px; }
+.ws-page .sources-empty { padding: 32px; }
+@media (max-width: 760px) {
+ .ws-page .ws-header { padding: 18px 16px; }
+ .ws-heading-row { align-items: flex-start; flex-direction: column; gap: 12px; }
+ .ws-page .ws-sections { padding: 16px; }
+ .ws-section-heading, .ws-page .workspace-team-page { padding: 16px; }
+ .ws-page .workspace-member-form { grid-template-columns: 1fr; }
+ .ws-page .team-member { grid-template-columns: 36px minmax(0, 1fr) 86px; }
+ .ws-page .team-member .member-role { grid-column: 2; grid-row: 2; justify-self: start; }
+ .ws-page .team-member .member-current { grid-column: 3; grid-row: 2; }
+ .ws-page .team-member .member-remove { grid-column: 3; grid-row: 1; }
+ .ws-page .sources-register { min-width: 160px; }
+}
+
+.context-help { flex: none; align-self: center; color: var(--muted); font-family: var(--cond); font-size: 14px; text-decoration: none; padding: 8px 10px; border-radius: 4px; }
+.context-help:hover { color: var(--accent); background: var(--raised); }
+.context-help:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.ws-section-switch { display: flex; flex: none; gap: 18px; padding: 0 var(--ws-inset, var(--page-gutter)); border-bottom: 1px solid var(--rule-2); }
+.ws-section-switch button { background: transparent; color: var(--muted); border: 0; border-bottom: 2px solid transparent; margin-bottom: -1px; padding: 8px 2px; font: 600 11.5px/1 var(--cond); letter-spacing: .08em; cursor: pointer; }
+.ws-section-switch button:hover { color: var(--ink); }
+.ws-section-switch button.on { color: var(--ink); border-bottom-color: var(--accent); }
+.ws-section-switch button:focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; }
+@media (max-width: 760px) { .ws-section-switch { padding: 0 16px; gap: 16px; overflow-x: auto; } }
+
+/* Sources: compact, quiet list rows with a clear selected state. */
+.sources-register .pane-head { padding: 12px 14px; min-height: 44px; box-sizing: border-box; }
+.sources-register .pane-head .btn { padding: 5px 9px; font-size: 12px; letter-spacing: .02em; box-shadow: none; }
+.sources-register .source-plates { padding: 8px; }
+.sources-register .source-plate { border: 0; margin-bottom: 4px; }
+.sources-register .plate-face { box-sizing: border-box; padding: 11px 12px; gap: 5px; border-radius: 5px; transition: background .12s ease; }
+.sources-register .plate-face:hover { background: color-mix(in srgb, var(--raised) 70%, transparent); }
+.sources-register .source-plate.on .plate-face { background: color-mix(in srgb, var(--accent) 7%, var(--panel)); box-shadow: inset 2px 0 0 var(--accent); }
+.sources-register .plate-id { font-family: var(--cond); font-size: 15px; font-weight: 500; line-height: 1.35; word-break: normal; overflow-wrap: anywhere; letter-spacing: 0; }
+.sources-register .plate-meta { gap: 8px; align-items: center; }
+.sources-register .plate-meta .tag { padding: 0; border: 0; border-radius: 0; background: transparent; color: var(--muted); font-family: var(--cond); font-size: 11px; letter-spacing: 0; box-shadow: none; }
+.sources-register .plate-meta .tag + .tag { border-left: 1px solid var(--rule); padding-left: 8px; }
+.sources-register .plate-sub { font-family: var(--cond); font-size: 11px; line-height: 1.4; color: var(--muted); }
+
+/* Prioritize browsing and detail; expand relationships when more canvas is needed. */
+.graph-model .graph-explorer > .pane-rail { flex: 1 1 25.5% !important; width: auto; min-width: 210px; }
+.graph-model .graph-explorer > .pane-dossier { flex: 1 1 27% !important; width: auto; min-width: 225px; max-width: 100%; }
+.graph-explorer .pane-dossier .model-object-summary,
+.graph-explorer .pane-dossier .model-object-summary code { white-space: normal; overflow-wrap: anywhere; word-break: normal; }
+.graph-explorer .pane-dossier .model-object-summary li { margin-bottom: 6px; line-height: 1.5; }
+.graph-model .graph-explorer > .relationships-panel { flex: 1 1 47.5%; min-width: 220px; min-height: 480px; }
+.relationships-panel { display: flex; flex-direction: column; }
+.relationships-panel > .pane-head { flex: none; gap: 10px; flex-wrap: wrap; }
+.relationships-panel .attr-graph { flex: 1; min-height: 400px; }
+.relationships-dialog { position: fixed; inset: 0; box-sizing: border-box; width: calc(100vw - 32px); height: calc(100dvh - 32px); max-width: none; max-height: none; margin: auto; padding: 0; background: var(--panel); color: var(--ink); border: 1px solid var(--rule); border-radius: 8px; box-shadow: 0 16px 64px #0005; overflow: hidden; }
+.relationships-dialog[open] { display: flex; flex-direction: column; }
+.relationships-dialog::backdrop { background: #0008; }
+.relationships-dialog > .pane-head { flex: none; padding: 12px 18px; gap: 12px; }
+.relationships-dialog > .attr-graph { flex: 1 1 auto; min-height: 0; height: auto; }
+.relationships-dialog > .hint { flex: none; margin: 0; }
+@media (max-width: 900px) {
+ .graph-explorer { flex-wrap: wrap; overflow: auto; }
+ .graph-model .graph-explorer > .pane-rail, .graph-model .graph-explorer > .pane-dossier { flex: 1 1 240px !important; }
+ .graph-model .graph-explorer > .relationships-panel { order: 3; flex: 1 0 100%; height: 65vh; }
+ .relationships-dialog { width: calc(100vw - 12px); height: calc(100dvh - 12px); }
+}
+
+/* Context and recovery guidance reuse the existing theme and compact layout. */
+.graph-guidance, .source-readiness {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  padding: 12px;
+  border-bottom: 1px solid var(--rule);
+  background: var(--panel);
+  color: var(--ink);
+}
+.graph-guidance > div { flex: 1 1 260px; min-width: 0; }
+.graph-guidance p, .error-guidance > p {
+  margin: 5px 0 0;
+  color: var(--muted);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.graph-guidance .btn, .source-readiness .btn { white-space: normal; }
+.source-readiness > span { flex: 1 1 240px; }
+.error-guidance {
+  margin: 8px 0;
+  padding: 12px;
+  border: 1px solid var(--rule-2);
+  border-left: 3px solid var(--error);
+  background: var(--panel);
+  color: var(--ink);
+}
+.error-guidance .hint { padding: 8px 0 0; margin-top: 8px; }
+.error-guidance .findings { margin-bottom: 0; }
+.error-reference code { user-select: all; overflow-wrap: anywhere; }

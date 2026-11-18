@@ -1,0 +1,14 @@
+.cpcache/
+.shadow-cljs/
+node_modules/
+target/
+
+# shadow-cljs build output; rebuilt by scripts/build-studio.sh
+resources/public/js/
+
+.DS_Store
+data/
+
+# ui-test build output (npm run test:ui)
+out/
+logs

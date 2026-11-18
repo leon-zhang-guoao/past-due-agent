@@ -1,0 +1,18 @@
+;; derived 连接器：contracts/connectors/derived-v1.md 的实现。
+;;
+;; 依赖 SPI 而不被 SPI 依赖；engine 也不直接依赖它——连接器可插拔，由装配处决定
+;; 加载哪些（与 connector-sql 同则）。
+;;
+;; **为什么是 SCI**：契约要的是「沙箱内的纯函数表达式，无 I/O」，并且**白名单封闭**
+;; （扩项即契约升版）。SCI 的缺省行为正是这个形状——未在 `:bindings` 里给出的符号
+;; 一律解析不到（实测 `slurp` 直接 `Could not resolve symbol`），于是白名单是**给出
+;; 什么就有什么**，而不是「先全给再逐个禁」。后者的失败方向是漏禁一个就开了口子。
+{:paths ["src"]
+ :deps  {org.clojure/clojure      {:mvn/version "1.11.4"}
+         open.atlas/connector-spi {:local/root "../connector-spi"}
+         org.babashka/sci         {:mvn/version "0.8.43"}}
+ :aliases
+ {:test {:extra-paths ["test"]
+         :extra-deps  {io.github.cognitect-labs/test-runner
+                       {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
+         :main-opts   ["-m" "cognitect.test-runner"]}}}

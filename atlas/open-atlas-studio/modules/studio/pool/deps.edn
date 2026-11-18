@@ -1,0 +1,24 @@
+;; open.atlas.studio.pool —— B4 的池内核。
+;;
+;; **本仓库第一个 studio 模块**，于是 D1.8 的依赖方向第一次在**两个方向上**都可验证：
+;; 这里可以 `:local/root` 依赖 common，而 common 的每一份 deps.edn 里都没有 studio
+;; ——「common 不得依赖 studio/server」不再只是一句约定，是 classpath 上查得到的事实。
+{:paths ["src"]
+ :deps  {org.clojure/clojure       {:mvn/version "1.12.0"}
+         ;; 池里的对象就是方言条目，校验、规范形与 finding 全部复用 B0，
+         ;; **不在这里写第二个 schema**（dialect-v1 §7 同则）。
+         open.atlas/dialect        {:local/root "../../common/dialect"}
+         ;; B4.4 的候选签字通道：**提议**那一半在 common（D1.8 的依赖方向不许
+         ;; common 依赖 studio，见 modules/common/candidates/README.md）。
+         ;; 池只做**处置**。
+         open.atlas/candidates     {:local/root "../../common/candidates"}
+         io.replikativ/datahike    {:mvn/version "0.6.1596"}
+         io.replikativ/konserve    {:mvn/version "0.7.319"}}
+ :aliases
+ ;; 退出条件 1 说「装料用真产物，不要用玩具数据」：`fixtures/demo` 是 demo 模型的家
+ ;; （188 属性 / 23 词条 / 12 张码值表），上 classpath 后 `io/resource` 直接读。
+ ;; **不再跑一次 B2 转换**——转换器与语料已退休（fixtures/demo/README.md）。
+ {:test {:extra-paths ["test" "../../../fixtures/demo"]
+         :extra-deps  {io.github.cognitect-labs/test-runner
+                       {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
+         :main-opts   ["-m" "cognitect.test-runner"]}}}

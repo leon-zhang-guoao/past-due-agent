@@ -1,0 +1,15 @@
+;; 引擎：归一模型 → env（Pathom index/resolver），EQL 应答口，四道边界，
+;; 以及把 security 的档位判定应用到 index/catalog 上的那一道门（D5.4）。
+;; 不依赖任何具体连接器——只依赖 SPI，连接器由装配处注入。
+{:paths ["src"]
+ :deps  {org.clojure/clojure      {:mvn/version "1.11.4"}
+         open.atlas/dialect       {:local/root "../dialect"}
+         open.atlas/connector-spi {:local/root "../connector-spi"}
+         com.wsscode/pathom3      {:mvn/version "2025.01.16-alpha"}}
+ :aliases
+ ;; fixtures/b1 进 :test classpath：`io/resource "graph.edn"` 读的就是它。
+ ;; engine 与 connector-sql 共用同一份 fixture，理解不一致时测试当场分叉。
+ {:test {:extra-paths ["test" "../../../fixtures/b1"]
+         :extra-deps  {io.github.cognitect-labs/test-runner
+                       {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
+         :main-opts   ["-m" "cognitect.test-runner"]}}}

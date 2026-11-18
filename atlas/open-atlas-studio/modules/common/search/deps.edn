@@ -1,0 +1,26 @@
+;; open.atlas.common.search —— B4.3 的搜索索引。
+;;
+;; **为什么在 common**：同 toolkit 的理由。B7 的读面 `search` / `search_attrs` 跑在
+;; **server** 上（D3.8 的版本架），而 D1.8 禁 server 依赖 studio。索引的建与查若住在
+;; studio，server 只能再写一份——「一个索引，两个问题」（D7.11）会变成两个索引。
+;;
+;; **不依赖 pool**：本模块吃的是**方言模型 + 一个 revision**，不是 Datahike 连接。
+;; studio 侧把池投影出来的模型喂进来，server 侧把制品装载出来的模型喂进来，
+;; 两边索引出的东西因此逐字节可比——这正是 D4.10「两层都必须等价」的同一条纪律。
+{:paths ["src"]
+ :deps  {org.clojure/clojure     {:mvn/version "1.12.0"}
+         open.atlas/dialect      {:local/root "../dialect"}
+         ;; sidecar 是 SQLite（D7.7：指纹与搜索索引都住在 sidecar，**不进 Datahike**
+         ;; ——进去会打破「store 可弃、导入导出精确重建」那条测试义务，
+         ;; 而且 server 上根本没有 Datahike）。
+         org.xerial/sqlite-jdbc  {:mvn/version "3.46.1.0"}}
+ :aliases
+ ;; 测试装料是 **demo 模型**（`fixtures/demo/model.edn`，裁定 ⑥ / pool README
+ ;; 裁定 ⑥）。玩具数据证不出「不洪泛」——三个属性的玩具里没有一个绑着 7 个
+ ;; 属性的词条，而洪泛正是绑定数一多才出现的失败（D7.11）。
+ ;; 它只是一份 fixture 上 classpath，**不是依赖**：common 不依赖任何 studio
+ ;; 模块，这一条在 `:deps` 一侧仍然是 classpath 事实（D1.8）。
+ {:test {:extra-paths ["test" "../../../fixtures/demo"]
+         :extra-deps  {io.github.cognitect-labs/test-runner
+                       {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
+         :main-opts   ["-m" "cognitect.test-runner"]}}}

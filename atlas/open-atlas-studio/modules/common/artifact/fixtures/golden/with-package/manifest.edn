@@ -1,0 +1,15 @@
+{:artifact/format-version 1
+ :content-hash "sha256:bd021de27fc68b64f76b5217b4314ba68c7e98a83b322b9d546536cd4644dcb0"
+ :health {:carried-only-keys [:cis.master.part/ave_cost]
+          :findings []
+          :row-security-declared []
+          :row-security-verified []
+          :structural-ok? true}
+ :package {:compat {:connectors {"sql" "v1"} :dialect "v1"}
+           :name "open-atlas/b1"
+           :requires {:files [] :vars ["B1_JDBC_URL"]}}
+ :provenance {:cut-at "2026-08-22T00:00:00Z"
+              :cut-by "b3-golden-vector"
+              :graph "b1"
+              :version 1
+              :workspace "core-team"}}

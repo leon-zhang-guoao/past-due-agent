@@ -1,0 +1,15 @@
+{:artifact/format-version 1
+ :objects {:attributes {:edge.case/bounded_int {:description "Long/MIN_VALUE、0、Long/MAX_VALUE 三个码值键都进 hash。"
+                                                :label "Integer boundaries"
+                                                :type :integer
+                                                :values {-1 {:label "minus one"}
+                                                         -9223372036854775808 {:label "min"}
+                                                         0 {:label "zero"}
+                                                         9223372036854775807 {:label "max"}}}
+                        :edge.case/id {:label "ID" :type :string}
+                        :edge.case/unicode_text {:description "line1\nline2\tTAB \"quoted\" back\\slash 中文 🌍 é ‍ ünïcödé"
+                                                 :label "Unicode"
+                                                 :synonyms ["naïve" "naïve"]
+                                                 :type :string}}
+           :namespaces {"edge.case" {:kind :master :label "Edge cases"}}}
+ :references []}

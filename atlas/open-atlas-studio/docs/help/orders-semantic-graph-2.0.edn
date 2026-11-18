@@ -1,0 +1,204 @@
+{:graphs [{:content/hash "sha256:fc2c8aaf55773346962354d2b80be676b8a0934d1f820b84a153e46f34df970a"
+           :document {:contract {:contract/family "atlas-semantic" :contract/version "2.0.0"}
+                      :execution {:bindings {"order-by-id-sql" {:binding/effect :read
+                                                                :binding/for [:resolver
+                                                                              "order-by-id"]
+                                                                :binding/implementation {:query "SELECT customer_id, from_acct_no, status, total FROM orders WHERE id = :id"}
+                                                                :binding/input-map {:demo.order/id "id"}
+                                                                :binding/output-map {:demo.order/customer_id "customer_id"
+                                                                                     :demo.order/from_acct_no "from_acct_no"
+                                                                                     :demo.order/status "status"
+                                                                                     :demo.order/total "total"}
+                                                                :binding/source "orders-db"}
+                                             "part-by-sku-sql" {:binding/effect :read
+                                                                :binding/for [:resolver
+                                                                              "part-by-sku"]
+                                                                :binding/implementation {:query "SELECT description FROM part WHERE sku_No = :sku_no"}
+                                                                :binding/input-map {:demo.part/sku_no "sku_no"}
+                                                                :binding/output-map {:demo.part/description "description"}
+                                                                :binding/source "orders-db"}}
+                                  :operations {}
+                                  :resolvers {"order-by-id" {:description "使用 orders.id 精确读取一条订单；可用 status 或 min_total 对该已锚定查询做收窄。"
+                                                             :effect :read
+                                                             :filters {:min_total {:attribute :demo.order/total
+                                                                                   :description "只接受金额不低于指定值的订单。"
+                                                                                   :operator :gte}
+                                                                       :status {:attribute :demo.order/status
+                                                                                :description "只接受等于指定状态的订单。"
+                                                                                :operator :eq}}
+                                                             :input [:demo.order/id]
+                                                             :label "按订单号读取订单"
+                                                             :output [:demo.order/customer_id
+                                                                      :demo.order/from_acct_no
+                                                                      :demo.order/status
+                                                                      :demo.order/total]
+                                                             :result/cardinality :one}
+                                              "part-by-sku" {:description "使用产品编码读取产品说明；Semantic 属性 sku_no 映射到来源字段 sku_No。"
+                                                             :effect :read
+                                                             :input [:demo.part/sku_no]
+                                                             :label "按产品编码读取产品"
+                                                             :output [:demo.part/description]
+                                                             :result/cardinality :one}}
+                                  :selection {[:resolver "order-by-id"] "order-by-id-sql"
+                                              [:resolver "part-by-sku"] "part-by-sku-sql"}
+                                  :sources {"orders-db" {:source/effects #{:read}
+                                                         :source/kind "sql"}}}
+                      :graph {:graph/dependencies []
+                              :graph/entities ["demo.vendor" "demo.part" "demo.order"
+                                               "demo.order_detail"]
+                              :graph/exposure :restricted
+                              :graph/id "REPLACE-WITH-GRAPH-ID"
+                              :graph/label "Orders example"
+                              :graph/operations []
+                              :graph/query-examples [{:example/description "以已经确认的订单主键作为初始实体，读取客户、供应商编码、状态和金额。"
+                                                      :example/entity {:demo.order/id 1001}
+                                                      :example/eql "[:demo.order/customer_id :demo.order/from_acct_no :demo.order/status :demo.order/total]"
+                                                      :example/expected {:result/cardinality :one
+                                                                         :result/fields [:demo.order/customer_id
+                                                                                         :demo.order/from_acct_no
+                                                                                         :demo.order/status
+                                                                                         :demo.order/total]}
+                                                      :example/id "order-by-id"
+                                                      :example/parameters {}
+                                                      :example/requires #{:connector/sql}
+                                                      :example/title "按订单号读取订单"}
+                                                     {:example/description "status 是 Resolver 声明的 EQL 收窄参数；它只收窄已由订单号锚定的查询。"
+                                                      :example/entity {:demo.order/id 1001}
+                                                      :example/eql "[(:demo.order/status {:status \"PAID\"}) :demo.order/total]"
+                                                      :example/expected {:result/cardinality :one
+                                                                         :result/fields [:demo.order/status
+                                                                                         :demo.order/total]}
+                                                      :example/id "order-by-id-and-status"
+                                                      :example/parameters {:status {:parameter/description "必须与来源中的订单状态相等。"
+                                                                                    :parameter/label "订单状态"
+                                                                                    :parameter/required? false
+                                                                                    :parameter/sample "PAID"}}
+                                                      :example/requires #{:connector/sql
+                                                                          :query/filter-v1}
+                                                      :example/title "按订单号读取并校验状态"}
+                                                     {:example/description "min_total 使用 gte 运算符收窄同一条按订单号读取的查询。"
+                                                      :example/entity {:demo.order/id 1001}
+                                                      :example/eql "[(:demo.order/total {:min_total 50}) :demo.order/status]"
+                                                      :example/expected {:result/cardinality :one
+                                                                         :result/fields [:demo.order/total
+                                                                                         :demo.order/status]}
+                                                      :example/id "order-by-id-and-minimum-total"
+                                                      :example/parameters {:min_total {:parameter/description "订单金额必须大于或等于此值。"
+                                                                                       :parameter/label "最低金额"
+                                                                                       :parameter/required? false
+                                                                                       :parameter/sample 50}}
+                                                      :example/requires #{:connector/sql
+                                                                          :query/filter-v1}
+                                                      :example/title "按订单号读取并设置最低金额"}]
+                              :graph/resolvers ["order-by-id" "part-by-sku"]
+                              :graph/terms ["common/vend_no" "common/sku_no"]}
+                      :ownership {:entities {"demo.order" "REPLACE-WITH-GRAPH-ID"
+                                             "demo.order_detail" "REPLACE-WITH-GRAPH-ID"
+                                             "demo.part" "REPLACE-WITH-GRAPH-ID"
+                                             "demo.vendor" "REPLACE-WITH-GRAPH-ID"}
+                                  :operations {}
+                                  :resolvers {"order-by-id" "REPLACE-WITH-GRAPH-ID"
+                                              "part-by-sku" "REPLACE-WITH-GRAPH-ID"}
+                                  :terms {"common/sku_no" "REPLACE-WITH-GRAPH-ID"
+                                          "common/vend_no" "REPLACE-WITH-GRAPH-ID"}}
+                      :publication {:release/version "1.0.0"
+                                    :required-capabilities #{:artifact/embedded-closure-v1
+                                                             :connector/sql
+                                                             :deployment/source-slot-v1
+                                                             :graph/single-owner-v1 :query/filter-v1
+                                                             :semantic/core-v1}
+                                    :source/revision 0}
+                      :vocabulary {:aliases []
+                                   :attributes {:demo.order/customer_id {:attribute/description "来源表 orders.customer_id；本样例没有把它声明成客户关系。"
+                                                                         :attribute/label "客户号"
+                                                                         :attribute/nullable? false
+                                                                         :attribute/type :integer}
+                                                :demo.order/from_acct_no {:attribute/description "在供应商主数据与业务单据中表示供应商的业务编码。"
+                                                                          :attribute/label "供应商编码"
+                                                                          :attribute/nullable? true
+                                                                          :attribute/term "common/vend_no"
+                                                                          :attribute/type :string}
+                                                :demo.order/id {:attribute/description "来源表 orders.id；已由来源约束确认为非空主键。"
+                                                                :attribute/label "订单号"
+                                                                :attribute/nullable? false
+                                                                :attribute/type :integer}
+                                                :demo.order/status {:attribute/description "来源表 orders.status 的原始业务状态码。"
+                                                                    :attribute/label "订单状态"
+                                                                    :attribute/nullable? false
+                                                                    :attribute/type :string}
+                                                :demo.order/total {:attribute/description "来源表 orders.total；本样例的来源证据确认它是最小货币单位的整数。"
+                                                                   :attribute/label "订单金额（最小货币单位）"
+                                                                   :attribute/nullable? false
+                                                                   :attribute/type :integer}
+                                                :demo.order_detail/line_no {:attribute/description "来源字段 order_detail.line_no；订单明细复合身份的第二部分。"
+                                                                            :attribute/label "行号"
+                                                                            :attribute/nullable? false
+                                                                            :attribute/type :integer}
+                                                :demo.order_detail/order_id {:attribute/description "来源字段 order_detail.order_id；订单明细复合身份的第一部分。"
+                                                                             :attribute/label "订单号"
+                                                                             :attribute/nullable? false
+                                                                             :attribute/type :integer}
+                                                :demo.order_detail/sku_no {:attribute/description "在产品主数据与订单明细中表示产品的业务编码。"
+                                                                           :attribute/label "产品编码"
+                                                                           :attribute/nullable? false
+                                                                           :attribute/term "common/sku_no"
+                                                                           :attribute/type :string}
+                                                :demo.part/description {:attribute/description "来源字段 part.description。"
+                                                                        :attribute/label "产品说明"
+                                                                        :attribute/nullable? true
+                                                                        :attribute/type :string}
+                                                :demo.part/sku_no {:attribute/description "在产品主数据与订单明细中表示产品的业务编码。"
+                                                                   :attribute/label "产品编码"
+                                                                   :attribute/nullable? false
+                                                                   :attribute/term "common/sku_no"
+                                                                   :attribute/type :string}
+                                                :demo.vendor/name {:attribute/description "来源字段 vendor.name。"
+                                                                   :attribute/label "供应商名称"
+                                                                   :attribute/nullable? false
+                                                                   :attribute/type :string}
+                                                :demo.vendor/vend_no {:attribute/description "在供应商主数据与业务单据中表示供应商的业务编码。"
+                                                                      :attribute/label "供应商编码"
+                                                                      :attribute/nullable? false
+                                                                      :attribute/term "common/vend_no"
+                                                                      :attribute/type :string}}
+                                   :entities {"demo.order" {:entity/attributes [:demo.order/id
+                                                                                :demo.order/customer_id
+                                                                                :demo.order/from_acct_no
+                                                                                :demo.order/status
+                                                                                :demo.order/total]
+                                                            :entity/description "业务订单；身份来自来源已确认的 orders.id 主键。"
+                                                            :entity/identity [:demo.order/id]
+                                                            :entity/label "订单"}
+                                              "demo.order_detail" {:entity/attributes [:demo.order_detail/order_id
+                                                                                       :demo.order_detail/line_no
+                                                                                       :demo.order_detail/sku_no]
+                                                                   :entity/description "订单行；以 order_id 与 line_no 的来源复合约束作为身份。"
+                                                                   :entity/identity [:demo.order_detail/order_id
+                                                                                     :demo.order_detail/line_no]
+                                                                   :entity/label "订单明细"}
+                                              "demo.part" {:entity/attributes [:demo.part/sku_no
+                                                                               :demo.part/description]
+                                                           :entity/description "产品主数据；Semantic 属性统一为 sku_no，来源字段真实拼写 sku_No 由 Binding 保留。"
+                                                           :entity/identity [:demo.part/sku_no]
+                                                           :entity/label "产品"}
+                                              "demo.vendor" {:entity/attributes [:demo.vendor/vend_no
+                                                                                 :demo.vendor/name]
+                                                             :entity/description "供应商主数据；vend_no 由来源约束确认为身份。"
+                                                             :entity/identity [:demo.vendor/vend_no]
+                                                             :entity/label "供应商"}}
+                                   :equivalences []
+                                   :references []
+                                   :terms {"common/sku_no" {:term/description "在产品主数据与订单明细中表示产品的业务编码。"
+                                                            :term/format :code
+                                                            :term/label "产品编码"}
+                                           "common/vend_no" {:term/description "在供应商主数据与业务单据中表示供应商的业务编码。"
+                                                             :term/format :code
+                                                             :term/label "供应商编码"}}}
+                      :workspace {:workspace/id "REPLACE-WITH-WORKSPACE-ID"}}
+           :graph/id "REPLACE-WITH-GRAPH-ID"
+           :release/version "1.0.0"}]
+ :package/family "atlas-semantic-graph"
+ :package/version 1
+ :root {:content/hash "sha256:fc2c8aaf55773346962354d2b80be676b8a0934d1f820b84a153e46f34df970a"
+        :graph/id "REPLACE-WITH-GRAPH-ID"
+        :release/version "1.0.0"}}

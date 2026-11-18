@@ -1,0 +1,1571 @@
+{:attributes {:cis.cpo.cpo_detail/cpo_line_qty {:description "Quantity the customer ordered on this line."
+                                                :format :number
+                                                :label "Line Qty"
+                                                :synonyms ["订货数量" "行数量" "line quantity" "order qty"]
+                                                :type :integer}
+              :cis.cpo.cpo_detail/cpo_line_seq {:description "Line sequence within the purchase order."
+                                                :format :number
+                                                :identity? true
+                                                :label "Line Seq"
+                                                :synonyms ["行序号" "行号" "line sequence" "line seq"]
+                                                :type :integer}
+              :cis.cpo.cpo_detail/cpo_line_status {:description "Line status code."
+                                                   :format :code
+                                                   :label "Line Status"
+                                                   :synonyms ["行状态" "明细状态" "line status"]
+                                                   :type :string}
+              :cis.cpo.cpo_detail/cpo_price {:description "Extended price for this line (qty x unit price)."
+                                             :format :currency
+                                             :label "Line Price"
+                                             :synonyms ["行金额" "行小计" "line amount" "extended price"]
+                                             :type :decimal
+                                             :unit "USD"}
+              :cis.cpo.cpo_detail/cpo_sku_no {:term "cis.catalog/sku_no" :type :integer}
+              :cis.cpo.cpo_detail/cpo_unit_price {:description "Price per unit the customer was quoted."
+                                                  :format :currency
+                                                  :label "Unit Price"
+                                                  :synonyms ["单价" "客户单价" "unit price"]
+                                                  :type :decimal
+                                                  :unit "USD"}
+              :cis.cpo.cpo_detail/order_no {:description "Purchase order this line belongs to."
+                                            :format :id
+                                            :identity? true
+                                            :label "CPO No"
+                                            :synonyms ["客户采购单号" "CPO号" "customer po number" "cpo no"]
+                                            :type :integer}
+              :cis.cpo.cpo_header/all_cpos {:cardinality :one-to-many
+                                            :description "Global collection of customer purchase orders."
+                                            :label "All CPOs"
+                                            :target "cis.cpo.cpo_header"}
+              :cis.cpo.cpo_header/cpo_cust_no {:term "cis.party/customer_no" :type :integer}
+              :cis.cpo.cpo_header/cpo_date {:description "Date the customer issued the purchase order."
+                                            :format :date
+                                            :label "CPO Date"
+                                            :synonyms ["采购单日期" "客户下单日期" "cpo date" "po date"]
+                                            :type :date}
+              :cis.cpo.cpo_header/cpo_details {:cardinality :one-to-many
+                                               :target "cis.cpo.cpo_detail"}
+              :cis.cpo.cpo_header/cpo_entry_datetime {:term "common.audit/created_at" :type :date}
+              :cis.cpo.cpo_header/cpo_entry_id {:term "common.audit/created_by" :type :string}
+              :cis.cpo.cpo_header/cpo_priority {:description "Customer-assigned priority."
+                                                :format :code
+                                                :label "Priority"
+                                                :synonyms ["优先级" "客户优先级" "priority"]
+                                                :type :string}
+              :cis.cpo.cpo_header/cpo_status {:description "Purchase order status code."
+                                              :format :code
+                                              :label "CPO Status"
+                                              :synonyms ["采购单状态" "CPO状态" "cpo status" "po status"]
+                                              :type :string
+                                              :values {"C" {:label "已关闭"}
+                                                       "O" {:label "开放"}
+                                                       "X" {:label "已取消"}}}
+              :cis.cpo.cpo_header/msos {:cardinality :one-to-many :target "cis.sales.mso"}
+              :cis.cpo.cpo_header/order_no {:description "Customer purchase order number — the identifier the customer put on their PO. This is what msos.int_ref_no points at."
+                                            :format :id
+                                            :identity? true
+                                            :label "CPO No"
+                                            :synonyms ["客户采购单号" "CPO号" "customer po number" "cpo no"]
+                                            :type :integer}
+              :cis.cpo.cpo_header/po_total {:description "Total amount the customer ordered on this PO."
+                                            :format :currency
+                                            :label "PO Total"
+                                            :synonyms ["采购单总额" "订货总额" "po total" "order total"]
+                                            :type :decimal
+                                            :unit "USD"}
+              :cis.master.customer/all_customers {:cardinality :one-to-many
+                                                  :description "Global collection of customers."
+                                                  :label "All Customers"
+                                                  :target "cis.master.customer"}
+              :cis.master.customer/audit_info {:term "common.audit/audit_info" :type :string}
+              :cis.master.customer/bank_accounts {:cardinality :one-to-many
+                                                  :target "cis.master.customer_bank"}
+              :cis.master.customer/cust_name {:description "Customer company name."
+                                              :format :text
+                                              :label "Customer Name"
+                                              :synonyms ["客户名称" "客户" "customer name" "buyer name"]
+                                              :type :string}
+              :cis.master.customer/cust_no {:identity? true
+                                            :term "cis.party/customer_no"
+                                            :type :integer}
+              :cis.master.customer/cust_type {:description "Customer classification code."
+                                              :format :code
+                                              :label "Customer Type"
+                                              :synonyms ["客户类型" "customer type"]
+                                              :type :string}
+              :cis.master.customer/default_terms {:description "Default payment terms."
+                                                  :format :code
+                                                  :label "Default Terms"
+                                                  :synonyms ["默认付款条款" "付款条款" "default terms"
+                                                             "payment terms"]
+                                                  :type :string
+                                                  :values {"NET30" {:label "30天账期(NET30)"}
+                                                           "NET45" {:label "45天账期(NET45)"}}}
+              :cis.master.customer/entry_datetime {:listed? false
+                                                   :term "common.audit/created_at"
+                                                   :type :date}
+              :cis.master.customer/entry_id {:listed? false
+                                             :term "common.audit/created_by"
+                                             :type :string}
+              :cis.master.customer/msos {:cardinality :one-to-many :target "cis.sales.mso"}
+              :cis.master.customer/sales_terr {:description "Sales territory code."
+                                               :format :code
+                                               :label "Sales Territory"
+                                               :synonyms ["销售区域" "区域" "sales territory" "territory"]
+                                               :type :string}
+              :cis.master.customer/tax_status {:description "Tax status code."
+                                               :format :code
+                                               :label "Tax Status"
+                                               :synonyms ["税务状态" "tax status"]
+                                               :type :string}
+              :cis.master.customer/u_version {:listed? false
+                                              :term "common.audit/detail_row_version"
+                                              :type :string}
+              :cis.master.customer_bank/acct_type {:description "Bank account type."
+                                                   :format :code
+                                                   :label "Account Type"
+                                                   :synonyms ["账户类型" "account type"]
+                                                   :type :string
+                                                   :values {"CHECKING" {:label "支票账户"}
+                                                            "SAVINGS" {:label "储蓄账户"}}}
+              :cis.master.customer_bank/bank_aba {:description "ABA routing number."
+                                                  :format :id
+                                                  :label "Bank ABA"
+                                                  :synonyms ["ABA路由号" "路由号" "aba routing number"]
+                                                  :type :string}
+              :cis.master.customer_bank/bank_acct {:description "Account number (masked)."
+                                                   :format :id
+                                                   :label "Bank Account"
+                                                   :synonyms ["银行账号" "结算账号" "bank account number"]
+                                                   :type :string}
+              :cis.master.customer_bank/bank_address {:description "Bank address (merged street/city/state/zip)."
+                                                      :format :text
+                                                      :label "Bank Address"
+                                                      :synonyms ["银行地址" "开户行地址" "bank address"]
+                                                      :type :string}
+              :cis.master.customer_bank/bank_def {:description "Whether this is the default settlement account (Y/N)."
+                                                  :format :code
+                                                  :label "Default Account"
+                                                  :synonyms ["是否默认账户" "默认账户" "default account"]
+                                                  :type :string
+                                                  :values {"N" {:label "非默认"} "Y" {:label "默认结算账户"}}}
+              :cis.master.customer_bank/bank_name {:description "Bank name."
+                                                   :format :text
+                                                   :label "Bank Name"
+                                                   :synonyms ["银行名称" "开户行" "bank name"]
+                                                   :type :string}
+              :cis.master.customer_bank/cust_no {:identity? true
+                                                 :term "cis.party/customer_no"
+                                                 :type :integer}
+              :cis.master.customer_bank/date_opened {:description "Account open date."
+                                                     :format :date
+                                                     :label "Date Opened"
+                                                     :synonyms ["开户日期" "账户开立日" "date opened"]
+                                                     :type :date}
+              :cis.master.customer_bank/iban_number {:description "IBAN international account number."
+                                                     :format :id
+                                                     :label "IBAN Number"
+                                                     :synonyms ["IBAN号" "国际银行账号" "iban"]
+                                                     :type :string}
+              :cis.master.customer_bank/line_no {:description "Line number distinguishing multiple accounts."
+                                                 :format :number
+                                                 :identity? true
+                                                 :label "Line No"
+                                                 :synonyms ["行号" "账户行号" "line number"]
+                                                 :type :integer}
+              :cis.master.customer_bank/swift_code {:description "SWIFT/BIC code."
+                                                    :format :id
+                                                    :label "SWIFT Code"
+                                                    :synonyms ["SWIFT代码" "BIC代码" "swift code" "bic"]
+                                                    :type :string}
+              :cis.master.customer_bank/type {:description "Banking method."
+                                              :format :code
+                                              :label "Banking Type"
+                                              :synonyms ["银行业务类型" "结算类型" "banking type"]
+                                              :type :string
+                                              :values {"ACH" {:label "自动清算(ACH)"}
+                                                       "WIRE" {:label "电汇"}}}
+              :cis.master.customer_credit/audit_info {:term "common.audit/audit_info" :type :string}
+              :cis.master.customer_credit/credit_limit {:description "Approved credit limit."
+                                                        :format :currency
+                                                        :label "Credit Limit"
+                                                        :synonyms ["信用额度" "授信额度" "credit limit"]
+                                                        :type :decimal
+                                                        :unit "USD"}
+              :cis.master.customer_credit/curr_bal {:description "Current outstanding balance."
+                                                    :format :currency
+                                                    :label "Current Balance"
+                                                    :synonyms ["当前余额" "应收余额" "current balance"
+                                                               "outstanding balance"]
+                                                    :type :decimal
+                                                    :unit "USD"}
+              :cis.master.customer_credit/curr_pymts {:description "Payments applied this period."
+                                                      :format :currency
+                                                      :label "Current Payments"
+                                                      :synonyms ["本期付款" "本期已付" "current payments"]
+                                                      :type :decimal
+                                                      :unit "USD"}
+              :cis.master.customer_credit/cust_no {:identity? true
+                                                   :term "cis.party/customer_no"
+                                                   :type :integer}
+              :cis.master.customer_credit/entry_datetime {:listed? false
+                                                          :term "common.audit/created_at"
+                                                          :type :date}
+              :cis.master.customer_credit/entry_id {:listed? false
+                                                    :term "common.audit/created_by"
+                                                    :type :string}
+              :cis.master.customer_credit/last_pay_date {:description "Most recent payment date."
+                                                         :format :date
+                                                         :label "Last Payment Date"
+                                                         :synonyms ["最近付款日" "上次付款日"
+                                                                    "last payment date"]
+                                                         :type :date}
+              :cis.master.customer_credit/past_due_amt {:description "Amount past due."
+                                                        :format :currency
+                                                        :label "Past Due Amount"
+                                                        :synonyms ["逾期金额" "past due amount"
+                                                                   "overdue amount"]
+                                                        :type :decimal
+                                                        :unit "USD"}
+              :cis.master.customer_credit/past_due_date {:description "Date the oldest past-due amount aged from."
+                                                         :format :date
+                                                         :label "Past Due Date"
+                                                         :synonyms ["逾期起始日" "账龄起始日" "past due date"]
+                                                         :type :date}
+              :cis.master.customer_credit/pending_amt {:description "Pending (unposted) amount."
+                                                       :format :currency
+                                                       :label "Pending Amount"
+                                                       :synonyms ["未过账金额" "待处理金额" "pending amount"]
+                                                       :type :decimal
+                                                       :unit "USD"}
+              :cis.master.customer_credit/restricted {:description "Whether credit is restricted / on hold."
+                                                      :format :code
+                                                      :label "Credit Restricted"
+                                                      :synonyms ["信用是否受限" "受限" "冻结" "restricted"
+                                                                 "on hold"]
+                                                      :type :string
+                                                      :values {"N" {:label "正常"}
+                                                               "Y" {:label "受限/冻结"}}}
+              :cis.master.customer_credit/sold_since {:description "Customer-since date."
+                                                      :format :date
+                                                      :label "Customer Since"
+                                                      :synonyms ["成为客户日期" "客户起始日" "customer since"]
+                                                      :type :date}
+              :cis.master.customer_credit/terms {:description "Payment terms."
+                                                 :format :code
+                                                 :label "Payment Terms"
+                                                 :synonyms ["付款条款" "payment terms"]
+                                                 :type :string
+                                                 :values {"NET30" {:label "30天账期(NET30)"}
+                                                          "NET45" {:label "45天账期(NET45)"}}}
+              :cis.master.customer_credit/u_version {:listed? false
+                                                     :term "common.audit/detail_row_version"
+                                                     :type :string}
+              :cis.master.part/all_parts {:cardinality :one-to-many
+                                          :description "Global collection of catalog parts."
+                                          :label "All Parts"
+                                          :target "cis.master.part"}
+              :cis.master.part/audit_info {:term "common.audit/audit_info" :type :string}
+              :cis.master.part/ave_cost {:description "Average unit cost."
+                                         :format :currency
+                                         :label "Average Cost"
+                                         :synonyms ["平均成本" "单位成本" "average cost" "unit cost"]
+                                         :type :decimal
+                                         :unit "USD"}
+              :cis.master.part/entry_datetime {:listed? false
+                                               :term "common.audit/created_at"
+                                               :type :date}
+              :cis.master.part/entry_id {:listed? false
+                                         :term "common.audit/created_by"
+                                         :type :string}
+              :cis.master.part/part_no {:description "Manufacturer / catalog part number."
+                                        :format :id
+                                        :label "Part No"
+                                        :synonyms ["厂商料号" "目录料号" "part number"
+                                                   "manufacturer part number"]
+                                        :type :string}
+              :cis.master.part/prod_code {:description "Product code / category."
+                                          :format :code
+                                          :label "Product Code"
+                                          :synonyms ["产品代码" "产品类别" "product code" "category"]
+                                          :type :string
+                                          :values {"ACCESSORIES" {:label "配件"}
+                                                   "CABLE" {:label "线缆"}
+                                                   "COMPONENT" {:label "元件"}
+                                                   "ELECTRICAL" {:label "电气"}
+                                                   "IMAGING" {:label "影像"}
+                                                   "INPUT" {:label "输入设备"}
+                                                   "LIGHTING" {:label "照明"}
+                                                   "MECHANICAL" {:label "机械"}
+                                                   "MEMORY" {:label "内存"}
+                                                   "NETWORK" {:label "网络"}
+                                                   "POWER" {:label "电源"}
+                                                   "STORAGE" {:label "存储"}}}
+              :cis.master.part/short_desc {:description "Short item description."
+                                           :format :text
+                                           :label "Short Description"
+                                           :synonyms ["简短描述" "物料描述" "short description"
+                                                      "item description"]
+                                           :type :string}
+              :cis.master.part/sku_no {:identity? true :term "cis.catalog/sku_no" :type :integer}
+              :cis.master.part/u_version {:listed? false
+                                          :term "common.audit/detail_row_version"
+                                          :type :string}
+              :cis.master.part/vend_no {:term "cis.party/vendor_no" :type :integer}
+              :cis.master.vendor/all_vendors {:cardinality :one-to-many
+                                              :description "Global collection of vendors."
+                                              :label "All Vendors"
+                                              :target "cis.master.vendor"}
+              :cis.master.vendor/audit_info {:term "common.audit/audit_info" :type :string}
+              :cis.master.vendor/discontinued {:description "Whether the vendor is discontinued (Y/N)."
+                                               :format :code
+                                               :label "Discontinued"
+                                               :synonyms ["是否停用" "停用" "discontinued" "inactive"]
+                                               :type :string
+                                               :values {"N" {:label "在用"} "Y" {:label "已停用"}}}
+              :cis.master.vendor/entry_datetime {:listed? false
+                                                 :term "common.audit/created_at"
+                                                 :type :date}
+              :cis.master.vendor/entry_id {:listed? false
+                                           :term "common.audit/created_by"
+                                           :type :string}
+              :cis.master.vendor/primary_loc {:description "Primary location code."
+                                              :format :code
+                                              :label "Primary Location"
+                                              :synonyms ["主要地点" "主仓位置" "primary location"]
+                                              :type :string}
+              :cis.master.vendor/u_version {:listed? false
+                                            :term "common.audit/detail_row_version"
+                                            :type :string}
+              :cis.master.vendor/vend_name {:description "Vendor company name."
+                                            :format :text
+                                            :label "Vendor Name"
+                                            :synonyms ["供应商名称" "供应商" "vendor name" "supplier name"]
+                                            :type :string}
+              :cis.master.vendor/vend_no {:identity? true
+                                          :term "cis.party/vendor_no"
+                                          :type :integer}
+              :cis.master.vendor/vend_type {:description "Vendor classification code."
+                                            :format :code
+                                            :label "Vendor Type"
+                                            :synonyms ["供应商类型" "vendor type"]
+                                            :type :string}
+              :cis.master.vendor/vpos {:cardinality :one-to-many :target "cis.purchase.vpo"}
+              :cis.purchase.vpo/all_vpos {:cardinality :one-to-many
+                                          :description "Global collection of vendor purchase orders."
+                                          :label "All VPOs"
+                                          :target "cis.purchase.vpo"}
+              :cis.purchase.vpo/audit_info {:term "common.audit/audit_info" :type :string}
+              :cis.purchase.vpo/closed_date {:description ""
+                                             :synonyms ["关闭日期" "结单日期" "closed date" "close date"]
+                                             :type :date}
+              :cis.purchase.vpo/detail_price_total {:description ""
+                                                    :synonyms ["明细金额合计" "行金额合计" "detail price total"
+                                                               "line total"]
+                                                    :type :decimal}
+              :cis.purchase.vpo/entry_datetime {:listed? false
+                                                :term "common.audit/created_at"
+                                                :type :date}
+              :cis.purchase.vpo/entry_id {:listed? false
+                                          :term "common.audit/created_by"
+                                          :type :string}
+              :cis.purchase.vpo/eta_detail {:cardinality :one-to-many
+                                            :target "cis.purchase.vpo_eta_detail"}
+              :cis.purchase.vpo/expected_date {:description "Expected delivery date."
+                                               :format :date
+                                               :label "Expected Date"
+                                               :synonyms ["预计到货日" "expected date"
+                                                          "expected delivery"]
+                                               :type :date}
+              :cis.purchase.vpo/freight {:description "Freight charge."
+                                         :format :currency
+                                         :label "Freight"
+                                         :synonyms ["运费" "freight" "shipping cost"]
+                                         :type :decimal
+                                         :unit "USD"}
+              :cis.purchase.vpo/from_acct_no {:term "cis.party/vendor_no" :type :integer}
+              :cis.purchase.vpo/int_ref_no {:description "Internal reference — the linked sales order (MSO)."
+                                            :format :id
+                                            :label "Internal Ref No"
+                                            :synonyms ["内部参考号" "关联销售单号" "internal ref" "linked mso"]
+                                            :type :integer}
+              :cis.purchase.vpo/issue_date {:term "cis.doc/issue_date" :type :date}
+              :cis.purchase.vpo/order_detail {:cardinality :one-to-many
+                                              :target "cis.purchase.vpo_order_detail"}
+              :cis.purchase.vpo/order_no {:description "Purchase order number (header id)."
+                                          :format :id
+                                          :identity? true
+                                          :label "Order No"
+                                          :synonyms ["采购单号" "PO号" "purchase order number" "po no"]
+                                          :type :integer}
+              :cis.purchase.vpo/order_type {:term "cis.doc/order_type" :type :integer}
+              :cis.purchase.vpo/po_amounts_info {:description "采购单上的各项金额：订单总额、成本、运费与明细价合计。这是**我们付出去的钱**——与销售单上同名的字段不是同一个概念（同名 ≠ 同义，D2.26）。"
+                                                 :format :text
+                                                 :label "采购金额"
+                                                 :type :string}
+              :cis.purchase.vpo/receiving_date {:description ""
+                                                :synonyms ["收货日期" "到货日期" "receiving date"
+                                                           "receipt date"]
+                                                :type :date}
+              :cis.purchase.vpo/receiving_dates_info {:description "这张采购单的收货时间线：下单 → 预计到货 → 我们收到 → 关单。它回答的是「货什么时候到」。"
+                                                      :format :text
+                                                      :label "收货时间线"
+                                                      :type :string}
+              :cis.purchase.vpo/ship_to_addr {:term "cis.ship/ship_to_addr" :type :string}
+              :cis.purchase.vpo/ship_to_city {:term "cis.ship/ship_to_city" :type :string}
+              :cis.purchase.vpo/ship_to_info {:term "cis.order/ship_to_info"
+                                              :term-context "采购单：dropship 时由供应商直接发给客户"
+                                              :type :string}
+              :cis.purchase.vpo/ship_to_name {:term "cis.ship/ship_to_name" :type :string}
+              :cis.purchase.vpo/ship_to_state {:term "cis.ship/ship_to_state" :type :string}
+              :cis.purchase.vpo/ship_to_zip {:term "cis.ship/ship_to_zip" :type :string}
+              :cis.purchase.vpo/to_acct_no {:term "cis.party/customer_no" :type :integer}
+              :cis.purchase.vpo/total_cost {:description "Total order cost."
+                                            :format :currency
+                                            :label "Total Cost"
+                                            :synonyms ["总成本" "采购总成本" "total cost"]
+                                            :type :decimal
+                                            :unit "USD"}
+              :cis.purchase.vpo/total_order {:term "cis.money/total_order" :type :decimal}
+              :cis.purchase.vpo/u_version {:listed? false
+                                           :term "common.audit/detail_row_version"
+                                           :type :string}
+              :cis.purchase.vpo/update_datetime {:listed? false
+                                                 :term "common.audit/updated_at"
+                                                 :type :date}
+              :cis.purchase.vpo/update_id {:listed? false
+                                           :term "common.audit/updated_by"
+                                           :type :string}
+              :cis.purchase.vpo_eta_detail/actual_arrival {:description "Actual arrival date (null until received)."
+                                                           :format :date
+                                                           :label "Actual Arrival"
+                                                           :synonyms ["实际到货日" "actual arrival"]
+                                                           :type :date}
+              :cis.purchase.vpo_eta_detail/carrier_no {:description "Carrier handling the line."
+                                                       :format :text
+                                                       :label "Carrier"
+                                                       :synonyms ["承运商" "物流公司" "carrier"]
+                                                       :type :string}
+              :cis.purchase.vpo_eta_detail/current_eta {:description "Current (revised) expected delivery date."
+                                                        :format :date
+                                                        :label "Current ETA"
+                                                        :synonyms ["当前预计到货" "current eta"
+                                                                   "revised eta"]
+                                                        :type :date}
+              :cis.purchase.vpo_eta_detail/delay_days {:description "Days current ETA slips past the original."
+                                                       :format :number
+                                                       :label "Delay Days"
+                                                       :synonyms ["延误天数" "delay days"]
+                                                       :type :integer
+                                                       :unit "days"}
+              :cis.purchase.vpo_eta_detail/eta_status {:description "Delivery tracking status."
+                                                       :format :code
+                                                       :label "ETA Status"
+                                                       :synonyms ["到货状态" "物流状态" "eta status"
+                                                                  "delivery status"]
+                                                       :type :string
+                                                       :values {"ARRIVED" {:label "已到货"}
+                                                                "BOOKED" {:label "已订舱"}
+                                                                "DELAYED" {:label "延误"}
+                                                                "IN_TRANSIT" {:label "在途"}}}
+              :cis.purchase.vpo_eta_detail/line_no {:description "Line number within the PO."
+                                                    :format :number
+                                                    :identity? true
+                                                    :label "Line No"
+                                                    :synonyms ["行号" "line number"]
+                                                    :type :integer}
+              :cis.purchase.vpo_eta_detail/order_no {:description "Parent PO number."
+                                                     :format :id
+                                                     :identity? true
+                                                     :label "Order No"
+                                                     :synonyms ["采购单号" "parent po number"]
+                                                     :type :integer}
+              :cis.purchase.vpo_eta_detail/original_eta {:description "Original promised delivery date."
+                                                         :format :date
+                                                         :label "Original ETA"
+                                                         :synonyms ["原始预计到货" "original eta"]
+                                                         :type :date}
+              :cis.purchase.vpo_eta_detail/sku_no {:term "cis.catalog/sku_no" :type :integer}
+              :cis.purchase.vpo_eta_detail/tracking_no {:description "Carrier tracking number."
+                                                        :format :id
+                                                        :label "Tracking No"
+                                                        :synonyms ["运单号" "追踪号" "tracking number"]
+                                                        :type :string}
+              :cis.purchase.vpo_eta_detail/updated_date {:description "When this ETA was last updated."
+                                                         :format :datetime
+                                                         :label "Updated Date"
+                                                         :synonyms ["更新时间" "updated date"]
+                                                         :type :datetime}
+              :cis.purchase.vpo_order_detail/line_no {:description "Line number within the PO."
+                                                      :format :number
+                                                      :identity? true
+                                                      :label "Line No"
+                                                      :synonyms ["行号" "line number"]
+                                                      :type :integer}
+              :cis.purchase.vpo_order_detail/order_no {:description "Parent PO number."
+                                                       :format :id
+                                                       :identity? true
+                                                       :label "Order No"
+                                                       :synonyms ["采购单号" "parent po number"]
+                                                       :type :integer}
+              :cis.purchase.vpo_order_detail/order_qty {:term "cis.line/order_qty" :type :integer}
+              :cis.purchase.vpo_order_detail/ship_qty {:term "cis.line/ship_qty" :type :integer}
+              :cis.purchase.vpo_order_detail/sku_no {:term "cis.catalog/sku_no" :type :integer}
+              :cis.purchase.vpo_order_detail/unit_cost {:term "cis.money/unit_cost"
+                                                        :type :decimal
+                                                        :unit "USD"}
+              :cis.purchase.vpo_order_detail/vend_part_no {:description "Vendor's part number."
+                                                           :format :id
+                                                           :label "Vendor Part No"
+                                                           :synonyms ["厂商料号" "供应商料号"
+                                                                      "vendor part number"
+                                                                      "mfg part"]
+                                                           :type :string}
+              :cis.sales.mso/all_msos {:cardinality :one-to-many
+                                       :description "Global collection of sales orders."
+                                       :label "All MSOs"
+                                       :target "cis.sales.mso"}
+              :cis.sales.mso/approval {:description ""
+                                       :synonyms ["审批" "审批人" "approval" "approved by"]
+                                       :type :string}
+              :cis.sales.mso/audit_info {:term "common.audit/audit_info" :type :string}
+              :cis.sales.mso/bol_date {:description ""
+                                       :synonyms ["提单日期" "运单日期" "bol date" "bill of lading date"]
+                                       :type :date}
+              :cis.sales.mso/credit_rel_date {:description ""
+                                              :synonyms ["信用放行日期" "解除信用冻结日期" "credit release date"]
+                                              :type :date}
+              :cis.sales.mso/entry_datetime {:listed? false
+                                             :term "common.audit/created_at"
+                                             :type :date}
+              :cis.sales.mso/entry_id {:listed? false :term "common.audit/created_by" :type :string}
+              :cis.sales.mso/hold_date {:description ""
+                                        :synonyms ["冻结日期" "挂起日期" "hold date"]
+                                        :type :date}
+              :cis.sales.mso/hold_id {:description ""
+                                      :synonyms ["冻结人" "挂起标识" "hold id" "held by"]
+                                      :type :string}
+              :cis.sales.mso/int_ref_no {:description "Internal reference."
+                                         :format :id
+                                         :label "Internal Ref No"
+                                         :synonyms ["内部参考号" "internal ref"]
+                                         :type :integer}
+              :cis.sales.mso/issue_date {:term "cis.doc/issue_date" :type :date}
+              :cis.sales.mso/label_date {:description ""
+                                         :synonyms ["打标签日期" "贴标日期" "label date"]
+                                         :type :date}
+              :cis.sales.mso/order_no {:description "Sales order number."
+                                       :format :id
+                                       :identity? true
+                                       :label "Order No"
+                                       :synonyms ["销售单号" "MSO号" "sales order number" "mso no"]
+                                       :type :integer}
+              :cis.sales.mso/order_type {:term "cis.doc/order_type" :type :integer}
+              :cis.sales.mso/pick_date {:description ""
+                                        :synonyms ["拣货日期" "备货日期" "pick date" "picking date"]
+                                        :type :date}
+              :cis.sales.mso/qc_date {:description ""
+                                      :synonyms ["质检日期" "品检日期" "qc date" "quality check date"]
+                                      :type :date}
+              :cis.sales.mso/releases_info {:description "这张销售单能不能发货：审批状态、扣单人与扣单日期、信用放行日期。它回答的是「有没有东西挡着它出门」。"
+                                            :format :text
+                                            :label "放行控制"
+                                            :type :string}
+              :cis.sales.mso/sales_terr {:description "Sales territory code."
+                                         :format :code
+                                         :label "Sales Territory"
+                                         :synonyms ["销售区域" "区域" "sales territory" "territory"]
+                                         :type :string}
+              :cis.sales.mso/sales_total {:description "Sales total."
+                                          :format :currency
+                                          :label "Sales Total"
+                                          :synonyms ["销售总额" "sales total"]
+                                          :type :decimal
+                                          :unit "USD"}
+              :cis.sales.mso/ship_date {:description ""
+                                        :synonyms ["发货日期" "出货日期" "ship date" "shipping date"]
+                                        :type :date}
+              :cis.sales.mso/ship_to_addr {:term "cis.ship/ship_to_addr" :type :string}
+              :cis.sales.mso/ship_to_city {:term "cis.ship/ship_to_city" :type :string}
+              :cis.sales.mso/ship_to_country {:description ""
+                                              :synonyms ["收货国家" "送货国家" "ship to country"
+                                                         "destination country"]
+                                              :type :string}
+              :cis.sales.mso/ship_to_info {:term "cis.order/ship_to_info"
+                                           :term-context "销售单：发给客户"
+                                           :type :string}
+              :cis.sales.mso/ship_to_name {:term "cis.ship/ship_to_name" :type :string}
+              :cis.sales.mso/ship_to_state {:term "cis.ship/ship_to_state" :type :string}
+              :cis.sales.mso/ship_to_zip {:term "cis.ship/ship_to_zip" :type :string}
+              :cis.sales.mso/so_amounts_info {:description "销售单上的各项金额：订单总额与销售额合计。这是**收入侧的钱**——与采购单上同名的字段不是同一个概念（同名 ≠ 同义，D2.26）。"
+                                              :format :text
+                                              :label "销售金额"
+                                              :type :string}
+              :cis.sales.mso/to_acct_no {:term "cis.party/customer_no" :type :integer}
+              :cis.sales.mso/total_order {:term "cis.money/total_order" :type :decimal :unit "USD"}
+              :cis.sales.mso/u_version {:listed? false
+                                        :term "common.audit/detail_row_version"
+                                        :type :string}
+              :cis.sales.mso/update_datetime {:listed? false
+                                              :term "common.audit/updated_at"
+                                              :type :date}
+              :cis.sales.mso/update_id {:listed? false
+                                        :term "common.audit/updated_by"
+                                        :type :string}
+              :cis.sales.mso/vpos {:cardinality :one-to-many :target "cis.purchase.vpo"}
+              :cis.sales.mso/warehouse_ops_info {:description "这张销售单在仓库里走到哪一步：拣货 → 质检 → 贴标 → 发货 → 提单，五个时点按履约先后排列。未发生的步骤是空——那本身就是答案。"
+                                                 :format :text
+                                                 :label "仓库作业"
+                                                 :type :string}
+              :cis.sales.mso_fulfilment/dropship_vpos {:cardinality :one-to-many
+                                                       :target "cis.purchase.vpo"}
+              :cis.sales.mso_fulfilment/order_details {:cardinality :one-to-many
+                                                       :target "cis.sales.mso_order_detail"}
+              :cis.sales.mso_fulfilment/ssos {:cardinality :one-to-many :target "cis.sales.sso"}
+              :cis.sales.mso_order_detail/claim_new_cost {:description "Claimed new cost for this line."
+                                                          :format :currency
+                                                          :label "Claim New Cost"
+                                                          :synonyms ["索赔新成本" "理赔成本" "claim new cost"]
+                                                          :type :decimal
+                                                          :unit "USD"}
+              :cis.sales.mso_order_detail/entry_datetime {:term "common.audit/created_at"
+                                                          :type :date}
+              :cis.sales.mso_order_detail/entry_id {:term "common.audit/created_by" :type :string}
+              :cis.sales.mso_order_detail/inv_type {:description "这一行怎么履约：从我们的库存发货，还是由供应商直发客户。它决定了这张合同后面会不会长出一张 VPO。"
+                                                    :format :code
+                                                    :label "Inv Type"
+                                                    :synonyms ["库存类型" "履约方式" "inventory type"
+                                                               "inv type"]
+                                                    :type :integer
+                                                    :values {1 {:description "从我们自己的仓库发货，走 g_warehouse_ops 那一串作业时点。"
+                                                                :label "库存单"}
+                                                             98 {:description "供应商直接发给终端客户，不进我们的仓库——这一行对应一张 VPO，发货后开出的 SSO 用 int_ref_type=2 指回那张 VPO。"
+                                                                 :label "直发单"}}}
+              :cis.sales.mso_order_detail/line_no {:description "Line number within the sales order."
+                                                   :format :number
+                                                   :identity? true
+                                                   :label "Line No"
+                                                   :synonyms ["行号" "行序号" "line number" "line no"]
+                                                   :type :integer}
+              :cis.sales.mso_order_detail/net_price {:term "cis.money/net_price"
+                                                     :type :decimal
+                                                     :unit "USD"}
+              :cis.sales.mso_order_detail/order_no {:description "Sales order (MSO) this line belongs to."
+                                                    :format :id
+                                                    :identity? true
+                                                    :label "Order No"
+                                                    :synonyms ["销售单号" "MSO号" "sales order number"
+                                                               "mso no"]
+                                                    :type :integer}
+              :cis.sales.mso_order_detail/order_qty {:term "cis.line/order_qty" :type :integer}
+              :cis.sales.mso_order_detail/order_type {:term "cis.doc/order_type" :type :integer}
+              :cis.sales.mso_order_detail/rec_qty {:description "Quantity received back on this line."
+                                                   :format :number
+                                                   :label "Rec Qty"
+                                                   :synonyms ["收货数量" "已收数量" "received quantity"
+                                                              "rec qty"]
+                                                   :type :integer}
+              :cis.sales.mso_order_detail/release_id {:description "Who released the line."
+                                                      :format :text
+                                                      :label "Release By"
+                                                      :synonyms ["放行人" "放行标识" "release id"
+                                                                 "released by"]
+                                                      :type :string}
+              :cis.sales.mso_order_detail/ship_qty {:term "cis.line/ship_qty" :type :integer}
+              :cis.sales.mso_order_detail/sku_no {:term "cis.catalog/sku_no" :type :integer}
+              :cis.sales.mso_order_detail/sys_new_cost {:description "System new cost for this line."
+                                                        :format :currency
+                                                        :label "Sys New Cost"
+                                                        :synonyms ["系统新成本" "系统成本" "system new cost"]
+                                                        :type :decimal
+                                                        :unit "USD"}
+              :cis.sales.mso_order_detail/unit_cost {:term "cis.money/unit_cost"
+                                                     :type :decimal
+                                                     :unit "USD"}
+              :cis.sales.mso_order_detail/unit_price {:term "cis.money/unit_price"
+                                                      :type :decimal
+                                                      :unit "USD"}
+              :cis.sales.sso/all_ssos {:cardinality :one-to-many
+                                       :description "Global collection of shipped sales orders."
+                                       :label "All SSOs"
+                                       :target "cis.sales.sso"}
+              :cis.sales.sso/drop_ship {:description "Drop-ship flag."
+                                        :format :code
+                                        :label "Drop Ship"
+                                        :synonyms ["是否直发" "代发货" "drop ship"]
+                                        :type :string
+                                        :values {"N" {:label "非直发"} "Y" {:label "直发/代发货"}}}
+              :cis.sales.sso/ext_ref {:description "External reference (customer PO)."
+                                      :format :id
+                                      :label "External Ref"
+                                      :synonyms ["外部参考" "客户PO号" "external reference" "customer po"]
+                                      :type :string}
+              :cis.sales.sso/invoice_date {:description "Invoice date."
+                                           :format :datetime
+                                           :label "Invoice Date"
+                                           :synonyms ["开票日期" "invoice date"]
+                                           :type :datetime}
+              :cis.sales.sso/issue_date {:term "cis.doc/issue_date" :type :date}
+              :cis.sales.sso/order_detail {:cardinality :one-to-many
+                                           :target "cis.sales.sso_order_detail"}
+              :cis.sales.sso/order_no {:description "Shipped sales order number (header id; = source int_ref_no)."
+                                       :format :id
+                                       :identity? true
+                                       :label "Order No"
+                                       :synonyms ["发货销售单号" "SSO号" "shipped order number"]
+                                       :type :integer}
+              :cis.sales.sso/order_type {:term "cis.doc/order_type" :type :integer}
+              :cis.sales.sso/sales_total {:description "Sales total."
+                                          :format :currency
+                                          :label "Sales Total"
+                                          :synonyms ["销售总额" "sales total"]
+                                          :type :decimal
+                                          :unit "USD"}
+              :cis.sales.sso/ship_date {:description "Date the order shipped."
+                                        :format :datetime
+                                        :label "Ship Date"
+                                        :synonyms ["发货日期" "ship date"]
+                                        :type :datetime}
+              :cis.sales.sso/ship_to_city {:term "cis.ship/ship_to_city" :type :string}
+              :cis.sales.sso/ship_to_name {:term "cis.ship/ship_to_name" :type :string}
+              :cis.sales.sso/ship_to_state {:term "cis.ship/ship_to_state" :type :string}
+              :cis.sales.sso/to_acct_no {:term "cis.party/customer_no" :type :integer}
+              :cis.sales.sso/total_cost {:description "Total order cost."
+                                         :format :currency
+                                         :label "Total Cost"
+                                         :synonyms ["总成本" "total cost"]
+                                         :type :decimal
+                                         :unit "USD"}
+              :cis.sales.sso/total_order {:term "cis.money/total_order" :type :decimal :unit "USD"}
+              :cis.sales.sso/total_weight {:description "Total shipped weight."
+                                           :format :number
+                                           :label "Total Weight"
+                                           :synonyms ["总重量" "total weight"]
+                                           :type :decimal}
+              :cis.sales.sso_order_detail/line_no {:description "Line number within the order."
+                                                   :format :number
+                                                   :identity? true
+                                                   :label "Line No"
+                                                   :synonyms ["行号" "line number"]
+                                                   :type :integer}
+              :cis.sales.sso_order_detail/net_price {:term "cis.money/net_price"
+                                                     :type :decimal
+                                                     :unit "USD"}
+              :cis.sales.sso_order_detail/order_no {:description "Parent shipped-order number."
+                                                    :format :id
+                                                    :identity? true
+                                                    :label "Order No"
+                                                    :synonyms ["发货单号" "parent order number"]
+                                                    :type :integer}
+              :cis.sales.sso_order_detail/order_qty {:term "cis.line/order_qty" :type :integer}
+              :cis.sales.sso_order_detail/ship_qty {:term "cis.line/ship_qty" :type :integer}
+              :cis.sales.sso_order_detail/sku_no {:term "cis.catalog/sku_no" :type :integer}
+              :cis.sales.sso_order_detail/unit_cost {:term "cis.money/unit_cost"
+                                                     :type :decimal
+                                                     :unit "USD"}
+              :cis.sales.sso_order_detail/unit_price {:term "cis.money/unit_price"
+                                                      :type :decimal
+                                                      :unit "USD"}}
+ :links [{:description "CPO 行项订的是哪个 SKU。"
+          :direction :one-way
+          :from :cis.cpo.cpo_detail/cpo_sku_no
+          :to :cis.master.part/sku_no}
+         {:description "CPO 行项属于哪张采购订单。"
+          :direction :one-way
+          :from :cis.cpo.cpo_detail/order_no
+          :to :cis.cpo.cpo_header/order_no}
+         {:description "采购订单是哪个客户下的。"
+          :direction :one-way
+          :from :cis.cpo.cpo_header/cpo_cust_no
+          :to :cis.master.customer/cust_no}
+         {:from :cis.master.customer/cust_no :to :cis.master.customer_credit/cust_no}
+         {:direction :one-way :from :cis.master.part/vend_no :to :cis.master.vendor/vend_no}
+         {:direction :one-way :from :cis.purchase.vpo/from_acct_no :to :cis.master.vendor/vend_no}
+         {:from :cis.purchase.vpo/int_ref_no :to :cis.sales.mso/order_no}
+         {:direction :one-way :from :cis.purchase.vpo/to_acct_no :to :cis.master.customer/cust_no}
+         {:direction :one-way
+          :from :cis.purchase.vpo_order_detail/sku_no
+          :to :cis.master.part/sku_no}
+         {:description "MSO 的内部引用指向客户的采购订单号（CPO）。"
+          :direction :one-way
+          :from :cis.sales.mso/int_ref_no
+          :to :cis.cpo.cpo_header/order_no}
+         {:direction :one-way :from :cis.sales.mso/to_acct_no :to :cis.master.customer/cust_no}
+         {:description "MSO 行项属于哪张销售合同。"
+          :direction :one-way
+          :from :cis.sales.mso_order_detail/order_no
+          :to :cis.sales.mso/order_no}
+         {:description "MSO 行项订的是哪个 SKU。"
+          :direction :one-way
+          :from :cis.sales.mso_order_detail/sku_no
+          :to :cis.master.part/sku_no}
+         {:direction :one-way :from :cis.sales.sso/to_acct_no :to :cis.master.customer/cust_no}]
+ :metrics {"sales_by_customer_month" {:description "开单口径的销售额：按客户、按月汇总 MSO 的订单总额。**开单不是发货**——一张 MSO 可能一件没发（demo 库里有 6 张），它仍然计入本口径。要看发出去多少，那是另一个口径，不是给这个加一个维度。"
+                                      :dimensions [:cis.sales.mso/to_acct_no
+                                                   :cis.sales.mso/issue_date]
+                                      :entity "cis.sales.mso"
+                                      :expression {:contract :duckdb-spill/v1
+                                                   :text "sum(total_order)"}
+                                      :grain :month
+                                      :label "客户月度销售额"
+                                      :synonyms ["月度销售额" "客户销售额" "sales by customer"]}
+           "spend_by_vendor_month" {:description "采购口径的支出：按供应商、按月汇总 VPO 的成本合计。与销售侧那条**不是同一个概念**（同名 ≠ 同义，D2.26）：这是我们付出去的钱，故另立 metric 而不是给上一条加一个「方向」维度。"
+                                    :dimensions [:cis.purchase.vpo/from_acct_no
+                                                 :cis.purchase.vpo/issue_date]
+                                    :entity "cis.purchase.vpo"
+                                    :expression {:contract :duckdb-spill/v1 :text "sum(total_cost)"}
+                                    :grain :month
+                                    :label "供应商月度采购支出"
+                                    :synonyms ["月度采购支出" "供应商支出" "spend by vendor"]}}
+ :namespaces {"cis.cpo.cpo_detail" {:label "CPO line item — what the customer ordered, line by line"}
+              "cis.cpo.cpo_header" {:label "CPO — Customer Purchase Order (header); the start of the demo's business chain"}
+              "cis.master.customer" {:label "Customer — buyer / ship-to account"}
+              "cis.master.customer_bank" {:label "Customer bank account — settlement banking detail"}
+              "cis.master.customer_credit" {:label "Customer credit — limit, balance, terms, past-due"}
+              "cis.master.part" {:label "Part — catalog item (SKU)"}
+              "cis.master.vendor" {:label "Vendor — supplier on a purchase order"}
+              "cis.purchase.vpo" {:label "VPO — Vendor Purchase Order (header)"}
+              "cis.purchase.vpo_eta_detail" {:label "VPO line ETA — delivery tracking per line"}
+              "cis.purchase.vpo_order_detail" {:label "VPO line item"}
+              "cis.sales.mso" {:label "MSO — sales order (links to the VPO via int_ref_no)"}
+              "cis.sales.mso_fulfilment" {:label "MSO fulfilment — navigation anchor for a sales order's lines and its shipments"}
+              "cis.sales.mso_order_detail" {:label "MSO line item — the full contracted order line"}
+              "cis.sales.sso" {:label "SSO — shipped sales order (header)"}
+              "cis.sales.sso_order_detail" {:label "SSO line item — shipped sales order detail"}}
+ :resolvers [{:curated? true
+              :description "Every CPO — a global collection. Query with an empty entity: {:entity {} :query [{:cis.cpo.cpo_header/all_cpos [...]}]}."
+              :id "demo_all_cpos"
+              :input []
+              :label "All customer purchase orders"
+              :limit {:default 50 :max 500}
+              :order {:allowed [:cis.cpo.cpo_header/order_no :cis.cpo.cpo_header/cpo_date]
+                      :default [:cis.cpo.cpo_header/order_no :asc]}
+              :output [{:cis.cpo.cpo_header/all_cpos [:cis.cpo.cpo_header/order_no
+                                                      :cis.cpo.cpo_header/cpo_cust_no
+                                                      :cis.cpo.cpo_header/cpo_date
+                                                      :cis.cpo.cpo_header/po_total]}]
+              :result_type "list"
+              :source {:query "SELECT order_no, cpo_cust_no, cpo_date, po_total FROM cpo_header"
+                       :type "sql"}
+              :source-ref "cis-demo-db"}
+             {:curated? true
+              :description "Every customer — a global collection. Query: {:entity {} :query [{:cis.master.customer/all_customers [:cis.master.customer/cust_no :cis.master.customer/cust_name]}]}."
+              :id "demo_all_customers"
+              :input []
+              :label "All customers"
+              :limit {:default 50 :max 500}
+              :output [{:cis.master.customer/all_customers [:cis.master.customer/cust_no
+                                                            :cis.master.customer/cust_name
+                                                            :cis.master.customer/cust_type]}]
+              :result_type "list"
+              :source {:query "SELECT cust_no, cust_name, cust_type FROM customers" :type "sql"}
+              :source-ref "cis-demo-db"}
+             {:curated? true
+              :description "Every MSO (sales order) — a global collection. List all: {:entity {} :query [{:cis.sales.mso/all_msos [:cis.sales.mso/order_no :cis.sales.mso/issue_date :cis.sales.mso/total_order]}]}. Narrow by issue-date range (:issue_date_from / :issue_date_to, \"YYYY-MM-DD\") or by customer (:cust_no — the buyer's account number): {:entity {} :query [({:cis.sales.mso/all_msos [...]} {:cust_no 121823})]}."
+              :eql-params {:cust_no {:attribute :cis.sales.mso/to_acct_no
+                                     :description "Only this customer's MSOs (buyer account number, e.g. 121823)."
+                                     :op :eq}
+                           :issue_date_from {:attribute :cis.sales.mso/issue_date
+                                             :description "Only MSOs issued on/after this date (YYYY-MM-DD)."
+                                             :op :gte}
+                           :issue_date_to {:attribute :cis.sales.mso/issue_date
+                                           :description "Only MSOs issued on/before this date (YYYY-MM-DD)."
+                                           :op :lte}}
+              :id "demo_all_msos"
+              :input []
+              :label "All MSOs"
+              :limit {:default 50 :max 500}
+              :order {:allowed [:cis.sales.mso/order_no :cis.sales.mso/issue_date
+                                :cis.sales.mso/total_order]
+                      :default [:cis.sales.mso/order_no :asc]}
+              :output [{:cis.sales.mso/all_msos [:cis.sales.mso/order_no :cis.sales.mso/issue_date
+                                                 :cis.sales.mso/ship_to_name
+                                                 :cis.sales.mso/total_order
+                                                 :cis.sales.mso/to_acct_no]}]
+              :result_type "list"
+              :source {:query "SELECT order_no, issue_date, ship_to_name, total_order, to_acct_no FROM msos"
+                       :type "sql"}
+              :source-ref "cis-demo-db"}
+             {:curated? true
+              :description "Every catalog part (SKU) — a global collection. List: {:entity {} :query [{:cis.master.part/all_parts [:cis.master.part/sku_no :cis.master.part/short_desc :cis.master.part/ave_cost]}]}. Narrow by product code with :prod_code."
+              :eql-params {:prod_code {:attribute :cis.master.part/prod_code
+                                       :description "Only parts with this product code."
+                                       :op :eq}}
+              :id "demo_all_parts"
+              :input []
+              :label "All parts (SKU catalog)"
+              :limit {:default 50 :max 500}
+              :order {:allowed [:cis.master.part/sku_no :cis.master.part/part_no
+                                :cis.master.part/ave_cost]
+                      :default [:cis.master.part/sku_no :asc]}
+              :output [{:cis.master.part/all_parts [:cis.master.part/sku_no :cis.master.part/part_no
+                                                    :cis.master.part/short_desc
+                                                    :cis.master.part/ave_cost
+                                                    :cis.master.part/prod_code]}]
+              :result_type "list"
+              :source {:query "SELECT sku_no, part_no, short_desc, ave_cost, prod_code FROM parts"
+                       :type "sql"}
+              :source-ref "cis-demo-db"}
+             {:curated? true
+              :description "Every SSO (order no, ext ref, ship-to, totals) — a global collection. Query with an empty entity: {:entity {} :query [{:cis.sales.sso/all_ssos [...]}]}."
+              :id "demo_all_ssos"
+              :input []
+              :label "All shipped sales orders"
+              :limit {:default 50 :max 500}
+              :output [{:cis.sales.sso/all_ssos [:cis.sales.sso/order_no :cis.sales.sso/ext_ref
+                                                 :cis.sales.sso/ship_to_name
+                                                 :cis.sales.sso/total_order
+                                                 :cis.sales.sso/sales_total]}]
+              :result_type "list"
+              :source {:query "SELECT order_no, ext_ref, ship_to_name, total_order, sales_total FROM sso"
+                       :type "sql"}
+              :source-ref "cis-demo-db"}
+             {:curated? true
+              :description "Every vendor — a global collection. Query: {:entity {} :query [{:cis.master.vendor/all_vendors [:cis.master.vendor/vend_no :cis.master.vendor/vend_name]}]}."
+              :id "demo_all_vendors"
+              :input []
+              :label "All vendors"
+              :limit {:default 50 :max 500}
+              :output [{:cis.master.vendor/all_vendors [:cis.master.vendor/vend_no
+                                                        :cis.master.vendor/vend_name
+                                                        :cis.master.vendor/vend_type]}]
+              :result_type "list"
+              :source {:query "SELECT vend_no, vend_name, vend_type FROM vendors" :type "sql"}
+              :source-ref "cis-demo-db"}
+             {:curated? true
+              :description "Every VPO (vendor purchase order) — a global collection. List all: {:entity {} :query [{:cis.purchase.vpo/all_vpos [:cis.purchase.vpo/order_no :cis.purchase.vpo/issue_date :cis.purchase.vpo/total_cost]}]}. Narrow by issue-date range (:issue_date_from / :issue_date_to, \"YYYY-MM-DD\") or by vendor (:vend_no — the vendor's account number): {:entity {} :query [({:cis.purchase.vpo/all_vpos [...]} {:vend_no 48332})]}."
+              :eql-params {:issue_date_from {:attribute :cis.purchase.vpo/issue_date
+                                             :description "Only VPOs issued on/after this date (YYYY-MM-DD)."
+                                             :op :gte}
+                           :issue_date_to {:attribute :cis.purchase.vpo/issue_date
+                                           :description "Only VPOs issued on/before this date (YYYY-MM-DD)."
+                                           :op :lte}
+                           :vend_no {:attribute :cis.purchase.vpo/from_acct_no
+                                     :description "Only this vendor's VPOs (vendor account number, e.g. 48332)."
+                                     :op :eq}}
+              :id "demo_all_vpos"
+              :input []
+              :label "All VPOs"
+              :limit {:default 50 :max 500}
+              :order {:allowed [:cis.purchase.vpo/order_no :cis.purchase.vpo/issue_date
+                                :cis.purchase.vpo/total_cost]
+                      :default [:cis.purchase.vpo/order_no :asc]}
+              :output [{:cis.purchase.vpo/all_vpos [:cis.purchase.vpo/order_no
+                                                    :cis.purchase.vpo/issue_date
+                                                    :cis.purchase.vpo/total_cost
+                                                    :cis.purchase.vpo/ship_to_name
+                                                    :cis.purchase.vpo/from_acct_no]}]
+              :result_type "list"
+              :source {:query "SELECT order_no, issue_date, total_cost, ship_to_name, from_acct_no FROM vpos"
+                       :type "sql"}
+              :source-ref "cis-demo-db"}
+             {:description "Customer purchase order (CPO) header by its order number."
+              :id "demo_cpo_by_id"
+              :input [:cis.cpo.cpo_header/order_no]
+              :label "CPO by order_no"
+              :output [:cis.cpo.cpo_header/cpo_cust_no :cis.cpo.cpo_header/cpo_date
+                       :cis.cpo.cpo_header/cpo_status :cis.cpo.cpo_header/cpo_priority
+                       :cis.cpo.cpo_header/po_total :cis.cpo.cpo_header/cpo_entry_id
+                       :cis.cpo.cpo_header/cpo_entry_datetime]
+              :result_type "single"
+              :source {:query "SELECT order_no, cpo_cust_no, cpo_date, cpo_status, cpo_priority, po_total, cpo_entry_id, cpo_entry_datetime FROM cpo_header WHERE order_no = :order_no"
+                       :type "sql"}
+              :source-ref "cis-demo-db"}
+             {:description "Line items of one CPO. Query: {:entity {:cis.cpo.cpo_header/order_no 210000001} :query [{:cis.cpo.cpo_header/cpo_details [...]}]}."
+              :id "demo_cpo_details"
+              :input [:cis.cpo.cpo_header/order_no]
+              :label "CPO line items"
+              :limit {:default 50 :max 500}
+              :output [{:cis.cpo.cpo_header/cpo_details [:cis.cpo.cpo_detail/order_no
+                                                         :cis.cpo.cpo_detail/cpo_line_seq
+                                                         :cis.cpo.cpo_detail/cpo_sku_no
+                                                         :cis.cpo.cpo_detail/cpo_line_qty
+                                                         :cis.cpo.cpo_detail/cpo_unit_price
+                                                         :cis.cpo.cpo_detail/cpo_price
+                                                         :cis.cpo.cpo_detail/cpo_line_status]}]
+              :result_type "list"
+              :source {:query "SELECT order_no, cpo_line_seq, cpo_sku_no, cpo_line_qty, cpo_unit_price, cpo_price, cpo_line_status FROM cpo_detail WHERE order_no = :order_no ORDER BY cpo_line_seq"
+                       :type "sql"}
+              :source-ref "cis-demo-db"}
+             {:description "Sales orders (MSOs) raised against one customer PO. Query: {:entity {:cis.cpo.cpo_header/order_no 210000001} :query [{:cis.cpo.cpo_header/msos [...]}]}."
+              :id "demo_cpo_msos"
+              :input [:cis.cpo.cpo_header/order_no]
+              :label "MSOs for a CPO"
+              :limit {:default 50 :max 500}
+              :output [{:cis.cpo.cpo_header/msos [:cis.sales.mso/order_no :cis.sales.mso/issue_date
+                                                  :cis.sales.mso/ship_to_name
+                                                  :cis.sales.mso/total_order]}]
+              :result_type "list"
+              :source {:query "SELECT order_no, issue_date, ship_to_name, total_order FROM msos WHERE int_ref_no = :order_no AND int_ref_type = 4"
+                       :type "sql"}
+              :source-ref "cis-demo-db"}
+             {:description "Audit trail of one customer master record."
+              :id "demo_customer_audit"
+              :input [:cis.master.customer/cust_no]
+              :label "Customer audit trail"
+              :output [:cis.master.customer/entry_id :cis.master.customer/entry_datetime
+                       :cis.master.customer/u_version]
+              :result_type "single"
+              :source {:query "SELECT cust_no, entry_id, entry_datetime, u_version FROM customers WHERE cust_no = :cust_no"
+                       :type "sql"}
+              :source-ref "cis-demo-db"}
+             {:description "All bank / settlement accounts for a customer (one-to-many)."
+              :id "demo_customer_bank_accounts"
+              :input [:cis.master.customer/cust_no]
+              :label "Customer bank accounts"
+              :limit {:default 50 :max 500}
+              :output [{:cis.master.customer/bank_accounts [:cis.master.customer_bank/line_no
+                                                            :cis.master.customer_bank/type
+                                                            :cis.master.customer_bank/bank_name
+                                                            :cis.master.customer_bank/bank_acct
+                                                            :cis.master.customer_bank/bank_aba
+                                                            :cis.master.customer_bank/acct_type
+                                                            :cis.master.customer_bank/bank_address
+                                                            :cis.master.customer_bank/swift_code
+                                                            :cis.master.customer_bank/iban_number
+                                                            :cis.master.customer_bank/bank_def
+                                                            :cis.master.customer_bank/date_opened
+                                                            :cis.master.customer_bank/cust_no]}]
+              :result_type "list"
+              :source {:query "SELECT cust_no, line_no, type, bank_name, bank_acct, bank_aba, acct_type, bank_address, swift_code, iban_number, bank_def, date_opened FROM customer_bank WHERE cust_no = :cust_no"
+                       :type "sql"}
+              :source-ref "cis-demo-db"}
+             {:cache {:ttl-ms 600000}
+              :description "Customer master record by customer number."
+              :id "demo_customer_by_id"
+              :input [:cis.master.customer/cust_no]
+              :label "Customer by cust_no"
+              :output [:cis.master.customer/cust_name :cis.master.customer/cust_type
+                       :cis.master.customer/sales_terr :cis.master.customer/default_terms
+                       :cis.master.customer/tax_status]
+              :result_type "single"
+              :source {:query "SELECT cust_no, cust_name, cust_type, sales_terr, default_terms, tax_status FROM customers WHERE cust_no = :cust_no"
+                       :type "sql"}
+              :source-ref "cis-demo-db"}
+             {:description "Credit profile (limit, balance, terms, past-due). Reached from a customer\n                 via the cust_no equivalence in relationships.edn."
+              :id "demo_customer_credit"
+              :input [:cis.master.customer_credit/cust_no]
+              :label "Customer credit by cust_no"
+              :output [:cis.master.customer_credit/terms :cis.master.customer_credit/credit_limit
+                       :cis.master.customer_credit/curr_bal :cis.master.customer_credit/curr_pymts
+                       :cis.master.customer_credit/pending_amt
+                       :cis.master.customer_credit/past_due_amt
+                       :cis.master.customer_credit/past_due_date
+                       :cis.master.customer_credit/last_pay_date
+                       :cis.master.customer_credit/restricted :cis.master.customer_credit/sold_since
+                       :cis.master.customer_credit/cust_no]
+              :result_type "single"
+              :source {:query "SELECT cust_no, terms, credit_limit, curr_bal, curr_pymts, pending_amt, past_due_amt, past_due_date, last_pay_date, restricted, sold_since FROM customer_credit WHERE cust_no = :cust_no"
+                       :type "sql"}
+              :source-ref "cis-demo-db"}
+             {:description "Audit trail of one customer credit record."
+              :id "demo_customer_credit_audit"
+              :input [:cis.master.customer_credit/cust_no]
+              :label "Customer credit audit trail"
+              :output [:cis.master.customer_credit/entry_id
+                       :cis.master.customer_credit/entry_datetime
+                       :cis.master.customer_credit/u_version]
+              :result_type "single"
+              :source {:query "SELECT cust_no, entry_id, entry_datetime, u_version FROM customer_credit WHERE cust_no = :cust_no"
+                       :type "sql"}
+              :source-ref "cis-demo-db"}
+             {:description "All sales orders (MSOs) a customer placed — one-to-many from cust_no via msos.to_acct_no. Query: {:entity {:cis.master.customer/cust_no 121823} :query [{:cis.master.customer/msos [:cis.sales.mso/order_no :cis.sales.mso/issue_date :cis.sales.mso/total_order]}]}."
+              :id "demo_customer_msos"
+              :input [:cis.master.customer/cust_no]
+              :label "Customer's MSOs"
+              :limit {:default 50 :max 500}
+              :output [{:cis.master.customer/msos [:cis.sales.mso/order_no :cis.sales.mso/issue_date
+                                                   :cis.sales.mso/ship_to_name
+                                                   :cis.sales.mso/total_order]}]
+              :result_type "list"
+              :source {:query "SELECT order_no, issue_date, ship_to_name, total_order FROM msos WHERE to_acct_no = :cust_no"
+                       :type "sql"}
+              :source-ref "cis-demo-db"}
+             {:description "Sales order header by order number."
+              :id "demo_mso_by_id"
+              :input [:cis.sales.mso/order_no]
+              :label "MSO by order_no"
+              :output [:cis.sales.mso/order_type :cis.sales.mso/ship_to_name
+                       :cis.sales.mso/ship_to_city :cis.sales.mso/total_order
+                       :cis.sales.mso/sales_total :cis.sales.mso/sales_terr
+                       :cis.sales.mso/to_acct_no :cis.sales.mso/int_ref_no]
+              :result_type "single"
+              :source {:query "SELECT order_no, order_type, ship_to_name, ship_to_city, total_order, sales_total, sales_terr, to_acct_no, int_ref_no FROM msos WHERE order_no = :order_no"
+                       :type "sql"}
+              :source-ref "cis-demo-db"}
+             {:description "Dropship purchase orders (VPOs) raised against one MSO — the supplier ships straight to the customer. Query: {:entity {:cis.sales.mso/order_no 143100002} :query [{:cis.sales.mso_fulfilment/dropship_vpos [...]}]}."
+              :id "demo_mso_dropship_vpos"
+              :input [:cis.sales.mso/order_no]
+              :label "Dropship VPOs for an MSO"
+              :limit {:default 50 :max 500}
+              :output [{:cis.sales.mso_fulfilment/dropship_vpos [:cis.purchase.vpo/order_no
+                                                                 :cis.purchase.vpo/from_acct_no
+                                                                 :cis.purchase.vpo/issue_date]}]
+              :result_type "list"
+              :source {:query "SELECT order_no, from_acct_no, issue_date FROM vpos WHERE int_ref_no = :order_no AND int_ref_type = 3"
+                       :type "sql"}
+              :source-ref "cis-demo-db"}
+             {:description "Audit trail, ship-to detail, warehouse milestones and release control of one sales order — the columns the base MSO resolver does not carry."
+              :id "demo_mso_extended"
+              :input [:cis.sales.mso/order_no]
+              :label "MSO extended header"
+              :output [:cis.sales.mso/entry_id :cis.sales.mso/entry_datetime
+                       :cis.sales.mso/update_id :cis.sales.mso/update_datetime
+                       :cis.sales.mso/u_version :cis.sales.mso/ship_to_addr
+                       :cis.sales.mso/ship_to_state :cis.sales.mso/ship_to_zip
+                       :cis.sales.mso/ship_to_country :cis.sales.mso/pick_date
+                       :cis.sales.mso/qc_date :cis.sales.mso/ship_date :cis.sales.mso/bol_date
+                       :cis.sales.mso/label_date :cis.sales.mso/approval :cis.sales.mso/hold_id
+                       :cis.sales.mso/hold_date :cis.sales.mso/credit_rel_date]
+              :result_type "single"
+              :source {:query "SELECT order_no, entry_id, entry_datetime, update_id, update_datetime, u_version, ship_to_addr, ship_to_state, ship_to_zip, ship_to_country, pick_date, qc_date, ship_date, bol_date, label_date, approval, hold_id, hold_date, credit_rel_date FROM msos WHERE order_no = :order_no"
+                       :type "sql"}
+              :source-ref "cis-demo-db"}
+             {:description "The full contracted order lines of one MSO. Query: {:entity {:cis.sales.mso/order_no 143100001} :query [{:cis.sales.mso_fulfilment/order_details [...]}]}."
+              :id "demo_mso_order_details"
+              :input [:cis.sales.mso/order_no]
+              :label "MSO line items"
+              :limit {:default 50 :max 500}
+              :output [{:cis.sales.mso_fulfilment/order_details [:cis.sales.mso_order_detail/order_no
+                                                                 :cis.sales.mso_order_detail/line_no
+                                                                 :cis.sales.mso_order_detail/order_type
+                                                                 :cis.sales.mso_order_detail/sku_no
+                                                                 :cis.sales.mso_order_detail/inv_type
+                                                                 :cis.sales.mso_order_detail/order_qty
+                                                                 :cis.sales.mso_order_detail/ship_qty
+                                                                 :cis.sales.mso_order_detail/rec_qty
+                                                                 :cis.sales.mso_order_detail/unit_cost
+                                                                 :cis.sales.mso_order_detail/unit_price
+                                                                 :cis.sales.mso_order_detail/net_price
+                                                                 :cis.sales.mso_order_detail/sys_new_cost
+                                                                 :cis.sales.mso_order_detail/claim_new_cost
+                                                                 :cis.sales.mso_order_detail/release_id
+                                                                 :cis.sales.mso_order_detail/entry_id
+                                                                 :cis.sales.mso_order_detail/entry_datetime]}]
+              :result_type "list"
+              :source {:query "SELECT order_no, line_no, order_type, sku_no, inv_type, order_qty, ship_qty, rec_qty, unit_cost, unit_price, net_price, sys_new_cost, claim_new_cost, release_id, entry_id, entry_datetime FROM mso_order_details WHERE order_no = :order_no ORDER BY line_no"
+                       :type "sql"}
+              :source-ref "cis-demo-db"}
+             {:description "Shipments (SSOs) that fulfil one MSO from our own warehouse. Query: {:entity {:cis.sales.mso/order_no 143100001} :query [{:cis.sales.mso_fulfilment/ssos [...]}]}."
+              :id "demo_mso_ssos"
+              :input [:cis.sales.mso/order_no]
+              :label "SSOs fulfilling an MSO"
+              :limit {:default 50 :max 500}
+              :output [{:cis.sales.mso_fulfilment/ssos [:cis.sales.sso/order_no
+                                                        :cis.sales.sso/ship_date
+                                                        :cis.sales.sso/ship_to_name
+                                                        :cis.sales.sso/total_order]}]
+              :result_type "list"
+              :source {:query "SELECT order_no, ship_date, ship_to_name, total_order FROM sso WHERE int_ref_no = :order_no AND int_ref_type = 3"
+                       :type "sql"}
+              :source-ref "cis-demo-db"}
+             {:description "All purchase orders linked to a sales order (one-to-many, cross-domain)."
+              :id "demo_mso_vpos"
+              :input [:cis.sales.mso/order_no]
+              :label "MSO → linked VPOs"
+              :limit {:default 50 :max 500}
+              :output [{:cis.sales.mso/vpos [:cis.purchase.vpo/order_no
+                                             :cis.purchase.vpo/from_acct_no
+                                             :cis.purchase.vpo/total_cost]}]
+              :result_type "list"
+              :source {:params {:int_ref_no :cis.sales.mso/order_no}
+                       :query "SELECT order_no, from_acct_no, total_cost FROM vpos WHERE int_ref_no = :int_ref_no"
+                       :type "sql"}
+              :source-ref "cis-demo-db"}
+             {:description "Audit trail of one part master record."
+              :id "demo_part_audit"
+              :input [:cis.master.part/sku_no]
+              :label "Part audit trail"
+              :output [:cis.master.part/entry_id :cis.master.part/entry_datetime
+                       :cis.master.part/u_version]
+              :result_type "single"
+              :source {:query "SELECT sku_no, entry_id, entry_datetime, u_version FROM parts WHERE sku_no = :sku_no"
+                       :type "sql"}
+              :source-ref "cis-demo-db"}
+             {:cache {:ttl-ms 600000}
+              :description "Catalog part by SKU. BATCHED (to-one): a VPO with 30 lines resolves\n                 all 30 parts in ONE `WHERE sku_no IN (...)` query instead of 30 — the\n                 N+1 killer for line → part-by-sku (via the sku_no alias)."
+              :id "demo_part_by_id"
+              :input [:cis.master.part/sku_no]
+              :label "Part by sku_no"
+              :output [:cis.master.part/part_no :cis.master.part/short_desc
+                       :cis.master.part/ave_cost :cis.master.part/prod_code :cis.master.part/vend_no]
+              :result_type "single"
+              :source {:batch {:child-fk "sku_no"
+                               :parent-key :cis.master.part/sku_no
+                               :placeholder "sku_nos"}
+                       :query "SELECT sku_no, part_no, short_desc, ave_cost, prod_code, vend_no FROM parts WHERE sku_no IN (:sku_nos)"
+                       :type "sql"}
+              :source-ref "cis-demo-db"}
+             {:description "Shipped sales order header by order number."
+              :id "demo_sso_by_id"
+              :input [:cis.sales.sso/order_no]
+              :label "SSO header by order_no"
+              :output [:cis.sales.sso/order_type :cis.sales.sso/ext_ref :cis.sales.sso/ship_to_name
+                       :cis.sales.sso/ship_to_city :cis.sales.sso/ship_to_state
+                       :cis.sales.sso/ship_date :cis.sales.sso/issue_date
+                       :cis.sales.sso/invoice_date :cis.sales.sso/to_acct_no
+                       :cis.sales.sso/total_order :cis.sales.sso/total_cost
+                       :cis.sales.sso/sales_total :cis.sales.sso/total_weight
+                       :cis.sales.sso/drop_ship]
+              :result_type "single"
+              :source {:query "SELECT order_no, order_type, ext_ref, ship_to_name, ship_to_city, ship_to_state, ship_date, issue_date, invoice_date, to_acct_no, cust_no, total_order, total_cost, sales_total, total_weight, drop_ship FROM sso WHERE order_no = :order_no"
+                       :type "sql"}
+              :source-ref "cis-demo-db"}
+             {:description "The MSO one shipment fulfils, for shipments out of our own warehouse. Returns nothing for a dropship SSO (that one points at a VPO instead)."
+              :id "demo_sso_mso"
+              :input [:cis.sales.sso/order_no]
+              :label "MSO behind a shipment"
+              :output [:cis.sales.mso/order_no :cis.sales.mso/issue_date :cis.sales.mso/to_acct_no
+                       :cis.sales.mso/total_order]
+              :result_type "single"
+              :source {:query "SELECT m.order_no, m.issue_date, m.to_acct_no, m.total_order FROM sso s JOIN msos m ON m.order_no = s.int_ref_no WHERE s.order_no = :order_no AND s.int_ref_type = 3"
+                       :type "sql"}
+              :source-ref "cis-demo-db"}
+             {:description "All line items for a shipped sales order (one-to-many)."
+              :id "demo_sso_order_detail"
+              :input [:cis.sales.sso/order_no]
+              :label "SSO line items"
+              :limit {:default 50 :max 500}
+              :output [{:cis.sales.sso/order_detail [:cis.sales.sso_order_detail/line_no
+                                                     :cis.sales.sso_order_detail/sku_no
+                                                     :cis.sales.sso_order_detail/order_qty
+                                                     :cis.sales.sso_order_detail/ship_qty
+                                                     :cis.sales.sso_order_detail/unit_cost
+                                                     :cis.sales.sso_order_detail/unit_price
+                                                     :cis.sales.sso_order_detail/net_price
+                                                     :cis.sales.sso_order_detail/order_no]}]
+              :result_type "list"
+              :source {:query "SELECT order_no, line_no, sku_no, order_qty, ship_qty, unit_cost, unit_price, net_price FROM sso_order_detail WHERE order_no = :order_no"
+                       :type "sql"}
+              :source-ref "cis-demo-db"}
+             {:description "The dropship VPO one shipment came from — the supplier shipped straight to the customer. Returns nothing for a normally-fulfilled SSO (that one points at an MSO instead)."
+              :id "demo_sso_vpo"
+              :input [:cis.sales.sso/order_no]
+              :label "Dropship VPO behind a shipment"
+              :output [:cis.purchase.vpo/order_no :cis.purchase.vpo/from_acct_no
+                       :cis.purchase.vpo/issue_date :cis.purchase.vpo/int_ref_no]
+              :result_type "single"
+              :source {:query "SELECT v.order_no, v.from_acct_no, v.issue_date, v.int_ref_no FROM sso s JOIN vpos v ON v.order_no = s.int_ref_no WHERE s.order_no = :order_no AND s.int_ref_type = 2"
+                       :type "sql"}
+              :source-ref "cis-demo-db"}
+             {:description "Audit trail of one vendor master record."
+              :id "demo_vendor_audit"
+              :input [:cis.master.vendor/vend_no]
+              :label "Vendor audit trail"
+              :output [:cis.master.vendor/entry_id :cis.master.vendor/entry_datetime
+                       :cis.master.vendor/u_version]
+              :result_type "single"
+              :source {:query "SELECT vend_no, entry_id, entry_datetime, u_version FROM vendors WHERE vend_no = :vend_no"
+                       :type "sql"}
+              :source-ref "cis-demo-db"}
+             {:cache {:ttl-ms 600000}
+              :description "Vendor master record by vendor number."
+              :id "demo_vendor_by_id"
+              :input [:cis.master.vendor/vend_no]
+              :label "Vendor by vend_no"
+              :output [:cis.master.vendor/vend_name :cis.master.vendor/vend_type
+                       :cis.master.vendor/primary_loc :cis.master.vendor/discontinued]
+              :result_type "single"
+              :source {:query "SELECT vend_no, vend_name, vend_type, primary_loc, discontinued FROM vendors WHERE vend_no = :vend_no"
+                       :type "sql"}
+              :source-ref "cis-demo-db"}
+             {:description "All purchase orders (VPOs) placed on a vendor — one-to-many from vend_no via vpos.from_acct_no. Query: {:entity {:cis.master.vendor/vend_no 48332} :query [{:cis.master.vendor/vpos [:cis.purchase.vpo/order_no :cis.purchase.vpo/issue_date :cis.purchase.vpo/total_cost]}]}."
+              :id "demo_vendor_vpos"
+              :input [:cis.master.vendor/vend_no]
+              :label "Vendor's VPOs"
+              :limit {:default 50 :max 500}
+              :output [{:cis.master.vendor/vpos [:cis.purchase.vpo/order_no
+                                                 :cis.purchase.vpo/issue_date
+                                                 :cis.purchase.vpo/ship_to_name
+                                                 :cis.purchase.vpo/total_cost]}]
+              :result_type "list"
+              :source {:query "SELECT order_no, issue_date, ship_to_name, total_cost FROM vpos WHERE from_acct_no = :vend_no"
+                       :type "sql"}
+              :source-ref "cis-demo-db"}
+             {:description "Vendor purchase-order header by order number."
+              :id "demo_vpo_by_id"
+              :input [:cis.purchase.vpo/order_no]
+              :label "VPO header by order_no"
+              :output [:cis.purchase.vpo/order_type :cis.purchase.vpo/total_cost
+                       :cis.purchase.vpo/freight :cis.purchase.vpo/ship_to_name
+                       :cis.purchase.vpo/ship_to_city :cis.purchase.vpo/ship_to_state
+                       :cis.purchase.vpo/issue_date :cis.purchase.vpo/expected_date
+                       :cis.purchase.vpo/from_acct_no :cis.purchase.vpo/to_acct_no
+                       :cis.purchase.vpo/int_ref_no]
+              :result_type "single"
+              :source {:query "SELECT order_no, order_type, total_cost, freight, ship_to_name, ship_to_city, ship_to_state, issue_date, expected_date, from_acct_no, to_acct_no, int_ref_no FROM vpos WHERE order_no = :order_no"
+                       :type "sql"}
+              :source-ref "cis-demo-db"}
+             {:description "Per-line delivery ETA tracking for a VPO — original vs current ETA, status,\n                 carrier, tracking, delay (one-to-many)."
+              :id "demo_vpo_eta_detail"
+              :input [:cis.purchase.vpo/order_no]
+              :label "VPO ETA detail"
+              :limit {:default 50 :max 500}
+              :output [{:cis.purchase.vpo/eta_detail [:cis.purchase.vpo_eta_detail/line_no
+                                                      :cis.purchase.vpo_eta_detail/sku_no
+                                                      :cis.purchase.vpo_eta_detail/original_eta
+                                                      :cis.purchase.vpo_eta_detail/current_eta
+                                                      :cis.purchase.vpo_eta_detail/actual_arrival
+                                                      :cis.purchase.vpo_eta_detail/eta_status
+                                                      :cis.purchase.vpo_eta_detail/carrier_no
+                                                      :cis.purchase.vpo_eta_detail/tracking_no
+                                                      :cis.purchase.vpo_eta_detail/delay_days
+                                                      :cis.purchase.vpo_eta_detail/updated_date
+                                                      :cis.purchase.vpo_eta_detail/order_no]}]
+              :result_type "list"
+              :source {:query "SELECT order_no, line_no, sku_no, original_eta, current_eta, actual_arrival, eta_status, carrier_no, tracking_no, delay_days, updated_date FROM vpo_eta_detail WHERE order_no = :order_no"
+                       :type "sql"}
+              :source-ref "cis-demo-db"}
+             {:description "Audit trail, ship-to detail, receiving timeline and order amounts of one purchase order — the columns the base VPO resolver does not carry."
+              :id "demo_vpo_extended"
+              :input [:cis.purchase.vpo/order_no]
+              :label "VPO extended header"
+              :output [:cis.purchase.vpo/entry_id :cis.purchase.vpo/entry_datetime
+                       :cis.purchase.vpo/update_id :cis.purchase.vpo/update_datetime
+                       :cis.purchase.vpo/u_version :cis.purchase.vpo/ship_to_addr
+                       :cis.purchase.vpo/ship_to_zip :cis.purchase.vpo/receiving_date
+                       :cis.purchase.vpo/closed_date :cis.purchase.vpo/total_order
+                       :cis.purchase.vpo/detail_price_total]
+              :result_type "single"
+              :source {:query "SELECT order_no, entry_id, entry_datetime, update_id, update_datetime, u_version, ship_to_addr, ship_to_zip, receiving_date, closed_date, total_order, detail_price_total FROM vpos WHERE order_no = :order_no"
+                       :type "sql"}
+              :source-ref "cis-demo-db"}
+             {:description "Line items for a VPO (one-to-many). A large order can be NARROWED instead of returning every line: filter by :vend_part_no (SQL LIKE, % wildcard), page with :limit/:offset (first N), or sort with :order_by/:sort_dir (e.g. :order_by \"line_no\" :sort_dir \"DESC\" :limit 5 = the last 5 lines)."
+              :eql-params {:vend_part_no {:attribute :cis.purchase.vpo_order_detail/vend_part_no
+                                          :description "Filter line items by vendor part number — SQL LIKE, use % wildcard (e.g. \"MFG-A%\")."
+                                          :op :like}}
+              :id "demo_vpo_order_detail"
+              :input [:cis.purchase.vpo/order_no]
+              :label "VPO line items"
+              :limit {:default 50 :max 500}
+              :order {:allowed [:cis.purchase.vpo_order_detail/line_no
+                                :cis.purchase.vpo_order_detail/vend_part_no
+                                :cis.purchase.vpo_order_detail/order_qty
+                                :cis.purchase.vpo_order_detail/ship_qty
+                                :cis.purchase.vpo_order_detail/unit_cost]
+                      :default [:cis.purchase.vpo_order_detail/line_no :asc]}
+              :output [{:cis.purchase.vpo/order_detail [:cis.purchase.vpo_order_detail/line_no
+                                                        :cis.purchase.vpo_order_detail/sku_no
+                                                        :cis.purchase.vpo_order_detail/vend_part_no
+                                                        :cis.purchase.vpo_order_detail/order_qty
+                                                        :cis.purchase.vpo_order_detail/ship_qty
+                                                        :cis.purchase.vpo_order_detail/unit_cost
+                                                        :cis.purchase.vpo_order_detail/order_no]}]
+              :result_type "list"
+              :source {:query "SELECT order_no, line_no, sku_no, vend_part_no, order_qty, ship_qty, unit_cost FROM vpo_order_details WHERE order_no = :order_no"
+                       :type "sql"}
+              :source-ref "cis-demo-db"}
+             {:description "Derived audit summary — who entered/updated the record and when."
+              :id "derived_customer_audit_info"
+              :input [:cis.master.customer/entry_id :cis.master.customer/entry_datetime
+                      :cis.master.customer/u_version]
+              :label "customer audit info (derived)"
+              :output [:cis.master.customer/audit_info]
+              :result_type "single"
+              :source {:expr "(str \"entry \" entry_id \" @ \" entry_datetime (when u_version (str \" · v\" u_version)))"
+                       :type "derived"}}
+             {:description "Derived audit summary — who entered/updated the record and when."
+              :id "derived_customer_credit_audit_info"
+              :input [:cis.master.customer_credit/entry_id
+                      :cis.master.customer_credit/entry_datetime
+                      :cis.master.customer_credit/u_version]
+              :label "customer_credit audit info (derived)"
+              :output [:cis.master.customer_credit/audit_info]
+              :result_type "single"
+              :source {:expr "(str \"entry \" entry_id \" @ \" entry_datetime (when u_version (str \" · v\" u_version)))"
+                       :type "derived"}}
+             {:description "Derived audit summary — who entered/updated the record and when."
+              :id "derived_mso_audit_info"
+              :input [:cis.sales.mso/entry_id :cis.sales.mso/entry_datetime :cis.sales.mso/update_id
+                      :cis.sales.mso/update_datetime :cis.sales.mso/u_version]
+              :label "mso audit info (derived)"
+              :output [:cis.sales.mso/audit_info]
+              :result_type "single"
+              :source {:expr "(str \"entry \" entry_id \" @ \" entry_datetime (when update_id (str \" · update \" update_id \" @ \" update_datetime)) (when u_version (str \" · v\" u_version)))"
+                       :type "derived"}}
+             {:description "Derived release-control summary: approval, hold and credit release."
+              :id "derived_mso_releases_info"
+              :input [:cis.sales.mso/approval :cis.sales.mso/hold_id :cis.sales.mso/hold_date
+                      :cis.sales.mso/credit_rel_date]
+              :label "MSO releases (derived)"
+              :output [:cis.sales.mso/releases_info]
+              :result_type "single"
+              :source {:expr "(str \"approval \" approval \" · hold \" hold_id \" @ \" hold_date \" · credit-released \" credit_rel_date)"
+                       :type "derived"}}
+             {:description "Derived one-line ship-to address of the sales order."
+              :id "derived_mso_ship_to_info"
+              :input [:cis.sales.mso/ship_to_name :cis.sales.mso/ship_to_addr
+                      :cis.sales.mso/ship_to_city :cis.sales.mso/ship_to_state
+                      :cis.sales.mso/ship_to_zip :cis.sales.mso/ship_to_country]
+              :label "MSO ship-to (derived)"
+              :output [:cis.sales.mso/ship_to_info]
+              :result_type "single"
+              :source {:expr "(str ship_to_name \" · \" ship_to_addr \" \" ship_to_city \" \" ship_to_state \" \" ship_to_zip \" \" ship_to_country)"
+                       :type "derived"}}
+             {:description "Derived money summary of the sales order."
+              :id "derived_mso_so_amounts_info"
+              :input [:cis.sales.mso/total_order :cis.sales.mso/sales_total]
+              :label "MSO amounts (derived)"
+              :output [:cis.sales.mso/so_amounts_info]
+              :result_type "single"
+              :source {:expr "(str \"order \" total_order \" · sales \" sales_total)"
+                       :type "derived"}}
+             {:description "Derived warehouse milestones in fulfilment order: pick → qc → label → ship → bol. Missing steps read as blank — that is the answer."
+              :id "derived_mso_warehouse_ops_info"
+              :input [:cis.sales.mso/pick_date :cis.sales.mso/qc_date :cis.sales.mso/label_date
+                      :cis.sales.mso/ship_date :cis.sales.mso/bol_date]
+              :label "MSO warehouse ops (derived)"
+              :output [:cis.sales.mso/warehouse_ops_info]
+              :result_type "single"
+              :source {:expr "(str \"pick \" pick_date \" · qc \" qc_date \" · label \" label_date \" · ship \" ship_date \" · bol \" bol_date)"
+                       :type "derived"}}
+             {:description "Derived audit summary — who entered/updated the record and when."
+              :id "derived_part_audit_info"
+              :input [:cis.master.part/entry_id :cis.master.part/entry_datetime
+                      :cis.master.part/u_version]
+              :label "part audit info (derived)"
+              :output [:cis.master.part/audit_info]
+              :result_type "single"
+              :source {:expr "(str \"entry \" entry_id \" @ \" entry_datetime (when u_version (str \" · v\" u_version)))"
+                       :type "derived"}}
+             {:description "Derived audit summary — who entered/updated the record and when."
+              :id "derived_vendor_audit_info"
+              :input [:cis.master.vendor/entry_id :cis.master.vendor/entry_datetime
+                      :cis.master.vendor/u_version]
+              :label "vendor audit info (derived)"
+              :output [:cis.master.vendor/audit_info]
+              :result_type "single"
+              :source {:expr "(str \"entry \" entry_id \" @ \" entry_datetime (when u_version (str \" · v\" u_version)))"
+                       :type "derived"}}
+             {:description "Derived audit summary — who entered/updated the record and when."
+              :id "derived_vpo_audit_info"
+              :input [:cis.purchase.vpo/entry_id :cis.purchase.vpo/entry_datetime
+                      :cis.purchase.vpo/update_id :cis.purchase.vpo/update_datetime
+                      :cis.purchase.vpo/u_version]
+              :label "vpo audit info (derived)"
+              :output [:cis.purchase.vpo/audit_info]
+              :result_type "single"
+              :source {:expr "(str \"entry \" entry_id \" @ \" entry_datetime (when update_id (str \" · update \" update_id \" @ \" update_datetime)) (when u_version (str \" · v\" u_version)))"
+                       :type "derived"}}
+             {:description "Derived money summary of the purchase order (composite tier follows the strictest member)."
+              :id "derived_vpo_po_amounts_info"
+              :input [:cis.purchase.vpo/total_order :cis.purchase.vpo/total_cost
+                      :cis.purchase.vpo/freight :cis.purchase.vpo/detail_price_total]
+              :label "VPO amounts (derived)"
+              :output [:cis.purchase.vpo/po_amounts_info]
+              :result_type "single"
+              :source {:expr "(str \"order \" total_order \" · cost \" total_cost \" · freight \" freight \" · lines \" detail_price_total)"
+                       :type "derived"}}
+             {:description "Derived receiving timeline of the purchase order: issued → expected → received → closed."
+              :id "derived_vpo_receiving_dates_info"
+              :input [:cis.purchase.vpo/issue_date :cis.purchase.vpo/expected_date
+                      :cis.purchase.vpo/receiving_date :cis.purchase.vpo/closed_date]
+              :label "VPO receiving timeline (derived)"
+              :output [:cis.purchase.vpo/receiving_dates_info]
+              :result_type "single"
+              :source {:expr "(str \"issued \" issue_date \" · expected \" expected_date \" · received \" receiving_date \" · closed \" closed_date)"
+                       :type "derived"}}
+             {:description "Derived one-line ship-to address of the purchase order."
+              :id "derived_vpo_ship_to_info"
+              :input [:cis.purchase.vpo/ship_to_name :cis.purchase.vpo/ship_to_addr
+                      :cis.purchase.vpo/ship_to_city :cis.purchase.vpo/ship_to_state
+                      :cis.purchase.vpo/ship_to_zip]
+              :label "VPO ship-to (derived)"
+              :output [:cis.purchase.vpo/ship_to_info]
+              :result_type "single"
+              :source {:expr "(str ship_to_name \" · \" ship_to_addr \" \" ship_to_city \" \" ship_to_state \" \" ship_to_zip)"
+                       :type "derived"}}]
+ :sources {"cis-demo-db" {:jdbc_url "jdbc:sqlite:data/cis-demo.db" :type "sql"}}
+ :terms {"cis.catalog/sku_no" {:description "目录里一个可售卖单元的内部编号。它是**我们的**编号，与厂商料号（`part_no`）和客户自己的料号都不是一回事。"
+                               :format :id
+                               :label "物料号"
+                               :synonyms ["SKU编号" "SKU" "内部物料号" "sku no" "sku number" "item no"]}
+         "cis.doc/issue_date" {:description "这张单据开出来的日期。它**不是**业务发生的日期——发货看 `ship_date`，开票看 `invoice_date`。"
+                               :format :date
+                               :label "签发日期"
+                               :synonyms ["开单日期" "下单日期" "单据日期" "issue date" "order date"]}
+         "cis.doc/order_type" {:description "这张单是什么单。`CIS.dbo.order_header` 用它把销售单与采购单放在同一张表里——四个 entity 共用一张表、靠这一列区分，所以它不只是个标签，是**读这张表的前提**。"
+                               :format :code
+                               :label "单据类型"
+                               :synonyms ["单据类型" "订单类型" "order type"]
+                               :values {1 {:description "卖给客户的单（MSO 合同与 SSO 发货单都是 1）。" :label "销售单"}
+                                        2 {:description "向供应商下的单（VPO）。" :label "采购单"}
+                                        8 {:description "backlog order —— 已接单但暂时无法履约、挂在那里等货的单。"
+                                           :label "欠单"}}}
+         "cis.line/order_qty" {:description "这一行**订了多少**。MSO 上是合同的全量，SSO 上是这一次发货分摊到的量。"
+                               :format :number
+                               :label "订货数量"
+                               :synonyms ["订货量" "订单数量" "order qty" "ordered quantity"]}
+         "cis.line/ship_qty" {:description "这一行**已经发了多少**。与 `order_qty` 的差就是未发量——部分发货时两者不等。"
+                              :format :number
+                              :label "已发数量"
+                              :synonyms ["发货量" "已发量" "ship qty" "shipped quantity"]}
+         "cis.money/net_price" {:description "这一行折让之后的实收金额。它是**这一行的结果**，不是单价乘数量的必然值——折扣、附加费都落在这里。"
+                                :format :currency
+                                :label "行净额"
+                                :synonyms ["净额" "行金额" "net price" "extended price"]}
+         "cis.money/total_order" {:description "整张单的金额合计。采购单上是我们要付的，销售单上是客户要付的——**方向由单据类型决定，不由这个数字本身说明**。"
+                                  :format :currency
+                                  :label "单据总额"
+                                  :synonyms ["订单总额" "单据总额" "total order" "order total"]}
+         "cis.money/unit_cost" {:description "这一行每单位货的成本。**我们付出去的钱**，与卖价（`unit_price`）是两回事。"
+                                :format :currency
+                                :label "单位成本"
+                                :synonyms ["单位成本" "进价" "unit cost" "cost per unit"]}
+         "cis.money/unit_price" {:description "这一行每单位货的售价。**客户付给我们的钱**，与成本（`unit_cost`）是两回事。"
+                                 :format :currency
+                                 :label "单价"
+                                 :synonyms ["单价" "售价" "unit price" "price per unit"]}
+         "cis.order/ship_to_info" {:description "这张单据发到哪里，汇成一行：收货方名称、街道、城市、州省、邮编（销售单还有国家）。销售单与采购单**共用**这一条定义——同一个概念、不同的当事人，谁发给谁的差别写在各自的 `:term-context` 上（绑定用长形，见下面绑定那一段）。成员**保持列出**（不像审计族）：`ship_to_city = 'Cary'` 这种按成员过滤是真需求，藏起来就等于砍掉它。"
+                                   :format :text
+                                   :label "收货地址"
+                                   :synonyms ["收货地址" "送货地址" "收货方" "ship to" "ship-to address"]}
+         "cis.party/customer_no" {:description "我们**卖给**的那一方的账号。TD SYNNEX 这类既买又卖的组织在库里有客户与供应商两条记录、两个号——它们是同一家公司的两个身份，不是同一个号（见本文件上面关于 party link 的那一段）。"
+                                  :format :id
+                                  :label "客户号"
+                                  :synonyms ["客户编号" "客户账号" "customer no" "customer number" "sold-to"
+                                             "bill-to"]}
+         "cis.party/vendor_no" {:description "我们**买自**的那一方的账号。VPO 上写成 `from_acct_no`（货从哪个账号来），主数据上写成 `vend_no`——同一个概念。"
+                                :format :id
+                                :label "供应商号"
+                                :synonyms ["供应商编号" "厂商号" "vendor no" "vendor number" "ship-from"]}
+         "cis.ship/ship_to_addr" {:description "收货地址的街道行。城市/州/邮编另有其列——它们合起来才是一个地址（`g_ship_to`）。"
+                                  :format :text
+                                  :label "收货街道地址"
+                                  :synonyms ["收货地址" "街道地址" "ship to address" "street"]}
+         "cis.ship/ship_to_city" {:description "收货地址的城市。"
+                                  :format :text
+                                  :label "收货城市"
+                                  :synonyms ["收货城市" "到货城市" "ship to city"]}
+         "cis.ship/ship_to_name" {:description "货发给谁（收货人/收货公司）。**不一定是客户本人**——dropship 时货直发终端客户，而账单仍开给下单的那一方。"
+                                  :format :text
+                                  :label "收货方名称"
+                                  :synonyms ["收货人" "收货方" "ship to name" "consignee"]}
+         "cis.ship/ship_to_state" {:description "收货地址的州或省。US 两位州码。"
+                                   :format :text
+                                   :label "收货州/省"
+                                   :synonyms ["收货州" "州" "省" "ship to state"]}
+         "cis.ship/ship_to_zip" {:description "收货地址的邮政编码。"
+                                 :format :text
+                                 :label "收货邮编"
+                                 :synonyms ["邮编" "邮政编码" "zip" "postal code"]}
+         "common.audit/audit_info" {:description "这条记录的审计痕迹汇成的一句话：谁录的、何时录的，改过的话还有谁改的、何时改的，以及行版本号。它回答的是「**这条记录是怎么来的**」，与记录本身的业务含义无关。各 entity 汇总的是它实有的那几个审计字段——单据头有录入与修改两套，主档只有录入，**没有的就不写**。成员本身都是 `:listed? false`（D2.28）：没人会按录入人过滤，收进目录只是噪音；要看就看这一句。"
+                                    :format :text
+                                    :label "审计信息"
+                                    :synonyms ["审计信息" "审计痕迹" "录入修改痕迹" "audit info" "audit trail"]}
+         "common.audit/created_at" {:description "记录被创建的时刻。它**早于**这条记录描述的业务事件——单子是先录进来，再发生后面的事。"
+                                    :label "录入时间"
+                                    :synonyms ["录入时间" "创建时间" "created at" "entry date"]}
+         "common.audit/created_by" {:description "创建这条记录的操作员。**是谁把它录进系统的**，与记录的业务含义无关。"
+                                    :label "录入人"
+                                    :synonyms ["录入者" "创建人" "created by" "entered by"]}
+         "common.audit/detail_row_version" {:description "这一行的乐观锁版本号，每改一次加一。它不是业务字段，是并发控制的痕迹。"
+                                            :label "行版本号"
+                                            :synonyms ["版本号" "行版本" "row version"]}
+         "common.audit/updated_at" {:description "记录最后一次被修改的时刻。从未被改过时为空——**空本身是答案**。"
+                                    :label "修改时间"
+                                    :synonyms ["修改时间" "最后修改时间" "updated at"]}
+         "common.audit/updated_by" {:description "最后一次修改这条记录的操作员。只留最后一次，不是修改历史。"
+                                    :label "修改人"
+                                    :synonyms ["修改人" "最后修改人" "updated by"]}}
+ :units {"USD" {} "days" {}}}

@@ -1,0 +1,4 @@
+{:artifact/format-version 1
+ :content-hash "sha256:bd021de27fc68b64f76b5217b4314ba68c7e98a83b322b9d546536cd4644dcb0"
+ :diff {:added-attributes [] :modified-objects [] :previous-version nil :removed-attributes []}
+ :quality {:attribute-count 14}}

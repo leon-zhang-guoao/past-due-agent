@@ -1,0 +1,8 @@
+{:booleans [true false]
+ :doubles [0.0 -0.0 1.0 0.1 1.0E10 1.0E-10 1.5E300 4.9E-324 3.141592653589793]
+ :integers [-9223372036854775808 -1 0 1 9223372036854775807]
+ :keywords [:a/b :ns.deep/name]
+ :nested {:a [1 2 3] :b {:c 2 :d 1}}
+ :nils [nil]
+ :sets #{:a/a :m/m :z/z}
+ :strings ["" "\n" "\t" "\"" "\\" "中文" "🌍" "é"]}

@@ -1,0 +1,206 @@
+;; 顶层只做聚合：无 :deps，无 :paths。
+;; 模块边界 = classpath 事实（各模块自带 deps.edn，依赖用 :local/root 声明）。
+;; 四个 clojure namespace 根（D1.8）：common / runtime / studio / server，依赖严格
+;; 单向——common 不得依赖其余三者。（workbench 是纯 TS/Node 的 OMA 前端，非 clojure
+;; 根——owner 裁定 2026-09-02，doc 8.15。）目录 modules/<根>/<模块> 让这条规则在
+;; 构建期可验证，而不是编码约定。
+;; - :dev  把全部模块拉进一个 REPL（开发期便利，不代表运行时耦合）。
+;; - :test 聚合跑全量测试（CI 也可 per-module 进各目录单独跑，天然并行）。
+{:aliases
+ {:dev  {:extra-deps  {open.atlas/dialect       {:local/root "modules/common/dialect"}
+                       open.atlas/crypto        {:local/root "modules/common/crypto"}
+                       open.atlas/token         {:local/root "modules/common/token"}
+                       open.atlas/oidc          {:local/root "modules/common/oidc"}
+                       open.atlas/connector-spi {:local/root "modules/common/connector-spi"}
+                       open.atlas/connector-sql {:local/root "modules/common/connector-sql"}
+                       open.atlas/connector-api {:local/root "modules/common/connector-api"}
+                       open.atlas/connector-api-kit {:local/root "modules/common/connector-api-kit"}
+                       open.atlas/connector-derived {:local/root "modules/common/connector-derived"}
+                       open.atlas/engine        {:local/root "modules/common/engine"}
+                       open.atlas/artifact      {:local/root "modules/common/artifact"}
+                       open.atlas/toolkit       {:local/root "modules/common/toolkit"}
+                       open.atlas/search        {:local/root "modules/common/search"}
+                       open.atlas/candidates    {:local/root "modules/common/candidates"}
+                       open.atlas/control-protocol {:local/root "modules/common/control-protocol"}
+                       open.atlas/mcp-transport {:local/root "modules/common/mcp-transport"}
+                       open.atlas/runtime-store   {:local/root "modules/runtime/store"}
+                       open.atlas/runtime-graph   {:local/root "modules/runtime/graph"}
+                       open.atlas/runtime-token   {:local/root "modules/runtime/token"}
+                       open.atlas/runtime-env     {:local/root "modules/runtime/env"}
+                       open.atlas/runtime-retention {:local/root "modules/runtime/retention"}
+                       open.atlas/runtime-rowsec  {:local/root "modules/runtime/rowsec"}
+                       open.atlas/runtime-instance {:local/root "modules/runtime/instance"}
+                       open.atlas/runtime-obs     {:local/root "modules/runtime/obs"}
+                       open.atlas/http-stack       {:local/root "modules/server/http-stack"}
+                       open.atlas/server-http      {:local/root "modules/server/http"}
+                       open.atlas/server-data      {:local/root "modules/server/data"}
+                       open.atlas/server-mcp       {:local/root "modules/server/mcp"}
+                       ;; Supplied by the assembly point now (8.13); the root
+                       ;; aggregate is one, for server/mcp's tests.
+                       org.duckdb/duckdb_jdbc      {:mvn/version "1.3.1.0"}
+                       ;; 装配点（只有 test 没有 src）：真库端到端的竖切证据。
+                       open.atlas/integration   {:local/root "modules/integration"}
+                       ;; B2 的一次性工具曾经也列在这里，2026-08-24 随转换器与语料
+                       ;; 一并删除（fixtures/demo/README.md）。
+                       ;; B4：四根里的 studio，本仓库第一个。
+                       open.atlas/pool          {:local/root "modules/studio/pool"}
+                       open.atlas/studio-tools  {:local/root "modules/studio/tools"}
+                       open.atlas/studio-graph  {:local/root "modules/studio/graph"}
+                       open.atlas/studio-version {:local/root "modules/studio/version"}
+                       open.atlas/studio-deploy  {:local/root "modules/studio/deploy"}
+                       open.atlas/studio-app     {:local/root "modules/studio/app"}}
+         :extra-paths ["modules/common/dialect/test" "modules/common/dialect/fixtures"
+                       "modules/common/crypto/test"
+                       "modules/common/token/test"
+                       "modules/common/oidc/test"
+                       "modules/common/connector-spi/test"
+                       "modules/common/connector-sql/test"
+                       "modules/common/connector-api/test" "modules/common/connector-api/fixtures"
+                       "modules/common/connector-api-kit/test" "modules/common/connector-api-kit/fixtures"
+                       "modules/common/connector-derived/test"
+                       "modules/common/engine/test"
+                       "modules/common/artifact/test" "modules/common/artifact/fixtures"
+                       "modules/integration/test"
+                       "modules/common/toolkit/test"
+                       "modules/common/search/test"
+                       "modules/common/candidates/test"
+                       "modules/common/control-protocol/test"
+                       "modules/common/mcp-transport/test"
+                       "modules/runtime/store/test"
+                       "modules/runtime/graph/test"
+                       "modules/runtime/token/test"
+                       "modules/runtime/env/test"
+                       "modules/runtime/retention/test"
+                       "modules/runtime/rowsec/test"
+                       "modules/runtime/instance/test"
+                       "modules/runtime/obs/test"
+                       "modules/server/http-stack/test"
+                       "modules/server/http/test"
+                       "modules/server/data/test"
+                       "modules/server/mcp/test"
+                       "modules/studio/pool/test"
+                       "modules/studio/tools/test"
+                       "modules/studio/graph/test"
+                       "modules/studio/version/test"
+                       "modules/studio/deploy/test"
+                       "modules/studio/app/test"
+                       "fixtures/b1"
+                       "fixtures/demo"]}
+  :test {:extra-deps  {open.atlas/dialect       {:local/root "modules/common/dialect"}
+                       open.atlas/crypto        {:local/root "modules/common/crypto"}
+                       open.atlas/token         {:local/root "modules/common/token"}
+                       open.atlas/oidc          {:local/root "modules/common/oidc"}
+                       open.atlas/connector-spi {:local/root "modules/common/connector-spi"}
+                       open.atlas/connector-sql {:local/root "modules/common/connector-sql"}
+                       open.atlas/connector-api {:local/root "modules/common/connector-api"}
+                       open.atlas/connector-api-kit {:local/root "modules/common/connector-api-kit"}
+                       open.atlas/connector-derived {:local/root "modules/common/connector-derived"}
+                       open.atlas/engine        {:local/root "modules/common/engine"}
+                       open.atlas/artifact      {:local/root "modules/common/artifact"}
+                       open.atlas/toolkit       {:local/root "modules/common/toolkit"}
+                       open.atlas/search        {:local/root "modules/common/search"}
+                       open.atlas/candidates    {:local/root "modules/common/candidates"}
+                       open.atlas/control-protocol {:local/root "modules/common/control-protocol"}
+                       open.atlas/mcp-transport {:local/root "modules/common/mcp-transport"}
+                       open.atlas/runtime-store   {:local/root "modules/runtime/store"}
+                       open.atlas/runtime-graph   {:local/root "modules/runtime/graph"}
+                       open.atlas/runtime-token   {:local/root "modules/runtime/token"}
+                       open.atlas/runtime-env     {:local/root "modules/runtime/env"}
+                       open.atlas/runtime-retention {:local/root "modules/runtime/retention"}
+                       open.atlas/runtime-rowsec  {:local/root "modules/runtime/rowsec"}
+                       open.atlas/runtime-instance {:local/root "modules/runtime/instance"}
+                       open.atlas/runtime-obs     {:local/root "modules/runtime/obs"}
+                       open.atlas/http-stack       {:local/root "modules/server/http-stack"}
+                       open.atlas/server-http      {:local/root "modules/server/http"}
+                       open.atlas/server-data      {:local/root "modules/server/data"}
+                       open.atlas/server-mcp       {:local/root "modules/server/mcp"}
+                       ;; Supplied by the assembly point now (8.13); the root
+                       ;; aggregate is one, for server/mcp's tests.
+                       org.duckdb/duckdb_jdbc      {:mvn/version "1.3.1.0"}
+                       ;; 装配点（只有 test 没有 src）：真库端到端的竖切证据。
+                       open.atlas/integration   {:local/root "modules/integration"}
+                       ;; B2 的一次性工具曾经也列在这里，2026-08-24 随转换器与语料
+                       ;; 一并删除（fixtures/demo/README.md）。
+                       ;; B4：四根里的 studio，本仓库第一个。
+                       open.atlas/pool          {:local/root "modules/studio/pool"}
+                       open.atlas/studio-tools  {:local/root "modules/studio/tools"}
+                       open.atlas/studio-graph  {:local/root "modules/studio/graph"}
+                       open.atlas/studio-version {:local/root "modules/studio/version"}
+                       open.atlas/studio-deploy  {:local/root "modules/studio/deploy"}
+                       open.atlas/studio-app     {:local/root "modules/studio/app"}
+                       org.xerial/sqlite-jdbc   {:mvn/version "3.46.1.0"}
+                       io.github.cognitect-labs/test-runner
+                       {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
+         :extra-paths ["modules/common/dialect/test" "modules/common/dialect/fixtures"
+                       "modules/common/crypto/test"
+                       "modules/common/token/test"
+                       "modules/common/oidc/test"
+                       "modules/common/connector-spi/test"
+                       "modules/common/connector-sql/test"
+                       "modules/common/connector-api/test" "modules/common/connector-api/fixtures"
+                       "modules/common/connector-api-kit/test" "modules/common/connector-api-kit/fixtures"
+                       "modules/common/connector-derived/test"
+                       "modules/common/engine/test"
+                       "modules/common/artifact/test" "modules/common/artifact/fixtures"
+                       "modules/integration/test"
+                       "modules/common/toolkit/test"
+                       "modules/common/search/test"
+                       "modules/common/candidates/test"
+                       "modules/common/control-protocol/test"
+                       "modules/common/mcp-transport/test"
+                       "modules/runtime/store/test"
+                       "modules/runtime/graph/test"
+                       "modules/runtime/token/test"
+                       "modules/runtime/env/test"
+                       "modules/runtime/retention/test"
+                       "modules/runtime/rowsec/test"
+                       "modules/runtime/instance/test"
+                       "modules/runtime/obs/test"
+                       "modules/server/http-stack/test"
+                       "modules/server/http/test"
+                       "modules/server/data/test"
+                       "modules/server/mcp/test"
+                       "modules/studio/pool/test"
+                       "modules/studio/tools/test"
+                       "modules/studio/graph/test"
+                       "modules/studio/version/test"
+                       "modules/studio/deploy/test"
+                       "modules/studio/app/test"
+                       "fixtures/b1"
+                       "fixtures/demo"]
+         :main-opts   ["-m" "cognitect.test-runner"
+                       "-d" "modules/common/dialect/test"
+                       "-d" "modules/common/crypto/test"
+                       "-d" "modules/common/token/test"
+                       "-d" "modules/common/oidc/test"
+                       "-d" "modules/common/connector-spi/test"
+                       "-d" "modules/common/connector-sql/test"
+                       "-d" "modules/common/connector-api/test"
+                       "-d" "modules/common/connector-api-kit/test"
+                       "-d" "modules/common/connector-derived/test"
+                       "-d" "modules/common/engine/test"
+                       "-d" "modules/common/artifact/test"
+                       "-d" "modules/integration/test"
+                       "-d" "modules/common/toolkit/test"
+                       "-d" "modules/common/search/test"
+                       "-d" "modules/common/candidates/test"
+                       "-d" "modules/common/control-protocol/test"
+                       "-d" "modules/common/mcp-transport/test"
+                       "-d" "modules/runtime/store/test"
+                       "-d" "modules/runtime/graph/test"
+                       "-d" "modules/runtime/token/test"
+                       "-d" "modules/runtime/env/test"
+                       "-d" "modules/runtime/retention/test"
+                       "-d" "modules/runtime/rowsec/test"
+                       "-d" "modules/runtime/instance/test"
+                       "-d" "modules/runtime/obs/test"
+                       "-d" "modules/server/http-stack/test"
+                       "-d" "modules/server/http/test"
+                       "-d" "modules/server/data/test"
+                       "-d" "modules/server/mcp/test"
+                       "-d" "modules/studio/pool/test"
+                       "-d" "modules/studio/tools/test"
+                       "-d" "modules/studio/graph/test"
+                       "-d" "modules/studio/version/test"
+                       "-d" "modules/studio/deploy/test"
+                       "-d" "modules/studio/app/test"]}}}

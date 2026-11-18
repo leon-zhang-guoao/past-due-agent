@@ -1,0 +1,28 @@
+;; open.atlas.runtime.env —— R3.2 在一台 instance 上的落地：**闭包合并成一份 env**。
+;;
+;; 归属由 owner 裁定 2026-08-25 定死。它编排既有能力，自己不新造语义：
+;;
+;;   common/artifact —— reader、引用图遍历、`:up-to` 的纯传播（D1.12 修订）
+;;   common/dialect  —— 多模型确定性合并与冲突拒绝
+;;   common/engine   —— 合并模型 → 一份 compiled env
+;;   runtime/graph   —— 制品架、receipt、serving 指针（**经注入的读能力**，不直接依赖）
+;;
+;; **不做的事**（同一份裁决）：不在 runtime/graph 里顺手编译；不在 runtime/token 里
+;; 物化；不逐个引用制品各编一份再合并 compiled env；graph 之间不做运行时网络调用;
+;; 不读 token 对被引用 graph 的独立 grant；**不为 studio 再写一条物化路径**——
+;; studio 内嵌的那台 runtime 走的就是这一份。
+{:paths ["src"]
+ :deps  {org.clojure/clojure      {:mvn/version "1.12.0"}
+         open.atlas/artifact      {:local/root "../../common/artifact"}
+         open.atlas/dialect       {:local/root "../../common/dialect"}
+         open.atlas/engine        {:local/root "../../common/engine"}
+         open.atlas/connector-spi {:local/root "../../common/connector-spi"}
+         ;; 只为了那把按键串行的锁（single-flight）与 instance 身份。
+         open.atlas/runtime-store {:local/root "../store"}}
+ :aliases
+ {:test {:extra-paths ["test" "../../common/dialect/fixtures"]
+         :extra-deps  {open.atlas/connector-sql {:local/root "../../common/connector-sql"}
+                      org.xerial/sqlite-jdbc {:mvn/version "3.46.1.0"}
+                      io.github.cognitect-labs/test-runner
+                       {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
+         :main-opts   ["-m" "cognitect.test-runner"]}}}

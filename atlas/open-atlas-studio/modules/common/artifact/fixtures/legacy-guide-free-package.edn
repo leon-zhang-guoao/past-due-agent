@@ -1,0 +1,36 @@
+{:graphs [{:content/hash "sha256:c5192c06049ff7f44892b330e62b13bc9a619cb9b175118da16adcc3cda02737"
+           :document {:contract {:contract/family "atlas-semantic" :contract/version "1.4.0"}
+                      :execution {:bindings {}
+                                  :operations {}
+                                  :resolvers {}
+                                  :selection {}
+                                  :sources {}}
+                      :graph {:graph/dependencies []
+                              :graph/entities []
+                              :graph/exposure :restricted
+                              :graph/id "legacy-guide-free"
+                              :graph/label "legacy-guide-free"
+                              :graph/operations []
+                              :graph/resolvers []
+                              :graph/terms []}
+                      :ownership {:entities {} :operations {} :resolvers {} :terms {}}
+                      :publication {:release/version "1"
+                                    :required-capabilities #{:artifact/embedded-closure-v1
+                                                             :deployment/source-slot-v1
+                                                             :graph/single-owner-v1
+                                                             :semantic/core-v1}
+                                    :source/revision 1}
+                      :vocabulary {:aliases []
+                                   :attributes {}
+                                   :entities {}
+                                   :equivalences []
+                                   :references []
+                                   :terms {}}
+                      :workspace {:workspace/id "portable"}}
+           :graph/id "legacy-guide-free"
+           :release/version "1"}]
+ :package/family "atlas-semantic-graph"
+ :package/version 1
+ :root {:content/hash "sha256:c5192c06049ff7f44892b330e62b13bc9a619cb9b175118da16adcc3cda02737"
+        :graph/id "legacy-guide-free"
+        :release/version "1"}}

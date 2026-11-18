@@ -1,0 +1,12 @@
+{:cache {:ttl-ms 600000}
+ :description "Catalog part by SKU；batch：一条 WHERE sku_no IN (...) 消 N+1。"
+ :id "demo_part_by_id"
+ :input [:cis.master.part/sku_no]
+ :label "Part by sku_no"
+ :output [:cis.master.part/part_no :cis.master.part/short_desc :cis.master.part/ave_cost
+          :cis.master.part/prod_code :cis.master.part/vend_no]
+ :result_type "single"
+ :source {:batch {:child-fk "sku_no" :parent-key :cis.master.part/sku_no :placeholder "sku_nos"}
+          :query "SELECT sku_no, part_no, short_desc, ave_cost, prod_code, vend_no FROM parts WHERE sku_no IN (:sku_nos)"
+          :type "sql"}
+ :source-ref "cis-demo-db"}
