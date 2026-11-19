@@ -10,6 +10,22 @@ import test_sql_fixtures as fixtures
 
 
 class Contracts(unittest.TestCase):
+    def test_only_compatible_seed_projection_changes_from_v370(self):
+        import zipfile
+        from build_current_v2 import sql
+        with zipfile.ZipFile(ROOT/'releases/pastdue-agent-v3.7.0.zip') as archive:
+            baseline=loads(archive.read('atlas/charts/pastdue.edn').decode())
+        old=baseline[':execution'][':bindings'][RID+'-sql'][':binding/implementation'][':query']
+        old_seed=""" SELECT true,arrayJoin(if((SELECT input_status FROM input_control)='OK',
+ arrayConcat((SELECT requested_vendors FROM vendor_selection),[toInt64(0)]),[toInt64(0)])),
+ '','','',toInt64(0),toInt64(0),true,false),"""
+        new_seed=""" SELECT true AS requested,seed_vendor_code AS vendor_code,
+ '' AS vendor_name,'' AS eta_code,'' AS eta_source,
+ toInt64(0) AS op,toInt64(0) AS pd,true AS is_seed,false AS org_match
+ FROM (SELECT arrayJoin(if((SELECT input_status FROM input_control)='OK',
+ arrayConcat((SELECT requested_vendors FROM vendor_selection),[toInt64(0)]),[toInt64(0)])) AS seed_vendor_code)),"""
+        self.assertEqual(old.count(old_seed),1)
+        self.assertEqual(sql(),old.replace(old_seed,new_seed))
     def test_additive_idempotent_and_example(self):
         baseline=loads(subprocess.check_output(['git','show','HEAD:atlas/charts/pastdue.edn'],cwd=ROOT,text=True))
         result=add_current_v2(copy.deepcopy(baseline))
@@ -18,7 +34,7 @@ class Contracts(unittest.TestCase):
             for key,value in baseline[':execution'][section].items():
                 if section==':bindings' and key==RID+'-sql':
                     value=copy.deepcopy(value)
-                    value[':binding/implementation'][':query']=value[':binding/implementation'][':query'].removesuffix(' ORDER BY row_ordinal')
+                    value[':binding/implementation'][':query']=result[':execution'][section][key][':binding/implementation'][':query']
                 self.assertEqual(result[':execution'][section][key],value)
         self.assertEqual(add_current_v2(copy.deepcopy(result)),result)
         example=loads((ROOT/'skill/pastdue-analysis/references/current-v2-query.eql').read_text())

@@ -1,0 +1,8 @@
+{:entity {:pastdue.current-analysis-query/country-code "US"
+    :pastdue.current-analysis-query/grain "VENDOR_CODE"
+    :pastdue.current-analysis-query/vendor-code-filter "64956"
+    :pastdue.current-analysis-query/department-type-filter ""
+    :pastdue.current-analysis-query/master-primary-filter ""
+    :pastdue.current-analysis-query/master-manager-filter ""
+    :pastdue.current-analysis-query/denominator-scope "FILTERED_POPULATION"}
+  :query [{:pastdue.current-analysis-query/rows [:pastdue.current-analysis-fact/country-code :pastdue.current-analysis-fact/vendor-code :pastdue.current-analysis-fact/eta-value :pastdue.current-analysis-fact/open-line-count :pastdue.current-analysis-fact/past-due-count :pastdue.current-analysis-fact/row-ordinal :pastdue.current-analysis-fact/expected-row-count]}]}

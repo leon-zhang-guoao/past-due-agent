@@ -184,8 +184,8 @@ def add_live_current(doc):
             doc[':vocabulary'][':attributes'][K(':'+child+'/'+name)][K(':attribute/description')]=description
     doc[':vocabulary'][':attributes'][K(':pastdue.live-overview-fact/unattributed-open-count')][K(':attribute/description')]='Country rows with null/nonpositive Vendor code; included in Country Open, excluded from ranked Vendors.'
     doc[':vocabulary'][':attributes'][K(':pastdue.live-overview-fact/unattributed-past-due-count')][K(':attribute/description')]='PD among null/nonpositive-code rows; included in Country PD, excluded from ranked Vendors.'
-    doc[':publication'][K(':release/version')]='3.7.0'
-    doc[':publication'][K(':source/revision')]=9
+    doc[':publication'][K(':release/version')]='3.7.1'
+    doc[':publication'][K(':source/revision')]=10
     return doc
 
 
@@ -193,6 +193,6 @@ if __name__=='__main__':
     root=Path(__file__).resolve().parents[1]
     path=root/'atlas/charts/pastdue.edn'
     doc=add_live_current(read(path))
-    doc[':publication'][K(':release/version')]='3.7.0'
-    doc[':publication'][K(':source/revision')]=9
+    doc[':publication'][K(':release/version')]='3.7.1'
+    doc[':publication'][K(':source/revision')]=10
     write(path,doc)

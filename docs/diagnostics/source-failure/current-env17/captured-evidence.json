@@ -1,0 +1,75 @@
+{
+  "kind": "CAPTURED_ENV17_REFUSALS_NOT_LIVE_REEXECUTION",
+  "cases": [
+    {
+      "trace_line": 31,
+      "resolver": "pastdue_v3_current_v2_query_rows",
+      "request_bytes": 1848,
+      "request_file": "01-cisco-current-v2.eql",
+      "response_edn": "{:error {:error \"the query was refused\", :findings [{:path [:query], :env/version 17, :error/statement-status nil, :severity :error, :code :engine.execution/failed, :error/category :source, :studio/recent-id \"e8c0c7ef-6330-45a7-bcb1-f21056ca9149\", :message \"source execution failed\"}]}}",
+      "contains_success_handle": false
+    },
+    {
+      "trace_line": 65,
+      "resolver": "pastdue_v3_explore_v3_query_rows",
+      "request_bytes": 2731,
+      "request_file": "02-cisco-explore-v3.eql",
+      "response_edn": "{:error {:error \"the query was refused\", :findings [{:path [:query], :env/version 17, :error/statement-status nil, :severity :error, :code :engine.execution/failed, :error/category :source, :studio/recent-id \"2debc4b7-a033-4b5b-83e6-91bc7e213e85\", :message \"source execution failed\"}]}}",
+      "contains_success_handle": false
+    },
+    {
+      "trace_line": 92,
+      "resolver": "pastdue_v3_current_v2_query_rows",
+      "request_bytes": 1920,
+      "request_file": "03-batch-current-v2.eql",
+      "response_edn": "{:error {:error \"the query was refused\", :findings [{:path [:query], :env/version 17, :error/statement-status nil, :severity :error, :code :engine.execution/failed, :error/category :source, :studio/recent-id \"9e3b73e3-0e52-4f94-8855-d8ae5904e094\", :message \"source execution failed\"}]}}",
+      "contains_success_handle": false
+    },
+    {
+      "trace_line": 96,
+      "resolver": "pastdue_v3_explore_v3_query_rows",
+      "request_bytes": 2803,
+      "request_file": "04-batch-explore-v3.eql",
+      "response_edn": "{:error {:error \"the query was refused\", :findings [{:path [:query], :env/version 17, :error/statement-status nil, :severity :error, :code :engine.execution/failed, :error/category :source, :studio/recent-id \"43452401-4b7b-4fd4-a7a1-d1ce03ed6b6e\", :message \"source execution failed\"}]}}",
+      "contains_success_handle": false
+    }
+  ],
+  "local_replay": [
+    {
+      "line": 31,
+      "resolver": "pastdue_v3_current_v2_query_rows",
+      "status": "PASS_LOCAL_SYNTHETIC_ONLY",
+      "row_count": 2,
+      "elapsed_s": 0.079,
+      "control_status": "OK",
+      "note": "Synthetic data does not contain requested production Vendors; coverage only, not actual source/JDBC reproduction"
+    },
+    {
+      "line": 65,
+      "resolver": "pastdue_v3_explore_v3_query_rows",
+      "status": "PASS_LOCAL_SYNTHETIC_ONLY",
+      "row_count": 2,
+      "elapsed_s": 1.544,
+      "control_status": "NO_DATA",
+      "note": "Synthetic data does not contain requested production Vendors; coverage only, not actual source/JDBC reproduction"
+    },
+    {
+      "line": 92,
+      "resolver": "pastdue_v3_current_v2_query_rows",
+      "status": "PASS_LOCAL_SYNTHETIC_ONLY",
+      "row_count": 14,
+      "elapsed_s": 0.031,
+      "control_status": "OK",
+      "note": "Synthetic data does not contain requested production Vendors; coverage only, not actual source/JDBC reproduction"
+    },
+    {
+      "line": 96,
+      "resolver": "pastdue_v3_explore_v3_query_rows",
+      "status": "PASS_LOCAL_SYNTHETIC_ONLY",
+      "row_count": 14,
+      "elapsed_s": 1.465,
+      "control_status": "NO_DATA",
+      "note": "Synthetic data does not contain requested production Vendors; coverage only, not actual source/JDBC reproduction"
+    }
+  ]
+}

@@ -1,0 +1,132 @@
+{
+  "kind": "GRAPH_ONLY_CURRENT_V2_CODE49_HOTFIX",
+  "release": "3.7.1",
+  "revision": 10,
+  "changed_binding": "pastdue_v3_current_v2_query_rows-sql",
+  "other_execution_contracts": "UNCHANGED_FROM_3.7.0",
+  "source_sha256": {
+    "atlas/charts/pastdue.edn": "be312d7be3858771f473b54ca0fd674604b96d9ef07c8c5b602a52dfb3801274",
+    "scripts/build_current_v2.py": "f2ecd1cf44f1914e9abceb5d3868f63662431f22c1146e3e29215a93d61c0eb3",
+    "scripts/build_live_current.py": "69360f2d23357f79162f1615be26718d29194244869aa847ef3e4fdd0b30ca6c",
+    "scripts/test_clickhouse22_current.py": "1450ff58b9608d66aa4fe6669248f0986672e856cd4775f986a9558d878df17e",
+    "scripts/test_current_v2.py": "4899175bcf36174024311fc94eebf479e3d213b9a08ada447db2a9cecf37bedf",
+    "scripts/test_query_contracts.py": "a871e5d673fa2516b3c9ffcd5e8bd5f566a495f51e385619324090e7c17c5e60",
+    "scripts/test_sql_fixtures.py": "819d573a00a004a9769ef726bb9ed7df6300e49f76cdc36615d64331081c5e04"
+  },
+  "native_clickhouse": {
+    "version": "22.8.21.38",
+    "binary_source": "Official ClickHouse/ClickHouse GitHub v22.8.21.38-lts clickhouse-macos-aarch64; binary not packaged",
+    "binary_sha256": "11bc30aa6315a07d582abf5f8e2945c70bebb8d68e91ba80445badbfd00a0330",
+    "status": "PASS_SYNTHETIC_LOCAL_NOT_JDBC",
+    "tests_run": 7,
+    "log": "test_atlas_appended_sort_and_limit_first_and_continuation (__main__.ClickHouse22Current) ... ok\ntest_denominator_org_parity (__main__.ClickHouse22Current) ... ok\ntest_duplicate_mapping_missing_and_zero (__main__.ClickHouse22Current) ... ok\ntest_invalid_explicit_control (__main__.ClickHouse22Current) ... ok\ntest_null_normalization_and_thirteen_vendor_coverage (__main__.ClickHouse22Current) ... ok\ntest_original_code49_repro_and_measured_single_vendor (__main__.ClickHouse22Current) ... ok\ntest_paging_totals_joint_and_fingerprint (__main__.ClickHouse22Current) ... ok\n\n----------------------------------------------------------------------\nRan 7 tests in 7.078s\n\nOK\n",
+    "red_green": [
+      {
+        "variant": "before",
+        "status": "FAIL",
+        "message": "Code: 49. DB::Exception: Different order of columns in UNION subquery: arrayJoin(if(equals(_subquery125, 'OK'), arrayConcat(_subquery126, array(toInt64(0))), array(toInt64(0)))), '', '', '', toInt64(0), toInt64(0), true, false and '', '', '', toInt64(0), toInt64(0), true, false. (LOGICAL_ERROR)\n"
+      },
+      {
+        "variant": "after",
+        "status": "PASS",
+        "rows": 4,
+        "pd": 1
+      }
+    ]
+  },
+  "offline": {
+    "kind": "OFFLINE_CONTRACT_CHECKS_NOT_LLM_EVAL",
+    "status": "PASS",
+    "graph_sha256": "be312d7be3858771f473b54ca0fd674604b96d9ef07c8c5b602a52dfb3801274",
+    "checks": [
+      {
+        "name": "validate_bundle.py",
+        "status": "PASS",
+        "exit_code": 0,
+        "script_sha256": "2184d25e795442dcf20f683606e4cec602d356b75c306f931d613ba4f481c34a",
+        "output": "PASS authoritative pastdue.edn: 43 resolvers, 984 attributes\nNOT RUN: Atlas config-check, deployed JDBC/SQL, live Agent acceptance. No production certification.\n"
+      },
+      {
+        "name": "test_query_contracts.py",
+        "status": "PASS",
+        "exit_code": 0,
+        "script_sha256": "a871e5d673fa2516b3c9ffcd5e8bd5f566a495f51e385619324090e7c17c5e60",
+        "output": "..................\n----------------------------------------------------------------------\nRan 18 tests in 0.578s\n\nOK\n"
+      },
+      {
+        "name": "test_top10_changes.py",
+        "status": "PASS",
+        "exit_code": 0,
+        "script_sha256": "8d178afcb0f377b16994c5b5235951e718bc97adcef35aeece583a2158801960",
+        "output": ".................\n----------------------------------------------------------------------\nRan 17 tests in 0.005s\n\nOK\n"
+      },
+      {
+        "name": "test_report_contracts.py",
+        "status": "PASS",
+        "exit_code": 0,
+        "script_sha256": "26fa543c58593797914690ee6bea53e5a7c9dce9ef3ad176dd24b91d8c3220e5",
+        "output": ".......................................\n----------------------------------------------------------------------\nRan 39 tests in 0.079s\n\nOK\n"
+      },
+      {
+        "name": "test_report_v2.py",
+        "status": "PASS",
+        "exit_code": 0,
+        "script_sha256": "d8da2e266051515625b57f06d6bc776de457e373848d60e6b66cc38930e71aa6",
+        "output": "..........\n----------------------------------------------------------------------\nRan 10 tests in 4.959s\n\nOK\n"
+      },
+      {
+        "name": "test_current_v2.py",
+        "status": "PASS",
+        "exit_code": 0,
+        "script_sha256": "4899175bcf36174024311fc94eebf479e3d213b9a08ada447db2a9cecf37bedf",
+        "output": "........\n----------------------------------------------------------------------\nRan 8 tests in 16.214s\n\nOK\n"
+      },
+      {
+        "name": "test_page_reads.py",
+        "status": "PASS",
+        "exit_code": 0,
+        "script_sha256": "61b3bb040b60be7b1b1f2896d084b1adbf5c1bbc1a9cc4cba102b837386db1d8",
+        "output": ".....\n----------------------------------------------------------------------\nRan 5 tests in 1.321s\n\nOK\n"
+      },
+      {
+        "name": "test_eta_read.py",
+        "status": "PASS",
+        "exit_code": 0,
+        "script_sha256": "93750ab6fff0ecf104503a0de1533dcaf77ad3228d77928d4e73e87ab4d93fd6",
+        "output": "...\n----------------------------------------------------------------------\nRan 3 tests in 0.002s\n\nOK\n"
+      },
+      {
+        "name": "test_live_current.py",
+        "status": "PASS",
+        "exit_code": 0,
+        "script_sha256": "3388d5f9e21c97405caaf1c91611846b29757df4323093d9976acf49267a2e51",
+        "output": "............\n----------------------------------------------------------------------\nRan 12 tests in 1.880s\n\nOK\n"
+      },
+      {
+        "name": "test_release_tooling.py",
+        "status": "PASS",
+        "exit_code": 0,
+        "script_sha256": "f31ec0e6917069f4f31743aafe8b832a4c0a7d8efbc999c0a3d281bbff6d1afa",
+        "output": "validate_bundle.py PASS \n...........\n----------------------------------------------------------------------\nRan 11 tests in 4.280s\n\nOK\n"
+      },
+      {
+        "name": "test_html*.py",
+        "status": "PASS",
+        "exit_code": 0,
+        "script_sha256": "00f747f95b6a94d225e7b62c5682bd8927cd8c53ef960a72f38198330263f2ac",
+        "output": "............................................\n----------------------------------------------------------------------\nRan 44 tests in 0.206s\n\nOK\n"
+      }
+    ],
+    "platform_config_check": "NOT_RUN",
+    "deployed_jdbc_sql": "NOT_RUN",
+    "real_agent_eval": "NOT_RUN"
+  },
+  "live_atlas": "NOT_RUN",
+  "production_latency": "NOT_RUN",
+  "production_jdbc": "NOT_RUN",
+  "independent_findings": [
+    "Legacy current-analysis source timeout5s confirmed by user; unchanged",
+    "Explore-v3 native22.8 JOIN Code403 reproduced locally; online causes unknown; unchanged"
+  ],
+  "install": "Graph only. Keep Prompt/Skill3.7.0; preserve live graph/source IDs. Run original CISCO EQL, then batch EQL."
+}

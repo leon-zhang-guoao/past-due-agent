@@ -1,0 +1,9 @@
+{:entity {:pastdue.current-v2-query/country-code "US"
+    :pastdue.current-v2-query/vendor-codes-json "[64956]"
+    :pastdue.current-v2-query/department-type-filter ""
+    :pastdue.current-v2-query/master-primary-filter ""
+    :pastdue.current-v2-query/master-manager-filter ""
+    :pastdue.current-v2-query/denominator-scope "WITHIN_VENDOR"
+    :pastdue.current-v2-query/page-after-ordinal 0
+    :pastdue.current-v2-query/page-size 100}
+  :query [{:pastdue.current-v2-query/rows [:pastdue.current-v2-fact/scope-key :pastdue.current-v2-fact/record-type :pastdue.current-v2-fact/scope-status :pastdue.current-v2-fact/country-code :pastdue.current-v2-fact/vendor-code :pastdue.current-v2-fact/eta-code :pastdue.current-v2-fact/eta-source :pastdue.current-v2-fact/open-line-count :pastdue.current-v2-fact/past-due-count :pastdue.current-v2-fact/row-ordinal :pastdue.current-v2-fact/expected-record-count :pastdue.current-v2-fact/page-record-count :pastdue.current-v2-fact/next-after-ordinal :pastdue.current-v2-fact/has-more :pastdue.current-v2-fact/result-fingerprint]}]}

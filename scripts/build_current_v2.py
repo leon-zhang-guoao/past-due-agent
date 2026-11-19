@@ -56,9 +56,11 @@ def sql():
  AND (:denominator_scope='COUNTRY_ALL' OR toInt64(from_acct_no) IN
  (SELECT arrayJoin(requested_vendors) FROM vendor_selection))
  UNION ALL
- SELECT true,arrayJoin(if((SELECT input_status FROM input_control)='OK',
- arrayConcat((SELECT requested_vendors FROM vendor_selection),[toInt64(0)]),[toInt64(0)])),
- '','','',toInt64(0),toInt64(0),true,false),
+ SELECT true AS requested,seed_vendor_code AS vendor_code,
+ '' AS vendor_name,'' AS eta_code,'' AS eta_source,
+ toInt64(0) AS op,toInt64(0) AS pd,true AS is_seed,false AS org_match
+ FROM (SELECT arrayJoin(if((SELECT input_status FROM input_control)='OK',
+ arrayConcat((SELECT requested_vendors FROM vendor_selection),[toInt64(0)]),[toInt64(0)])) AS seed_vendor_code)),
  buckets AS (SELECT vendor_code,min(vendor_name) AS vendor_name,eta_code,eta_source,is_seed,
  sum(r.op) AS readable_op,sum(r.pd) AS country_pd,sumIf(r.op,r.org_match) AS op,sumIf(r.pd,r.org_match) AS pd
  FROM raw r GROUP BY vendor_code,eta_code,eta_source,is_seed),
