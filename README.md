@@ -1,13 +1,12 @@
-# PastDue Analysis Agent — 3.6.3
+# PastDue Analysis Agent — 3.7.0
 
-3.6.3 fixes ETA bucket/check field binding with a typed retained projection and
-explicit main-cell mappings. It preserves the 3.6.2 routing choices, which
-narrowed the unpublished 3.6.1 proposal: keep original positive Top N and
-single-Vendor report paths, existing CURRENT explore routing and adaptive typed
-reads. Keep handle/identity checks and fact reuse. current-v2 preference and wide
-full-page reads remain candidates, pending independent same-scope live comparison.
-Graph3.6.0/revision8 is unchanged. Offline validation is not live acceptance.
-See [plan, update scope and live comparison](docs/ETA_BINDING_FIX_3_6_3.md).
+“目前／当前／今日情况”现在默认实时明细：Country概况和重点Vendor；单个或一批
+Vendor名称/编号先精确识别，再按Country集合查询当前指标与Code/Source分析。
+新增live-overview和vendor-identity两个EDN查询，复用current-v2；原41个执行接口不变。
+历史报告、无预警report、TEST、explore及可选HTML路径保留。
+
+本次需要一起更新EDN、Prompt及完整Skill。详见
+[方案、文件与逐步验收](docs/CURRENT_3_7_0.md)。本地检查不等于线上通过。
 
 Requested reports run independently of alert status. One/several Vendor questions
 retain the exact set, including improving and zero-PD Vendors. Graph3.6 adds
@@ -53,15 +52,14 @@ live use. No Atlas update is needed for this presentation patch.
 
 ## Delivery and validation
 
-Full package: `releases/pastdue-agent-v3.6.3.zip`; Skill package:
-`releases/pastdue-analysis-skill-v3.6.3.zip`. Packaging is local, not deployment.
+Full package: `releases/pastdue-agent-v3.7.0.zip`; Skill package:
+`releases/pastdue-analysis-skill-v3.7.0.zip`. Packaging is local, not deployment.
 Preserve approved graph/source IDs and credentials outside the repository.
 
-For this 3.6.3 patch on graph3.6.0/revision8, update the Prompt and complete
-pastdue-analysis Skill only; do not republish the unchanged graph. If the live
-graph is older or differs, compare schema/revision first; do not overwrite it
-with a historical full package. Existing equivalent paths remain usable;
-do not silently substitute a different metric/population or truncated data.
+For3.7.0 deploy the graph extension first to a test graph, then Prompt and full
+Skill after direct live EQL verification. Preserve approved IDs/source mappings.
+See CURRENT_3_7_0.md for rollout and rollback. Prior3.6.3 was Prompt-only;
+its graph-unchanged deployment instructions do not apply to this release.
 See [design and rollout](docs/COMPOSABLE_ANALYSIS_3_5.md),
 [API](docs/API_V3.md), [deployment](docs/DEPLOYMENT_V3.md) and
 [evidence](docs/VALIDATION_V3.md). Actual receipts distinguish offline checks,

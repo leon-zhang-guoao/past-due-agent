@@ -6,6 +6,11 @@ EQL stays `{:entity ... :query ...}` inside `execute_eql.query`.
 
 ## Choose the fact capability
 
+Current overview, one Vendor or names/codes batch: use [live current](live-current.md)
+and its small EQL examples first. Exact Vendor sets reuse current-v2; ranking or
+filter/comparison beyond those scopes retains explore. Discover only unresolved
+attributes of the selected interface and reuse the mapping.
+
 Requested reports, including nontrigger dates and Vendor sets: read
 [report planning](report-planning.md) and select the semantically equivalent
 interface: original report for positive Top N/single Vendor, v2 for added selection

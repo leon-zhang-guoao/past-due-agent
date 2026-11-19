@@ -3,6 +3,22 @@
   "evaluation": "Public design/regression cases, not withheld questions. Use actual deployed facts and original calls; keep rubrics outside the tested agent. Assess correctness, coverage, preserved scope, calls, recovery and delivered answer independently. Prepare separate unseen holdouts.",
   "cases": [
     {
+      "id": "current_overview_not_snapshot",
+      "request": "目前的past due情况是什么",
+      "check": "CURRENT detail country metrics and current Vendor leaders; capture not source refresh; no snapshot or alert gate; explain missing Country; calls grow with pages not full-schema rereads."
+    },
+    {
+      "id": "current_single_name",
+      "request": "US F5 NETWORKS, INC的情况",
+      "check": "Exact name identity then current metrics/composition or explicit candidate/no readable match. No guessed code, no snapshot."
+    },
+    {
+      "id": "current_mixed_batch",
+      "request": "查这批当前情况：64342、75256、F5 NETWORKS, INC",
+      "setup": "Supply real allowed names, ambiguous name, duplicate alias, zeroPD and unmatched item; default Country US/CA if none inherited.",
+      "check": "Token ledger covers every input; resolve once in batches, query matched codes as Country sets; ambiguous and missing separate from zero; totals dedup Country+code; comparisons only on request."
+    },
+    {
       "id": "vendor_set_current",
       "request": "US这13家64342、75256、64351、19215、65505、75257、22344、85058、71886、48378、65885、75691、72478，刷新每家Past Due数量和ETA Code、Source分布。",
       "check": "Exactly the requested set accounted for; no comma-list single-value call; no missing-as-zero; same-scope distributions reconcile where complete."

@@ -3,9 +3,15 @@ name: pastdue-analysis
 description: Analyze PastDue current data, snapshots, comparisons and trends through Atlas; generate requested reports with or without alerts, investigate one or several Vendors, and run daily monitoring, historical review or start test / 开始测试.
 ---
 
-# PastDue Analysis — 3.6.3
+# PastDue Analysis — 3.7.0
 
 ## 1. Resolve the analysis specification
+
+“目前／当前／今日 past due 情况” defaults to live CURRENT detail, not snapshots.
+For a current overview, one Vendor or a batch of names/codes, read
+[live current](references/live-current.md) first. It supplies shared overview,
+identity resolution and exact-set metrics, with ambiguity and coverage. Explicit
+historical/report/monitor/test periods and inherited scope retain their own paths.
 
 Fix mode, language, Country/Vendor, time basis/dates, grain, filters, denominator,
 ranking and display scope. Language: explicit preference > current request >
@@ -22,7 +28,7 @@ if instructions are truncated, read that section separately before using it.
 | DAILY | Monitor all requested Countries; drill real eligible triggers, US/CA independently by default. |
 | HISTORICAL | Read events, normally analyze latest event per Country; events-only stops at the list. |
 | TEST | Same full report, force applicable analysis for valid pairs; keep actual trigger and TEST_FORCED/THRESHOLD_MET separate. No positive Vendors is a valid empty path, not negative-Vendor substitution. |
-| INTERACTIVE | Query only relevant facts/modules through explore. No implicit daily Top10, positive-only, nearest-date or full-report restriction. |
+| INTERACTIVE | Query relevant graph facts/modules through live-current or composable explore. No implicit daily Top10, positive-only, nearest-date or full-report restriction. |
 
 For an explicit report, a single/set Vendor question or a report follow-up, read
 [report planning](references/report-planning.md). Report delivery is independent
@@ -56,9 +62,9 @@ serial report flow. Keep report-query for explicit POSITIVE_TOP_N (1..10) and
 SINGLE_VENDOR pair reports when equivalent, including nontrigger dates.
 Requested all-sign Top N, multiple-Vendor sets or explicit coverage requirements
 use discovered report-v2-query/rows. See report planning for semantic routing.
-Use existing explore for CURRENT by default. current-v2 and wide full-page reads
-remain candidate strategies requiring their own live comparison before default
-promotion; they are not prerequisites for an ordinary report.
+Use live-current.md for current overviews and exact Vendor sets; use explore
+for ranking/filter/comparison operations. Wide full-page reads stay optional.
+These live routes are independent of completed-pair reports.
 Interactive composition: prefer discovered explore-v3-query/rows for selection/expansion and
 per-date ranking; read [v3 contract](references/explore-v3.md). Keep selection and
 display filters independent, retain candidate denominators and distinguish empty

@@ -76,7 +76,7 @@ Explore retains its SELECTION/FACT and coverage rules from its own reference.
 ### Choose the read, bind, continue
 
 1. Use the complete EQL projection for the selected interface. First cursor0;
-   report-v2 starts page-size50. Candidate current-v2 starts100. Discover only an
+   report-v2 starts page-size50. Exact-set current-v2 starts100. Discover only an
    unresolved schema/input gap; reuse compatible mappings in this environment.
 2. Retain the execute's actual handle. Select required fields and record types
    according to the report modules. Report typed projections in section4 can be
@@ -300,3 +300,14 @@ Source collection pagination is separate: a handle can contain only one source
 page. Follow the playbook's source coverage rules. Never requery source per Vendor
 to fix retained preview truncation. When a full read path is unavailable, name the
 precise gap and keep dependent scope unverified rather than claim completion.
+
+## Live overview and identity
+
+Read live-current.md for CURRENT overview, one or many Vendor names/codes.
+The two small EQL examples project explicit scalar fields; reuse that mapping
+instead of reading the entire graph schema. Identity follows the same repeated
+CONTROL, page count, fingerprint and ordinal-union rules as current-v2. Overview
+is bounded to one Country + at most20 Vendor rows. Its COUNTRY record supplies
+Country measurements; TOP_VENDOR is current ranking, not historical drivers.
+Use current-metrics-read.sql/current-buckets-read.sql for exact-set typed reads;
+full projection remains optional. All reads bind to the actual source handle.

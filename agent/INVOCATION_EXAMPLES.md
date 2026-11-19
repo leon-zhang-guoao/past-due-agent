@@ -1,4 +1,4 @@
-# Requests — Agent contract 3.6.3
+# Requests — Agent contract 3.7.0
 
 Examples illustrate operation composition, not a closed list of supported phrases.
 Prefer discovered explore-v3 for composition; old explore remains compatible for scopes it expresses.
@@ -77,3 +77,12 @@ must be verified. No self-awarded report PASS, no platform execution claimed her
 The parent waits and independently reads back artifacts before disclosing paths.
 Missing child → DELEGATE; changed/missing artifact → VERIFY. No inline rendering
 fallback. See `skill/pastdue-html-report/references/sub-agent-contract.md`.
+
+## Live current questions
+
+| Request | Route and expected scope |
+|---|---|
+| 目前的past due情况是什么／今日past due情况 | CURRENT overview per Country, default US+CA; metrics plus five current leaders, no snapshot or trigger gate |
+| US Vendor64342目前情况／US F5 NETWORKS, INC的情况 | Known code directly to current-set; name resolves within US first; metrics and composition |
+| 查询这批：64342、75256、F5 NETWORKS, INC | Batch identities in inherited Country or default US/CA; account for each token, query resolved sets per Country |
+| 这些Vendor昨天和前天有什么变化 | Explicit historical comparison, existing explore/report route; live defaults do not override dates |

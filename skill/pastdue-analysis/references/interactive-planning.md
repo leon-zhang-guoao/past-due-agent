@@ -86,3 +86,10 @@ no data, zero measurement, filtered-out, selection-excluded and unfinished work.
 Keep execution, retrieval and delivery separate. Use captured dates/denominators;
 current PO/Owner facts do not prove historical causes. Local gaps do not invalidate
 independent facts. Name exact remaining scope rather than generic whole-task failure.
+
+## Live intent default
+
+“目前／当前／今日情况” and Vendor situation without a historical period use
+[live-current.md](live-current.md): shared live overview, batch exact identity and
+current set facts. Preserve explicit inherited periods. These examples are not
+a closed intent list; other operations keep the composable explore path.

@@ -1,4 +1,4 @@
-{:policy-version "3.6.3"
+{:policy-version "3.7.0"
   :business-timezone "America/Los_Angeles"
   :business-timezone-iana "America/Los_Angeles"
   :display-timezone {:daylight-saving true
@@ -21,14 +21,14 @@
     :requested-report :select-by-report-planning-semantics
     :requested-report-added-selection :pastdue.report-v2-query/rows
     :equivalent-positive-or-single-report :pastdue.report-query/rows
-    :targeted-current :pastdue.explore-v3-query/rows
-    :candidate-targeted-current :pastdue.current-v2-query/rows
-    :candidate-promotion :same-scope-live-comparison-required
+    :targeted-current :pastdue.current-v2-query/rows
     :monitor :pastdue.monitor-query/countries
     :history :pastdue.history-query/trigger-events
     :missing-required :deployment-gap
     :silent-legacy-fallback false
-    :compatibility-only [:pastdue.report-block-query/blocks :pastdue.monitor-block-query/countries]}
+    :compatibility-only [:pastdue.report-block-query/blocks :pastdue.monitor-block-query/countries]
+    :live-overview :pastdue.live-overview-query/rows
+    :vendor-identity :pastdue.vendor-identity-query/rows}
   :explore {:time-bases ["CURRENT" "SNAPSHOT" "PAIR" "RANGE"]
     :pair-policies ["PREVIOUS_AVAILABLE" "EXPLICIT"]
     :grains ["COUNTRY" "VENDOR" "VENDOR_CODE" "VENDOR_SOURCE" "VENDOR_CODE_SOURCE"]
@@ -188,4 +188,11 @@
       :preferred-emit "business-storyteller writes equivalent HTML matching html-shell.md / payload-contract"
       :optional-verification-script "skill/pastdue-html-report/scripts/render_ops_shell.py"
       :not-a-host-markdown-renderer true}
-    :independent-output-review "not performed unless actually evidenced"}}
+    :independent-output-review "not performed unless actually evidenced"}
+  :interactive-current {:default-time-basis "CURRENT"
+    :reference "live-current.md"
+    :overview-countries ["US" "CA"]
+    :overview-top-n 5
+    :exact-set-page-size 100
+    :identity-match "EXACT_TRIM_ASCII_CASE_INSENSITIVE"
+    :missing-is-zero false}}

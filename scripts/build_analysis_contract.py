@@ -422,6 +422,8 @@ def build(graph_path=None):
     add_report_v2(doc)
     from build_current_v2 import add_current_v2
     add_current_v2(doc)
+    from build_live_current import add_live_current
+    add_live_current(doc)
     write(graph_path,doc)
     return doc
 

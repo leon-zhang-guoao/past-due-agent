@@ -6,6 +6,15 @@ particular environment is deployed. The development source is
 It is not an Agent runtime dependency. Long-text block collections are retained compatibility-only. Inventory counts are not online acceptance.
 Required new interfaces missing → deployment gap, never silent v3/v2 fallback.
 
+## Live CURRENT questions — 3.7.0
+
+`pastdue.live-overview-query/rows` adds bounded Country/current-leader measures;
+`pastdue.vendor-identity-query/rows` resolves batch exact names and codes with
+ambiguity, missing coverage and pagination. Read [live current](live-current.md)
+for input/record definitions, scope differences and the existing current-v2 set
+route. General currently/today situation uses live detail; historical/report
+presets retain their explicit dates. No source refresh timestamp is claimed.
+
 ## Requested report sets — 3.6.0
 
 `pastdue.report-v2-query/rows` adds paged TOP_N/POSITIVE_TOP_N/VENDOR_SET selection

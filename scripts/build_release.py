@@ -16,7 +16,7 @@ from edn_io import read, loads, dumps, K
 from run_golden_eval import run_checks
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = '3.6.3'
+VERSION = '3.7.0'
 SKILL = 'skill/pastdue-analysis/'
 HTML_SKILL = 'skill/pastdue-html-report/'
 MANIFEST_PATH = SKILL + 'references/release-manifest.edn'
@@ -34,7 +34,9 @@ ROOT_FILES = {'agent/SYSTEM_PROMPT.md', 'agent/INVOCATION_EXAMPLES.md',
               'docs/RESULT_READER_FIX_3_3_7.md', 'docs/COMPOSABLE_ANALYSIS_3_4.md',
               'tests/fixtures/live-question-cases.json', 'docs/PASTDUE_AGENT_REDESIGN.md',
               'docs/ON_DEMAND_REPORTS_3_6.md',
-              'docs/STABLE_REPORT_ROLLOUT_3_6_2.md', 'docs/ETA_BINDING_FIX_3_6_3.md',
+              'docs/STABLE_REPORT_ROLLOUT_3_6_2.md', 'docs/ETA_BINDING_FIX_3_6_3.md', 'docs/CURRENT_3_7_0.md',
+              'docs/builds/current-3.7.0/findings.md', 'docs/builds/current-3.7.0/coverage.md',
+              'docs/builds/current-3.7.0/open-items.md', 'docs/builds/current-3.7.0/changes.md',
               'docs/COMPOSABLE_ANALYSIS_3_5.md', 'docs/HTML_SUB_AGENT_3_5_1.md'}
 REF_NAMES = {'atlas-query-playbook.md', 'completion-contract.md', 'current-context.md',
              'data-contract.md', 'eta-diagnostic-rules.edn', 'metric-definitions.md',
@@ -43,7 +45,8 @@ REF_NAMES = {'atlas-query-playbook.md', 'completion-contract.md', 'current-conte
              'mcp-tool-arguments.md', 'interactive-planning.md', 'explore-v2.md',
              'explore-v2-query.eql', 'explore-v3.md', 'explore-v3-query.eql',
              'report-planning.md', 'report-v2-query.eql', 'current-v2-query.eql',
-             'report-page-read.sql', 'current-page-read.sql', 'report-eta-read.sql'}
+             'report-page-read.sql', 'current-page-read.sql', 'report-eta-read.sql', 'live-current.md', 'live-overview-query.eql',
+             'vendor-identity-query.eql', 'current-metrics-read.sql', 'current-buckets-read.sql'}
 HTML_REF_NAMES = {'payload-contract.md', 'html-shell.md', 'acceptance-checklist.md',
                   'sample-payload.json', 'sub-agent-contract.md', 'business-storyteller.md'}
 HTML_SCRIPT_NAMES = {'payload_gate.py', 'render_ops_shell.py', 'verify_artifact.py'}
@@ -215,7 +218,8 @@ def _manifest(full, skill, offline, sql, inputs, doc, baseline):
                                 for rid in sorted(REQUIRED_RESOLVERS)},
         ':additive-capabilities': {rid: doc[':execution'][':resolvers'][rid][':input'] for rid in
                                    ('pastdue_v3_explore_v2_query_rows','pastdue_v3_explore_v3_query_rows',
-                                    'pastdue_v3_report_v2_query_rows','pastdue_v3_current_v2_query_rows')},
+                                    'pastdue_v3_report_v2_query_rows','pastdue_v3_current_v2_query_rows',
+                                    'pastdue_v3_live_overview_query_rows','pastdue_v3_vendor_identity_query_rows')},
         ':optional-current-context': 'Discover existing Owner/contact/PO APIs only when requested',
         ':offline-contracts': offline['status'], ':skill-structure': next((c['status'] for c in offline['checks'] if c['name'] == 'validate_bundle.py'), 'NOT_RUN'),
         ':local-clickhouse-sql': sql['status'] if sql else 'NOT_RUN',
@@ -226,7 +230,7 @@ def _manifest(full, skill, offline, sql, inputs, doc, baseline):
         ':artifact-input-sha256': inputs,
         ':agent-contract-version': VERSION,
         ':recommended-atlas-publication': doc[':publication'][':release/version'],
-        ':atlas-compatibility': 'Graph3.6.0/revision8 unchanged. Original report positive TopN and SINGLE_VENDOR paths preserved; all-sign/set/coverage reports use additive report-v2. CURRENT defaults to explore-v3; current-v2 and wide reads remain candidates. Verify deployed schema/JDBC, source policy and same-scope Agent behavior before promotion.',
+        ':atlas-compatibility': 'Graph3.7.0/revision9 adds live overview and batch identity; original41 execution interfaces unchanged. Exact-set CURRENT reuses current-v2; ranking/other operations retain explore. Existing report paths and optional wide reads preserved. Deployed22.8/JDBC/permissions/latency/Agent acceptance NOT_RUN.',
         ':source-report-page-default': 1000,
         ':compatible-metric-version': '3.1.0',
         ':manifest-self-hash': 'excluded-to-avoid-recursion',

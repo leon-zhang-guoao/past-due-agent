@@ -1,4 +1,4 @@
--- Optional candidate projection; use only when actual output limits permit.
+-- Optional full projection; use only when actual output limits permit.
 -- Retained data only. Use the SAME originating result_handle, analysis_version=2.
 -- current-v2 full explicit projection; interpret by record_type after control validation.
 SELECT scope_key,

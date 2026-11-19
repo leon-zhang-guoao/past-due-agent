@@ -1,4 +1,4 @@
-# Requested reports and Vendor scope — 3.6.3
+# Requested reports and Vendor scope — 3.7.0
 
 Read for a report request (including `report` / `reprot` / 报告), one or several
 named Vendors, or a follow-up changing report scope. Atlas supplies business facts.
@@ -15,6 +15,7 @@ Keep TEST_FORCED for an explicit test invocation.
 | Request | Default scope when context does not already specify it |
 |---|---|
 | “给我报告，即使没有预警” | Latest completed eligible snapshot pair; requested Countries, otherwise US/CA. TOP_N by Country contribution, including improvements/zero. |
+| “目前／今日 past due 情况” | CURRENT detail overview and current leading Vendors, default US/CA independently; see live-current.md. |
 | “US Vendor 64342 的情况” | CURRENT, that Vendor; metrics and Code/Source distribution. Comparison only if requested or retained in context. |
 | “US 64342、75256 的报告” | Latest completed eligible pair, exact set; all readable requested Vendors regardless of sign. |
 | “看这几家的当前情况” | CURRENT, exact set inherited from context; no daily Top10 restriction. |
@@ -102,30 +103,13 @@ or name the exact deployment gap.
 
 ## CURRENT and free-form Vendor questions
 
-Use discovered explore-v3-query/rows by default, preserving the existing CURRENT
-path: exact vendor-codes-json, time-basis=CURRENT, selection-unit=VENDOR,
-grain=VENDOR_CODE_SOURCE, ranking-metric=NONE, change-selection=ALL, top-n=0,
-selection/expansion filters empty unless requested. Use the complete example in
-[explore-v3-query.eql](explore-v3-query.eql), with every scalar input explicit.
-SELECTION supplies Vendor totals; FACT supplies joint distributions. Read pages
-and coverage under [explore-v3.md](explore-v3.md). Derive marginals only from
-complete disjoint facts. Preserve the requested denominator and org filters.
-Existing explore-v2/older explore remain usable only within equivalent scopes;
-legacy current-analysis ratios and explore ratios have different semantics.
-CURRENT has no observed previous period unless separately queried.
-
-### Candidate current-v2 route
-
-Keep current-v2-query/rows available for explicit-set CURRENT counts, ratios and
-distributions, but do not switch ordinary requests to it solely because it is
-newer or described as one scan. Evaluate it as an explicitly selected candidate
-plan; promote it independently only after a same-scope live comparison. It
-supports neither history nor ranking/selection filters. Use
-[current-v2-query.eql](current-v2-query.eql): eight explicit inputs, nonempty
-numeric vendor-codes-json, three org filters, denominator-scope and source paging.
-Empty org strings mean unrestricted. COUNTRY_ALL, FILTERED_POPULATION and
-WITHIN_VENDOR must match the requested semantics, not just the denominator name.
-Start candidate pages at100 and adapt to actual bytes.
+Read [live current](live-current.md) for general current situation and exact Vendor
+sets, including names, codes and mixed batches. Reuse current-v2 for supported
+exact-set metrics/distributions; it is independent of historical reports.
+Use explore-v3 for ranking, ETA selection filters or broader composition. Preserve
+the requested denominator, population, org filters and field meanings. CURRENT
+has no observed previous period unless separately queried. Full-width retained
+reads remain optional, chosen by actual output limits.
 
 CONTROL describes scope; VENDOR_COVERAGE carries MATCHED / NO_READABLE_ROWS /
 EXCLUDED_BY_ORG. Only FACT has measured counts. Vendor totals repeat on FACT:

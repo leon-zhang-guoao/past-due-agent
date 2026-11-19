@@ -130,3 +130,12 @@ Metric semantics remain 3.1.0. Server structured summaries/checks, client comple
 retrieval, and delivered Vendor analysis are separate scopes. None certifies an
 independent final-output review. The sole layout is report-format.md; diagnostic
 applicability is in eta-diagnostic-rules.edn. No Agent-issued overall report PASS.
+
+## Live overview scope (3.7)
+
+General “目前／当前／今日情况” uses CURRENT readable detail, not latest snapshot.
+Live overview Country Open counts all readable detail rows; PD counts is_pastdue=1.
+Rows with null/nonpositive Vendor code are included in Country totals and disclosed
+as unattributed, excluded from Vendor ranking. The retained current-v2 Country
+share excludes null codes; see live-current.md before comparing shares across
+these scopes. Capture time is query time, not source refresh/ETL time.

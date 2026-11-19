@@ -78,8 +78,8 @@
       :guide/examples ["v3-weekday-monitor" "v3-fixed-pair-scope-validation"]}
     :graph/dependencies []
     :graph/terms []
-    :graph/entities ["pastdue.country-history-query" "pastdue.country-monitor" "pastdue.country-trigger-event" "pastdue.current-high-risk-line" "pastdue.current-vendor-past-due-rank" "pastdue.current-vendor-rank-query" "pastdue.current-vendor-alert-type-count" "pastdue.current-alert-type-query" "pastdue.current-detail-line" "pastdue.current-detail-query" "pastdue.historical-vendor-contribution" "pastdue.historical-vendor-eta-code" "pastdue.historical-vendor-eta-source" "pastdue.notification-recipient" "pastdue.owner-current-risk" "pastdue.vendor-contribution" "pastdue.vendor-eta-code" "pastdue.vendor-eta-source" "pastdue.vendor-master-mapping" "pastdue.vendor-master-mapping-query" "pastdue.vendor-master-mapping-rollup" "pastdue.analysis-query" "pastdue.analysis-vendor" "pastdue.analysis-eta-code" "pastdue.analysis-eta-source" "pastdue.analysis-eta-us-source" "pastdue.analysis-check" "pastdue.monitor-query" "pastdue.monitor-fact" "pastdue.history-query" "pastdue.history-fact" "pastdue.current-analysis-query" "pastdue.current-analysis-fact" "pastdue.analysis-scope" "pastdue.report-query" "pastdue.report-fact" "pastdue.explore-query" "pastdue.explore-fact" "pastdue.report-block-query" "pastdue.report-block" "pastdue.monitor-block-query" "pastdue.monitor-block" "pastdue.explore-v2-query" "pastdue.explore-v2-fact" "pastdue.explore-v3-query" "pastdue.explore-v3-fact" "pastdue.report-v2-query" "pastdue.report-v2-fact" "pastdue.current-v2-query" "pastdue.current-v2-fact"]
-    :graph/resolvers ["pastdue_country_monitor_all" "pastdue_country_monitor_by_country" "pastdue_positive_vendor_contributors" "pastdue_vendor_changes" "pastdue_vendor_eta_code_drivers" "pastdue_vendor_eta_source_drivers" "pastdue_current_owner_risks_by_vendor" "pastdue_current_high_risk_lines_by_vendor" "pastdue_current_vendor_past_due_ranks" "pastdue_current_vendor_alert_type_counts" "pastdue_current_detail_matching_lines" "pastdue_historical_country_comparisons" "pastdue_historical_country_trigger_events" "pastdue_historical_positive_vendor_contributors" "pastdue_historical_vendor_changes" "pastdue_historical_vendor_eta_code_drivers" "pastdue_historical_vendor_eta_code_changes" "pastdue_historical_vendor_eta_source_drivers" "pastdue_historical_vendor_eta_source_changes" "pastdue_notification_recipients_by_vendor" "pastdue_vendor_master_mappings_by_vendor" "pastdue_vendor_master_mappings_by_filter" "pastdue_vendor_master_mapping_rollups_by_country" "pastdue_v3_analysis_query_vendor_comparisons" "pastdue_v3_analysis_query_eta_code_changes" "pastdue_v3_analysis_query_eta_source_changes" "pastdue_v3_analysis_query_us_source_changes" "pastdue_v3_analysis_query_vendor_checks" "pastdue_v3_monitor_query_countries" "pastdue_v3_history_query_comparisons" "pastdue_v3_history_query_trigger_events" "pastdue_v3_current_analysis_query_rows" "pastdue_v3_analysis_query_scope_status" "pastdue_v3_report_query_rows" "pastdue_v3_explore_query_rows" "pastdue_v3_report_block_query_blocks" "pastdue_v3_monitor_block_query_countries" "pastdue_v3_explore_v2_query_rows" "pastdue_v3_explore_v3_query_rows" "pastdue_v3_report_v2_query_rows" "pastdue_v3_current_v2_query_rows"]
+    :graph/entities ["pastdue.country-history-query" "pastdue.country-monitor" "pastdue.country-trigger-event" "pastdue.current-high-risk-line" "pastdue.current-vendor-past-due-rank" "pastdue.current-vendor-rank-query" "pastdue.current-vendor-alert-type-count" "pastdue.current-alert-type-query" "pastdue.current-detail-line" "pastdue.current-detail-query" "pastdue.historical-vendor-contribution" "pastdue.historical-vendor-eta-code" "pastdue.historical-vendor-eta-source" "pastdue.notification-recipient" "pastdue.owner-current-risk" "pastdue.vendor-contribution" "pastdue.vendor-eta-code" "pastdue.vendor-eta-source" "pastdue.vendor-master-mapping" "pastdue.vendor-master-mapping-query" "pastdue.vendor-master-mapping-rollup" "pastdue.analysis-query" "pastdue.analysis-vendor" "pastdue.analysis-eta-code" "pastdue.analysis-eta-source" "pastdue.analysis-eta-us-source" "pastdue.analysis-check" "pastdue.monitor-query" "pastdue.monitor-fact" "pastdue.history-query" "pastdue.history-fact" "pastdue.current-analysis-query" "pastdue.current-analysis-fact" "pastdue.analysis-scope" "pastdue.report-query" "pastdue.report-fact" "pastdue.explore-query" "pastdue.explore-fact" "pastdue.report-block-query" "pastdue.report-block" "pastdue.monitor-block-query" "pastdue.monitor-block" "pastdue.explore-v2-query" "pastdue.explore-v2-fact" "pastdue.explore-v3-query" "pastdue.explore-v3-fact" "pastdue.report-v2-query" "pastdue.report-v2-fact" "pastdue.current-v2-query" "pastdue.current-v2-fact" "pastdue.live-overview-query" "pastdue.live-overview-fact" "pastdue.vendor-identity-query" "pastdue.vendor-identity-fact"]
+    :graph/resolvers ["pastdue_country_monitor_all" "pastdue_country_monitor_by_country" "pastdue_positive_vendor_contributors" "pastdue_vendor_changes" "pastdue_vendor_eta_code_drivers" "pastdue_vendor_eta_source_drivers" "pastdue_current_owner_risks_by_vendor" "pastdue_current_high_risk_lines_by_vendor" "pastdue_current_vendor_past_due_ranks" "pastdue_current_vendor_alert_type_counts" "pastdue_current_detail_matching_lines" "pastdue_historical_country_comparisons" "pastdue_historical_country_trigger_events" "pastdue_historical_positive_vendor_contributors" "pastdue_historical_vendor_changes" "pastdue_historical_vendor_eta_code_drivers" "pastdue_historical_vendor_eta_code_changes" "pastdue_historical_vendor_eta_source_drivers" "pastdue_historical_vendor_eta_source_changes" "pastdue_notification_recipients_by_vendor" "pastdue_vendor_master_mappings_by_vendor" "pastdue_vendor_master_mappings_by_filter" "pastdue_vendor_master_mapping_rollups_by_country" "pastdue_v3_analysis_query_vendor_comparisons" "pastdue_v3_analysis_query_eta_code_changes" "pastdue_v3_analysis_query_eta_source_changes" "pastdue_v3_analysis_query_us_source_changes" "pastdue_v3_analysis_query_vendor_checks" "pastdue_v3_monitor_query_countries" "pastdue_v3_history_query_comparisons" "pastdue_v3_history_query_trigger_events" "pastdue_v3_current_analysis_query_rows" "pastdue_v3_analysis_query_scope_status" "pastdue_v3_report_query_rows" "pastdue_v3_explore_query_rows" "pastdue_v3_report_block_query_blocks" "pastdue_v3_monitor_block_query_countries" "pastdue_v3_explore_v2_query_rows" "pastdue_v3_explore_v3_query_rows" "pastdue_v3_report_v2_query_rows" "pastdue_v3_current_v2_query_rows" "pastdue_v3_live_overview_query_rows" "pastdue_v3_vendor_identity_query_rows"]
     :graph/label "PastDue Monitoring"}
   :vocabulary {:entities {"pastdue.country-history-query" {:entity/label "PastDue Country History Query"
         :entity/identity [:pastdue.country-history-query/country-code :pastdue.country-history-query/range-end-date :pastdue.country-history-query/range-start-date :pastdue.country-history-query/relative-change-threshold]
@@ -280,6 +280,22 @@
       "pastdue.current-v2-fact" {:entity/label "Current V2 Fact"
         :entity/identity [:pastdue.current-v2-fact/scope-key :pastdue.current-v2-fact/record-type :pastdue.current-v2-fact/vendor-code :pastdue.current-v2-fact/eta-code :pastdue.current-v2-fact/eta-source]
         :entity/attributes [:pastdue.current-v2-fact/scope-key :pastdue.current-v2-fact/record-type :pastdue.current-v2-fact/scope-status :pastdue.current-v2-fact/country-code :pastdue.current-v2-fact/vendor-code :pastdue.current-v2-fact/vendor-name :pastdue.current-v2-fact/eta-code :pastdue.current-v2-fact/eta-source :pastdue.current-v2-fact/open-line-count :pastdue.current-v2-fact/past-due-count :pastdue.current-v2-fact/vendor-open-count :pastdue.current-v2-fact/vendor-past-due-count :pastdue.current-v2-fact/ratio-denominator :pastdue.current-v2-fact/share-denominator :pastdue.current-v2-fact/past-due-ratio :pastdue.current-v2-fact/past-due-share :pastdue.current-v2-fact/vendor-past-due-ratio :pastdue.current-v2-fact/vendor-past-due-share :pastdue.current-v2-fact/denominator-scope :pastdue.current-v2-fact/organization-basis :pastdue.current-v2-fact/metric-version :pastdue.current-v2-fact/time-basis :pastdue.current-v2-fact/business-timezone :pastdue.current-v2-fact/queried-at-local :pastdue.current-v2-fact/requested-vendor-count :pastdue.current-v2-fact/expected-record-count :pastdue.current-v2-fact/expected-bucket-count :pastdue.current-v2-fact/row-ordinal :pastdue.current-v2-fact/page-after-ordinal :pastdue.current-v2-fact/page-size :pastdue.current-v2-fact/page-record-count :pastdue.current-v2-fact/next-after-ordinal :pastdue.current-v2-fact/has-more :pastdue.current-v2-fact/result-fingerprint]
+        :entity/description "Analysis contract; America/Los_Angeles (PST/PDT), fixed scope and verifiable facts."}
+      "pastdue.live-overview-query" {:entity/label "Live Overview Query"
+        :entity/identity [:pastdue.live-overview-query/country-code :pastdue.live-overview-query/top-n]
+        :entity/attributes [:pastdue.live-overview-query/country-code :pastdue.live-overview-query/top-n :pastdue.live-overview-query/rows]
+        :entity/description "Live CURRENT PastDue overview / 目前 今日 实时情况: one Country summary plus bounded top Vendors by PD count. Reads detail view, never snapshots or alert gates. top-n=0..20; no-data is not zero."}
+      "pastdue.live-overview-fact" {:entity/label "Live Overview Fact"
+        :entity/identity [:pastdue.live-overview-fact/scope-key :pastdue.live-overview-fact/row-ordinal]
+        :entity/attributes [:pastdue.live-overview-fact/scope-key :pastdue.live-overview-fact/record-type :pastdue.live-overview-fact/scope-status :pastdue.live-overview-fact/time-basis :pastdue.live-overview-fact/queried-at-local :pastdue.live-overview-fact/business-timezone :pastdue.live-overview-fact/metric-version :pastdue.live-overview-fact/expected-record-count :pastdue.live-overview-fact/row-ordinal :pastdue.live-overview-fact/country-code :pastdue.live-overview-fact/vendor-code :pastdue.live-overview-fact/vendor-name :pastdue.live-overview-fact/vendor-rank :pastdue.live-overview-fact/open-line-count :pastdue.live-overview-fact/past-due-count :pastdue.live-overview-fact/past-due-ratio :pastdue.live-overview-fact/past-due-share :pastdue.live-overview-fact/country-open-count :pastdue.live-overview-fact/country-past-due-count :pastdue.live-overview-fact/readable-vendor-count :pastdue.live-overview-fact/past-due-vendor-count :pastdue.live-overview-fact/unattributed-open-count :pastdue.live-overview-fact/unattributed-past-due-count]
+        :entity/description "Analysis contract; America/Los_Angeles (PST/PDT), fixed scope and verifiable facts."}
+      "pastdue.vendor-identity-query" {:entity/label "Vendor Identity Query"
+        :entity/identity [:pastdue.vendor-identity-query/countries-json :pastdue.vendor-identity-query/vendor-codes-json :pastdue.vendor-identity-query/vendor-names-json :pastdue.vendor-identity-query/page-after-ordinal :pastdue.vendor-identity-query/page-size]
+        :entity/attributes [:pastdue.vendor-identity-query/countries-json :pastdue.vendor-identity-query/vendor-codes-json :pastdue.vendor-identity-query/vendor-names-json :pastdue.vendor-identity-query/page-after-ordinal :pastdue.vendor-identity-query/page-size :pastdue.vendor-identity-query/rows]
+        :entity/description "Resolve exact Vendor names and numeric codes in batches against readable CURRENT detail. Trim/ASCII case-insensitive names; return all Country+code candidates, ambiguity and missing coverage. No fuzzy guessing or Vendor existence claim."}
+      "pastdue.vendor-identity-fact" {:entity/label "Vendor Identity Fact"
+        :entity/identity [:pastdue.vendor-identity-fact/scope-key :pastdue.vendor-identity-fact/row-ordinal]
+        :entity/attributes [:pastdue.vendor-identity-fact/scope-key :pastdue.vendor-identity-fact/record-type :pastdue.vendor-identity-fact/scope-status :pastdue.vendor-identity-fact/time-basis :pastdue.vendor-identity-fact/queried-at-local :pastdue.vendor-identity-fact/business-timezone :pastdue.vendor-identity-fact/metric-version :pastdue.vendor-identity-fact/expected-record-count :pastdue.vendor-identity-fact/row-ordinal :pastdue.vendor-identity-fact/requested-kind :pastdue.vendor-identity-fact/requested-token :pastdue.vendor-identity-fact/country-code :pastdue.vendor-identity-fact/vendor-code :pastdue.vendor-identity-fact/vendor-name :pastdue.vendor-identity-fact/candidate-count :pastdue.vendor-identity-fact/requested-input-count :pastdue.vendor-identity-fact/page-record-count :pastdue.vendor-identity-fact/next-after-ordinal :pastdue.vendor-identity-fact/has-more :pastdue.vendor-identity-fact/result-fingerprint]
         :entity/description "Analysis contract; America/Los_Angeles (PST/PDT), fixed scope and verifiable facts."}}
     :attributes {:pastdue.country-history-query/comparisons {:attribute/label "Comparisons"
         :attribute/type :ref
@@ -4418,7 +4434,219 @@
       :pastdue.current-v2-fact/vendor-past-due-share {:attribute/label "Vendor Past Due Share"
         :attribute/type :decimal
         :attribute/nullable? true
-        :attribute/description "v3 vendor-past-due-share; see shipped semantic contract. Identity is from actual result grouping."}}
+        :attribute/description "v3 vendor-past-due-share; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.live-overview-query/country-code {:attribute/label "Country Code"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "Exact authorized Country. No Country specified by user: query US and CA separately."}
+      :pastdue.live-overview-query/top-n {:attribute/label "Top N"
+        :attribute/type :integer
+        :attribute/nullable? false
+        :attribute/description "0..20 current Vendors, ordered by PD descending, Open descending, code ascending. Default overview5; 0=Country summary only. Includes measured zero-PD Vendors when within rank."}
+      :pastdue.live-overview-fact/scope-key {:attribute/label "Scope Key"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "v3 scope-key; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.live-overview-fact/record-type {:attribute/label "Record Type"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "COUNTRY ordinal0 has Country measures; TOP_VENDOR has ranked positive-code Vendor measures. Repeated Country totals must not be summed."}
+      :pastdue.live-overview-fact/scope-status {:attribute/label "Scope Status"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "Use measurements only with valid scope. Missing readable rows is not observed zero; resolution MATCHED requires exactly one Country+code candidate."}
+      :pastdue.live-overview-fact/time-basis {:attribute/label "Time Basis"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "CURRENT detail view, not a completed snapshot."}
+      :pastdue.live-overview-fact/queried-at-local {:attribute/label "Queried At Local"
+        :attribute/type :datetime
+        :attribute/nullable? false
+        :attribute/description "Query capture time in America/Los_Angeles, not source refresh timestamp or an atomic multi-query capture."}
+      :pastdue.live-overview-fact/business-timezone {:attribute/label "Business Timezone"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "v3 business-timezone; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.live-overview-fact/metric-version {:attribute/label "Metric Version"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "v3 metric-version; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.live-overview-fact/expected-record-count {:attribute/label "Expected Record Count"
+        :attribute/type :integer
+        :attribute/nullable? false
+        :attribute/description "COUNTRY plus selected TOP_VENDOR rows, maximum21. Verify retained row and cell completeness."}
+      :pastdue.live-overview-fact/row-ordinal {:attribute/label "Row Ordinal"
+        :attribute/type :integer
+        :attribute/nullable? false
+        :attribute/description "v3 row-ordinal; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.live-overview-fact/country-code {:attribute/label "Country Code"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "v3 country-code; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.live-overview-fact/vendor-code {:attribute/label "Vendor Code"
+        :attribute/type :integer
+        :attribute/nullable? false
+        :attribute/description "v3 vendor-code; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.live-overview-fact/vendor-name {:attribute/label "Vendor Name"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "v3 vendor-name; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.live-overview-fact/vendor-rank {:attribute/label "Vendor Rank"
+        :attribute/type :integer
+        :attribute/nullable? false
+        :attribute/description "TOP_VENDOR PD descending, Open descending, code ascending; COUNTRY placeholder0."}
+      :pastdue.live-overview-fact/open-line-count {:attribute/label "Open Line Count"
+        :attribute/type :integer
+        :attribute/nullable? false
+        :attribute/description "Readable current detail row count at the record grain, including non-PD rows. COUNTRY includes null/nonpositive Vendor codes."}
+      :pastdue.live-overview-fact/past-due-count {:attribute/label "Past Due Count"
+        :attribute/type :integer
+        :attribute/nullable? false
+        :attribute/description "Readable current detail rows with is_pastdue=1 at the record grain."}
+      :pastdue.live-overview-fact/past-due-ratio {:attribute/label "Past Due Ratio"
+        :attribute/type :decimal
+        :attribute/nullable? true
+        :attribute/description "past-due-count / open-line-count at the record grain; null for zero Open. No prior-period observation."}
+      :pastdue.live-overview-fact/past-due-share {:attribute/label "Past Due Share"
+        :attribute/type :decimal
+        :attribute/nullable? true
+        :attribute/description "past-due-count / country-past-due-count; null for zero Country PD. Top Vendor share uses all readable Country rows, including unattributed."}
+      :pastdue.live-overview-fact/country-open-count {:attribute/label "Country Open Count"
+        :attribute/type :integer
+        :attribute/nullable? false
+        :attribute/description "All readable current Country rows, repeated on TOP_VENDOR; do not sum."}
+      :pastdue.live-overview-fact/country-past-due-count {:attribute/label "Country Past Due Count"
+        :attribute/type :integer
+        :attribute/nullable? false
+        :attribute/description "Country rows with is_pastdue=1, repeated on TOP_VENDOR; do not sum."}
+      :pastdue.live-overview-fact/readable-vendor-count {:attribute/label "Readable Vendor Count"
+        :attribute/type :integer
+        :attribute/nullable? false
+        :attribute/description "Distinct positive Vendor codes with readable Country rows, not all registered Vendors."}
+      :pastdue.live-overview-fact/past-due-vendor-count {:attribute/label "Past Due Vendor Count"
+        :attribute/type :integer
+        :attribute/nullable? false
+        :attribute/description "Distinct positive Vendor codes with at least one readable PD row."}
+      :pastdue.live-overview-fact/unattributed-open-count {:attribute/label "Unattributed Open Count"
+        :attribute/type :integer
+        :attribute/nullable? false
+        :attribute/description "Country rows with null/nonpositive Vendor code; included in Country Open, excluded from ranked Vendors."}
+      :pastdue.live-overview-fact/unattributed-past-due-count {:attribute/label "Unattributed Past Due Count"
+        :attribute/type :integer
+        :attribute/nullable? false
+        :attribute/description "PD among null/nonpositive-code rows; included in Country PD, excluded from ranked Vendors."}
+      :pastdue.live-overview-query/rows {:attribute/label "Rows"
+        :attribute/type :ref
+        :attribute/nullable? false
+        :attribute/description "v3 bounded facts; fetch and reconcile every page before declaring completeness."
+        :attribute/target "pastdue.live-overview-fact"
+        :attribute/cardinality :many}
+      :pastdue.vendor-identity-query/countries-json {:attribute/label "Countries Json"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "Nonempty JSON string array of authorized Countries. Explicit user Country or inherited scope; otherwise [\"US\",\"CA\"]. This is search scope, not access control."}
+      :pastdue.vendor-identity-query/vendor-codes-json {:attribute/label "Vendor Codes Json"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "JSON numeric positive Int64 codes. [] permitted only with nonempty names. Never means all Vendors."}
+      :pastdue.vendor-identity-query/vendor-names-json {:attribute/label "Vendor Names Json"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "JSON nonblank strings. Exact trimmed case-insensitive match, no substring/fuzzy auto-selection. [] permitted only with codes."}
+      :pastdue.vendor-identity-query/page-after-ordinal {:attribute/label "Page After Ordinal"
+        :attribute/type :integer
+        :attribute/nullable? false
+        :attribute/description "First0; thereafter returned next-after-ordinal, same logical inputs."}
+      :pastdue.vendor-identity-query/page-size {:attribute/label "Page Size"
+        :attribute/type :integer
+        :attribute/nullable? false
+        :attribute/description "1..199 resolution rows plus repeated CONTROL. Default100; verify page count and fingerprint."}
+      :pastdue.vendor-identity-fact/scope-key {:attribute/label "Scope Key"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "v3 scope-key; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.vendor-identity-fact/record-type {:attribute/label "Record Type"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "CONTROL ordinal0 repeated per source page; RESOLUTION for each token and distinct Country+code candidate, including a no-match row."}
+      :pastdue.vendor-identity-fact/scope-status {:attribute/label "Scope Status"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "Use measurements only with valid scope. Missing readable rows is not observed zero; resolution MATCHED requires exactly one Country+code candidate."}
+      :pastdue.vendor-identity-fact/time-basis {:attribute/label "Time Basis"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "CURRENT detail view, not a completed snapshot."}
+      :pastdue.vendor-identity-fact/queried-at-local {:attribute/label "Queried At Local"
+        :attribute/type :datetime
+        :attribute/nullable? false
+        :attribute/description "Query capture time in America/Los_Angeles, not source refresh timestamp or an atomic multi-query capture."}
+      :pastdue.vendor-identity-fact/business-timezone {:attribute/label "Business Timezone"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "v3 business-timezone; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.vendor-identity-fact/metric-version {:attribute/label "Metric Version"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "v3 metric-version; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.vendor-identity-fact/expected-record-count {:attribute/label "Expected Record Count"
+        :attribute/type :integer
+        :attribute/nullable? false
+        :attribute/description "Whole logical result including one CONTROL and all resolution/candidate rows, not merely this page."}
+      :pastdue.vendor-identity-fact/row-ordinal {:attribute/label "Row Ordinal"
+        :attribute/type :integer
+        :attribute/nullable? false
+        :attribute/description "v3 row-ordinal; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.vendor-identity-fact/requested-kind {:attribute/label "Requested Kind"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "CODE or NAME. CONTROL placeholder empty; token kinds are separate even if they refer to the same Vendor."}
+      :pastdue.vendor-identity-fact/requested-token {:attribute/label "Requested Token"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "Trimmed original name token or canonical numeric code token. Preserve original-input mapping outside the query; no fuzzy matching."}
+      :pastdue.vendor-identity-fact/country-code {:attribute/label "Country Code"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "v3 country-code; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.vendor-identity-fact/vendor-code {:attribute/label "Vendor Code"
+        :attribute/type :integer
+        :attribute/nullable? false
+        :attribute/description "v3 vendor-code; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.vendor-identity-fact/vendor-name {:attribute/label "Vendor Name"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "v3 vendor-name; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.vendor-identity-fact/candidate-count {:attribute/label "Candidate Count"
+        :attribute/type :integer
+        :attribute/nullable? false
+        :attribute/description "Number of distinct Country+code matches for the requested kind/token;0=NO_READABLE_MATCH,1=MATCHED,greater1=AMBIGUOUS. All ambiguous candidates must be read."}
+      :pastdue.vendor-identity-fact/requested-input-count {:attribute/label "Requested Input Count"
+        :attribute/type :integer
+        :attribute/nullable? false
+        :attribute/description "Distinct numeric codes plus distinct trimmed name strings, before resolving; case variants remain separate input tokens."}
+      :pastdue.vendor-identity-fact/page-record-count {:attribute/label "Page Record Count"
+        :attribute/type :integer
+        :attribute/nullable? false
+        :attribute/description "Actual source-page row count, including repeated CONTROL. Retained transport completeness is a separate check."}
+      :pastdue.vendor-identity-fact/next-after-ordinal {:attribute/label "Next After Ordinal"
+        :attribute/type :integer
+        :attribute/nullable? false
+        :attribute/description "Next source cursor only if has-more=true;0 means finished, never a result handle."}
+      :pastdue.vendor-identity-fact/has-more {:attribute/label "Has More"
+        :attribute/type :boolean
+        :attribute/nullable? false
+        :attribute/description "v3 has-more; see shipped semantic contract. Identity is from actual result grouping."}
+      :pastdue.vendor-identity-fact/result-fingerprint {:attribute/label "Result Fingerprint"
+        :attribute/type :string
+        :attribute/nullable? false
+        :attribute/description "Order-independent noncryptographic XOR of complete resolution identities/statuses/candidate counts. Compare with scope/counts/ordinals; no atomic snapshot guarantee."}
+      :pastdue.vendor-identity-query/rows {:attribute/label "Rows"
+        :attribute/type :ref
+        :attribute/nullable? false
+        :attribute/description "v3 bounded facts; fetch and reconcile every page before declaring completeness."
+        :attribute/target "pastdue.vendor-identity-fact"
+        :attribute/cardinality :many}}
     :terms {}
     :units {"%" {:unit/label "%"}
       "PO lines" {:unit/label "PO lines"}
@@ -4834,7 +5062,27 @@
         :pagination {:default 200
           :max 1000}
         :sort {:allowed [:pastdue.current-v2-fact/scope-key :pastdue.current-v2-fact/record-type :pastdue.current-v2-fact/scope-status :pastdue.current-v2-fact/country-code :pastdue.current-v2-fact/vendor-code :pastdue.current-v2-fact/vendor-name :pastdue.current-v2-fact/eta-code :pastdue.current-v2-fact/eta-source :pastdue.current-v2-fact/open-line-count :pastdue.current-v2-fact/past-due-count :pastdue.current-v2-fact/vendor-open-count :pastdue.current-v2-fact/vendor-past-due-count :pastdue.current-v2-fact/ratio-denominator :pastdue.current-v2-fact/share-denominator :pastdue.current-v2-fact/past-due-ratio :pastdue.current-v2-fact/past-due-share :pastdue.current-v2-fact/vendor-past-due-ratio :pastdue.current-v2-fact/vendor-past-due-share :pastdue.current-v2-fact/denominator-scope :pastdue.current-v2-fact/organization-basis :pastdue.current-v2-fact/metric-version :pastdue.current-v2-fact/time-basis :pastdue.current-v2-fact/business-timezone :pastdue.current-v2-fact/queried-at-local :pastdue.current-v2-fact/requested-vendor-count :pastdue.current-v2-fact/expected-record-count :pastdue.current-v2-fact/expected-bucket-count :pastdue.current-v2-fact/row-ordinal :pastdue.current-v2-fact/page-after-ordinal :pastdue.current-v2-fact/page-size :pastdue.current-v2-fact/page-record-count :pastdue.current-v2-fact/next-after-ordinal :pastdue.current-v2-fact/has-more :pastdue.current-v2-fact/result-fingerprint]
-          :default [:pastdue.current-v2-fact/row-ordinal :asc]}}}
+          :default [:pastdue.current-v2-fact/row-ordinal :asc]}}
+      "pastdue_v3_live_overview_query_rows" {:label "rows"
+        :description "Live CURRENT PastDue overview / 目前 今日 实时情况: one Country summary plus bounded top Vendors by PD count. Reads detail view, never snapshots or alert gates. top-n=0..20; no-data is not zero."
+        :effect :read
+        :input [:pastdue.live-overview-query/country-code :pastdue.live-overview-query/top-n]
+        :output [{:pastdue.live-overview-query/rows [:pastdue.live-overview-fact/scope-key :pastdue.live-overview-fact/record-type :pastdue.live-overview-fact/scope-status :pastdue.live-overview-fact/time-basis :pastdue.live-overview-fact/queried-at-local :pastdue.live-overview-fact/business-timezone :pastdue.live-overview-fact/metric-version :pastdue.live-overview-fact/expected-record-count :pastdue.live-overview-fact/row-ordinal :pastdue.live-overview-fact/country-code :pastdue.live-overview-fact/vendor-code :pastdue.live-overview-fact/vendor-name :pastdue.live-overview-fact/vendor-rank :pastdue.live-overview-fact/open-line-count :pastdue.live-overview-fact/past-due-count :pastdue.live-overview-fact/past-due-ratio :pastdue.live-overview-fact/past-due-share :pastdue.live-overview-fact/country-open-count :pastdue.live-overview-fact/country-past-due-count :pastdue.live-overview-fact/readable-vendor-count :pastdue.live-overview-fact/past-due-vendor-count :pastdue.live-overview-fact/unattributed-open-count :pastdue.live-overview-fact/unattributed-past-due-count]}]
+        :result/cardinality :many
+        :pagination {:default 200
+          :max 1000}
+        :sort {:allowed [:pastdue.live-overview-fact/scope-key :pastdue.live-overview-fact/record-type :pastdue.live-overview-fact/scope-status :pastdue.live-overview-fact/time-basis :pastdue.live-overview-fact/queried-at-local :pastdue.live-overview-fact/business-timezone :pastdue.live-overview-fact/metric-version :pastdue.live-overview-fact/expected-record-count :pastdue.live-overview-fact/row-ordinal :pastdue.live-overview-fact/country-code :pastdue.live-overview-fact/vendor-code :pastdue.live-overview-fact/vendor-name :pastdue.live-overview-fact/vendor-rank :pastdue.live-overview-fact/open-line-count :pastdue.live-overview-fact/past-due-count :pastdue.live-overview-fact/past-due-ratio :pastdue.live-overview-fact/past-due-share :pastdue.live-overview-fact/country-open-count :pastdue.live-overview-fact/country-past-due-count :pastdue.live-overview-fact/readable-vendor-count :pastdue.live-overview-fact/past-due-vendor-count :pastdue.live-overview-fact/unattributed-open-count :pastdue.live-overview-fact/unattributed-past-due-count]
+          :default [:pastdue.live-overview-fact/row-ordinal :asc]}}
+      "pastdue_v3_vendor_identity_query_rows" {:label "rows"
+        :description "Resolve exact Vendor names and numeric codes in batches against readable CURRENT detail. Trim/ASCII case-insensitive names; return all Country+code candidates, ambiguity and missing coverage. No fuzzy guessing or Vendor existence claim."
+        :effect :read
+        :input [:pastdue.vendor-identity-query/countries-json :pastdue.vendor-identity-query/vendor-codes-json :pastdue.vendor-identity-query/vendor-names-json :pastdue.vendor-identity-query/page-after-ordinal :pastdue.vendor-identity-query/page-size]
+        :output [{:pastdue.vendor-identity-query/rows [:pastdue.vendor-identity-fact/scope-key :pastdue.vendor-identity-fact/record-type :pastdue.vendor-identity-fact/scope-status :pastdue.vendor-identity-fact/time-basis :pastdue.vendor-identity-fact/queried-at-local :pastdue.vendor-identity-fact/business-timezone :pastdue.vendor-identity-fact/metric-version :pastdue.vendor-identity-fact/expected-record-count :pastdue.vendor-identity-fact/row-ordinal :pastdue.vendor-identity-fact/requested-kind :pastdue.vendor-identity-fact/requested-token :pastdue.vendor-identity-fact/country-code :pastdue.vendor-identity-fact/vendor-code :pastdue.vendor-identity-fact/vendor-name :pastdue.vendor-identity-fact/candidate-count :pastdue.vendor-identity-fact/requested-input-count :pastdue.vendor-identity-fact/page-record-count :pastdue.vendor-identity-fact/next-after-ordinal :pastdue.vendor-identity-fact/has-more :pastdue.vendor-identity-fact/result-fingerprint]}]
+        :result/cardinality :many
+        :pagination {:default 200
+          :max 1000}
+        :sort {:allowed [:pastdue.vendor-identity-fact/scope-key :pastdue.vendor-identity-fact/record-type :pastdue.vendor-identity-fact/scope-status :pastdue.vendor-identity-fact/time-basis :pastdue.vendor-identity-fact/queried-at-local :pastdue.vendor-identity-fact/business-timezone :pastdue.vendor-identity-fact/metric-version :pastdue.vendor-identity-fact/expected-record-count :pastdue.vendor-identity-fact/row-ordinal :pastdue.vendor-identity-fact/requested-kind :pastdue.vendor-identity-fact/requested-token :pastdue.vendor-identity-fact/country-code :pastdue.vendor-identity-fact/vendor-code :pastdue.vendor-identity-fact/vendor-name :pastdue.vendor-identity-fact/candidate-count :pastdue.vendor-identity-fact/requested-input-count :pastdue.vendor-identity-fact/page-record-count :pastdue.vendor-identity-fact/next-after-ordinal :pastdue.vendor-identity-fact/has-more :pastdue.vendor-identity-fact/result-fingerprint]
+          :default [:pastdue.vendor-identity-fact/row-ordinal :asc]}}}
     :operations {}
     :sources {"eta-clickhouse" {:source/kind "sql"
         :source/effects #{:read}}}
@@ -6134,7 +6382,67 @@
           :pastdue.current-v2-fact/page-record-count "page_record_count"
           :pastdue.current-v2-fact/next-after-ordinal "next_after_ordinal"
           :pastdue.current-v2-fact/has-more "has_more"
-          :pastdue.current-v2-fact/result-fingerprint "result_fingerprint"}}}
+          :pastdue.current-v2-fact/result-fingerprint "result_fingerprint"}}
+      "pastdue_v3_live_overview_query_rows-sql" {:binding/for [:resolver "pastdue_v3_live_overview_query_rows"]
+        :binding/source "eta-clickhouse"
+        :binding/effect :read
+        :binding/implementation {:query "WITH input_control AS (SELECT multiIf(empty(trim(:country_code)),\n 'INVALID_COUNTRY',:top_n NOT BETWEEN 0 AND 20,'INVALID_TOP_N','OK') AS input_status),\n grouped AS (SELECT toInt64(ifNull(from_acct_no,0)) AS vendor_code,\n min(ifNull(vendor_name,'')) AS vendor_name,toInt64(count()) AS op,\n toInt64(countIf(toInt64(is_pastdue)=1)) AS pd,false AS is_seed\n FROM past_due.past_due_detail_view WHERE country_code=:country_code\n AND (SELECT input_status FROM input_control)='OK' GROUP BY vendor_code\n UNION ALL SELECT toInt64(0),'',toInt64(0),toInt64(0),true),\n measured AS (SELECT *,toInt64(sum(op) OVER ()) AS country_open_count,\n toInt64(sum(pd) OVER ()) AS country_past_due_count,\n toInt64(countIf(NOT is_seed AND vendor_code>0) OVER ()) AS readable_vendor_count,\n toInt64(countIf(NOT is_seed AND vendor_code>0 AND pd>0) OVER ()) AS past_due_vendor_count,\n toInt64(sumIf(op,NOT is_seed AND vendor_code<=0) OVER ()) AS unattributed_open_count,\n toInt64(sumIf(pd,NOT is_seed AND vendor_code<=0) OVER ()) AS unattributed_past_due_count,\n toInt64(row_number() OVER (ORDER BY (NOT is_seed AND vendor_code>0) DESC,pd DESC,op DESC,vendor_code)) AS ranking\n FROM grouped),\n typed AS (SELECT if(is_seed,'COUNTRY','TOP_VENDOR') AS record_type,\n multiIf((SELECT input_status FROM input_control)!='OK',(SELECT input_status FROM input_control),\n country_open_count=0,'NO_READABLE_ROWS','OK') AS scope_status,\n :country_code AS country_code,if(is_seed,toInt64(0),vendor_code) AS vendor_code,\n if(is_seed,'',vendor_name) AS vendor_name,if(is_seed,toInt64(0),ranking) AS vendor_rank,\n if(is_seed,country_open_count,op) AS open_line_count,\n if(is_seed,country_past_due_count,pd) AS past_due_count,\n country_open_count,country_past_due_count,readable_vendor_count,past_due_vendor_count,\n unattributed_open_count,unattributed_past_due_count,\n if(is_seed,toInt64(0),ranking) AS row_ordinal\n FROM measured WHERE is_seed OR (vendor_code>0 AND ranking<=:top_n))\n SELECT *,toJSONString(tuple(:country_code, :top_n)) AS scope_key,\n toDecimal128(toDecimal256(past_due_count, 18) / nullIf(toDecimal256(open_line_count, 18), 0), 18) AS past_due_ratio,\n toDecimal128(toDecimal256(past_due_count, 18) / nullIf(toDecimal256(country_past_due_count, 18), 0), 18) AS past_due_share,\n 'CURRENT' AS time_basis,now('America/Los_Angeles') AS queried_at_local,\n 'America/Los_Angeles' AS business_timezone,'3.1.0' AS metric_version,\n toInt64(count() OVER ()) AS expected_record_count FROM typed"}
+        :binding/input-map {:pastdue.live-overview-query/country-code "country_code"
+          :pastdue.live-overview-query/top-n "top_n"}
+        :binding/output-map {:pastdue.live-overview-query/rows "rows"
+          :pastdue.live-overview-fact/scope-key "scope_key"
+          :pastdue.live-overview-fact/record-type "record_type"
+          :pastdue.live-overview-fact/scope-status "scope_status"
+          :pastdue.live-overview-fact/time-basis "time_basis"
+          :pastdue.live-overview-fact/queried-at-local "queried_at_local"
+          :pastdue.live-overview-fact/business-timezone "business_timezone"
+          :pastdue.live-overview-fact/metric-version "metric_version"
+          :pastdue.live-overview-fact/expected-record-count "expected_record_count"
+          :pastdue.live-overview-fact/row-ordinal "row_ordinal"
+          :pastdue.live-overview-fact/country-code "country_code"
+          :pastdue.live-overview-fact/vendor-code "vendor_code"
+          :pastdue.live-overview-fact/vendor-name "vendor_name"
+          :pastdue.live-overview-fact/vendor-rank "vendor_rank"
+          :pastdue.live-overview-fact/open-line-count "open_line_count"
+          :pastdue.live-overview-fact/past-due-count "past_due_count"
+          :pastdue.live-overview-fact/past-due-ratio "past_due_ratio"
+          :pastdue.live-overview-fact/past-due-share "past_due_share"
+          :pastdue.live-overview-fact/country-open-count "country_open_count"
+          :pastdue.live-overview-fact/country-past-due-count "country_past_due_count"
+          :pastdue.live-overview-fact/readable-vendor-count "readable_vendor_count"
+          :pastdue.live-overview-fact/past-due-vendor-count "past_due_vendor_count"
+          :pastdue.live-overview-fact/unattributed-open-count "unattributed_open_count"
+          :pastdue.live-overview-fact/unattributed-past-due-count "unattributed_past_due_count"}}
+      "pastdue_v3_vendor_identity_query_rows-sql" {:binding/for [:resolver "pastdue_v3_vendor_identity_query_rows"]
+        :binding/source "eta-clickhouse"
+        :binding/effect :read
+        :binding/implementation {:query "WITH vendor_selection AS (SELECT\n JSONExtractArrayRaw(if(isValidJSON(:vendor_codes_json),:vendor_codes_json,'[]')) AS vendor_tokens,\n isValidJSON(:vendor_codes_json)\n AND toString(JSONType(if(isValidJSON(:vendor_codes_json),:vendor_codes_json,'[]')))='Array'\n AND arrayAll(x -> match(x,'^[1-9][0-9]{0,18}$')\n AND (length(x)<19 OR x<='9223372036854775807'),vendor_tokens) AS vendor_selection_valid,\n arraySort(arrayDistinct(arrayMap(x -> toInt64OrZero(x),vendor_tokens))) AS requested_vendors),countries AS (SELECT\n JSONExtractArrayRaw(if(isValidJSON(:countries_json),:countries_json,'[]')) AS tokens,\n isValidJSON(:countries_json) AND toString(JSONType(if(isValidJSON(:countries_json),:countries_json,'[]')))='Array'\n AND arrayAll(x -> toString(JSONType(x))='String' AND notEmpty(trim(JSONExtractString(x))),tokens) AS valid,\n arraySort(arrayDistinct(arrayMap(x -> upper(trim(JSONExtractString(x))),tokens))) AS values),names AS (SELECT\n JSONExtractArrayRaw(if(isValidJSON(:vendor_names_json),:vendor_names_json,'[]')) AS tokens,\n isValidJSON(:vendor_names_json) AND toString(JSONType(if(isValidJSON(:vendor_names_json),:vendor_names_json,'[]')))='Array'\n AND arrayAll(x -> toString(JSONType(x))='String' AND notEmpty(trim(JSONExtractString(x))),tokens) AS valid,\n arraySort(arrayDistinct(arrayMap(x -> trim(JSONExtractString(x)),tokens))) AS values),\n input_control AS (SELECT multiIf(NOT (SELECT valid FROM countries) OR empty((SELECT values FROM countries)),'INVALID_COUNTRIES',\n NOT (SELECT vendor_selection_valid FROM vendor_selection) OR NOT (SELECT valid FROM names)\n OR (empty((SELECT requested_vendors FROM vendor_selection)) AND empty((SELECT values FROM names))),'INVALID_VENDOR_SELECTION',\n :page_after_ordinal<0 OR :page_size NOT BETWEEN 1 AND 199,'INVALID_PAGE','OK') AS input_status),\n requests AS (SELECT item.1 AS requested_kind,item.2 AS requested_token\n FROM (SELECT arrayJoin(arrayConcat(\n arrayMap(x -> tuple('CODE',toString(x)),(SELECT requested_vendors FROM vendor_selection)),\n arrayMap(x -> tuple('NAME',x),(SELECT values FROM names)))) AS item)\n WHERE (SELECT input_status FROM input_control)='OK'),\n identities AS (SELECT country_code,toInt64(ifNull(from_acct_no,0)) AS vendor_code,\n ifNull(vendor_name,'') AS vendor_name\n FROM past_due.past_due_detail_view WHERE country_code IN (SELECT arrayJoin(values) FROM countries)\n AND toInt64(ifNull(from_acct_no,0))>0 AND (SELECT input_status FROM input_control)='OK'\n AND (toInt64(ifNull(from_acct_no,0)) IN (SELECT arrayJoin(requested_vendors) FROM vendor_selection)\n OR upper(trim(ifNull(vendor_name,''))) IN (SELECT arrayJoin(arrayMap(x -> upper(x),values)) FROM names))\n GROUP BY country_code,vendor_code,vendor_name),\n identity_keys AS (SELECT *,arrayJoin([tuple('CODE',toString(vendor_code)),\n tuple('NAME',upper(trim(vendor_name)))]) AS match_key FROM identities),\n candidates AS (SELECT r.requested_kind,r.requested_token,i.country_code,i.vendor_code,min(i.vendor_name) AS vendor_name,\n toInt64(1) AS found FROM requests r INNER JOIN identity_keys i\n ON r.requested_kind=i.match_key.1 AND upper(r.requested_token)=i.match_key.2\n GROUP BY r.requested_kind,r.requested_token,i.country_code,i.vendor_code),\n matches AS (SELECT r.requested_kind,r.requested_token,ifNull(c.country_code,'') AS country_code,\n toInt64(ifNull(c.vendor_code,0)) AS vendor_code,ifNull(c.vendor_name,'') AS vendor_name,\n toInt64(sum(ifNull(c.found,0)) OVER (PARTITION BY r.requested_kind,r.requested_token)) AS candidate_count\n FROM requests r LEFT JOIN candidates c ON r.requested_kind=c.requested_kind AND r.requested_token=c.requested_token),\n typed AS (SELECT 'RESOLUTION' AS record_type,\n multiIf(candidate_count=0,'NO_READABLE_MATCH',candidate_count=1,'MATCHED','AMBIGUOUS') AS scope_status,\n requested_kind,requested_token,country_code,vendor_code,vendor_name,candidate_count,\n toInt64(row_number() OVER (ORDER BY requested_kind,requested_token,country_code,vendor_code)) AS row_ordinal FROM matches\n UNION ALL SELECT 'CONTROL',(SELECT input_status FROM input_control),'','','',toInt64(0),'',toInt64(0),toInt64(0)),\n measured AS (SELECT *,toInt64(count() OVER ()) AS expected_record_count,\n toString(groupBitXor(cityHash64(toJSONString(tuple(record_type,scope_status,requested_kind,requested_token,\n country_code,vendor_code,vendor_name,candidate_count)))) OVER ()) AS result_fingerprint FROM typed),\n paged AS (SELECT * FROM measured WHERE record_type='CONTROL' OR\n (row_ordinal>:page_after_ordinal AND row_ordinal<=:page_after_ordinal+:page_size))\n SELECT *,toJSONString(tuple(:countries_json, :vendor_codes_json, :vendor_names_json)) AS scope_key,\n 'CURRENT' AS time_basis,now('America/Los_Angeles') AS queried_at_local,\n 'America/Los_Angeles' AS business_timezone,'3.1.0' AS metric_version,\n toInt64(length((SELECT requested_vendors FROM vendor_selection))+length((SELECT values FROM names))) AS requested_input_count,\n toInt64(count() OVER ()) AS page_record_count,\n if(expected_record_count-1>:page_after_ordinal+:page_size,toInt64(:page_after_ordinal+:page_size),toInt64(0)) AS next_after_ordinal,\n CAST(expected_record_count-1>:page_after_ordinal+:page_size AS Bool) AS has_more FROM paged"}
+        :binding/input-map {:pastdue.vendor-identity-query/countries-json "countries_json"
+          :pastdue.vendor-identity-query/vendor-codes-json "vendor_codes_json"
+          :pastdue.vendor-identity-query/vendor-names-json "vendor_names_json"
+          :pastdue.vendor-identity-query/page-after-ordinal "page_after_ordinal"
+          :pastdue.vendor-identity-query/page-size "page_size"}
+        :binding/output-map {:pastdue.vendor-identity-query/rows "rows"
+          :pastdue.vendor-identity-fact/scope-key "scope_key"
+          :pastdue.vendor-identity-fact/record-type "record_type"
+          :pastdue.vendor-identity-fact/scope-status "scope_status"
+          :pastdue.vendor-identity-fact/time-basis "time_basis"
+          :pastdue.vendor-identity-fact/queried-at-local "queried_at_local"
+          :pastdue.vendor-identity-fact/business-timezone "business_timezone"
+          :pastdue.vendor-identity-fact/metric-version "metric_version"
+          :pastdue.vendor-identity-fact/expected-record-count "expected_record_count"
+          :pastdue.vendor-identity-fact/row-ordinal "row_ordinal"
+          :pastdue.vendor-identity-fact/requested-kind "requested_kind"
+          :pastdue.vendor-identity-fact/requested-token "requested_token"
+          :pastdue.vendor-identity-fact/country-code "country_code"
+          :pastdue.vendor-identity-fact/vendor-code "vendor_code"
+          :pastdue.vendor-identity-fact/vendor-name "vendor_name"
+          :pastdue.vendor-identity-fact/candidate-count "candidate_count"
+          :pastdue.vendor-identity-fact/requested-input-count "requested_input_count"
+          :pastdue.vendor-identity-fact/page-record-count "page_record_count"
+          :pastdue.vendor-identity-fact/next-after-ordinal "next_after_ordinal"
+          :pastdue.vendor-identity-fact/has-more "has_more"
+          :pastdue.vendor-identity-fact/result-fingerprint "result_fingerprint"}}}
     :selection {[:resolver "pastdue_country_monitor_all"] "pastdue_country_monitor_all-sql"
       [:resolver "pastdue_historical_vendor_eta_source_drivers"] "pastdue_historical_vendor_eta_source_drivers-sql"
       [:resolver "pastdue_historical_country_trigger_events"] "pastdue_historical_country_trigger_events-sql"
@@ -6175,7 +6483,9 @@
       [:resolver "pastdue_v3_explore_v2_query_rows"] "pastdue_v3_explore_v2_query_rows-sql"
       [:resolver "pastdue_v3_explore_v3_query_rows"] "pastdue_v3_explore_v3_query_rows-sql"
       [:resolver "pastdue_v3_report_v2_query_rows"] "pastdue_v3_report_v2_query_rows-sql"
-      [:resolver "pastdue_v3_current_v2_query_rows"] "pastdue_v3_current_v2_query_rows-sql"}}
+      [:resolver "pastdue_v3_current_v2_query_rows"] "pastdue_v3_current_v2_query_rows-sql"
+      [:resolver "pastdue_v3_live_overview_query_rows"] "pastdue_v3_live_overview_query_rows-sql"
+      [:resolver "pastdue_v3_vendor_identity_query_rows"] "pastdue_v3_vendor_identity_query_rows-sql"}}
   :ownership {:entities {"pastdue.country-history-query" "REPLACE-WITH-GRAPH-ID"
       "pastdue.country-monitor" "REPLACE-WITH-GRAPH-ID"
       "pastdue.country-trigger-event" "REPLACE-WITH-GRAPH-ID"
@@ -6225,7 +6535,11 @@
       "pastdue.report-v2-query" "REPLACE-WITH-GRAPH-ID"
       "pastdue.report-v2-fact" "REPLACE-WITH-GRAPH-ID"
       "pastdue.current-v2-query" "REPLACE-WITH-GRAPH-ID"
-      "pastdue.current-v2-fact" "REPLACE-WITH-GRAPH-ID"}
+      "pastdue.current-v2-fact" "REPLACE-WITH-GRAPH-ID"
+      "pastdue.live-overview-query" "REPLACE-WITH-GRAPH-ID"
+      "pastdue.live-overview-fact" "REPLACE-WITH-GRAPH-ID"
+      "pastdue.vendor-identity-query" "REPLACE-WITH-GRAPH-ID"
+      "pastdue.vendor-identity-fact" "REPLACE-WITH-GRAPH-ID"}
     :resolvers {"pastdue_country_monitor_all" "REPLACE-WITH-GRAPH-ID"
       "pastdue_country_monitor_by_country" "REPLACE-WITH-GRAPH-ID"
       "pastdue_current_high_risk_lines_by_vendor" "REPLACE-WITH-GRAPH-ID"
@@ -6266,9 +6580,11 @@
       "pastdue_v3_explore_v2_query_rows" "REPLACE-WITH-GRAPH-ID"
       "pastdue_v3_explore_v3_query_rows" "REPLACE-WITH-GRAPH-ID"
       "pastdue_v3_report_v2_query_rows" "REPLACE-WITH-GRAPH-ID"
-      "pastdue_v3_current_v2_query_rows" "REPLACE-WITH-GRAPH-ID"}
+      "pastdue_v3_current_v2_query_rows" "REPLACE-WITH-GRAPH-ID"
+      "pastdue_v3_live_overview_query_rows" "REPLACE-WITH-GRAPH-ID"
+      "pastdue_v3_vendor_identity_query_rows" "REPLACE-WITH-GRAPH-ID"}
     :operations {}
     :terms {}}
-  :publication {:release/version "3.6.0"
-    :source/revision 8
+  :publication {:release/version "3.7.0"
+    :source/revision 9
     :required-capabilities #{:query/pagination-v1 :connector/sql :query/sort-v1 :graph/single-owner-v1 :artifact/embedded-closure-v1 :deployment/source-slot-v1 :semantic/core-v1}}}
