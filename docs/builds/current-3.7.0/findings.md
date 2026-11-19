@@ -8,3 +8,5 @@
 - 本地合成数据：CA Open4/PD3，与大量历史快照值不同，可检出误用snapshot；有0PD、
   无可读数据、同名跨Country、引号、重复alias、null编号、分页和完整batch组合用例。
 - 本环境没有可调用Atlas/Builder；源profile、JDBC22.8执行、实际角色/RLS、源延迟均未执行。
+
+- 3.7.2补充：env18身份查询3次source失败，未到current-v2；原生22.8复现identity CONTROL UNION Code49。详见../../diagnostics/source-failure/IDENTITY_ENV18_REV11_FIX.md。

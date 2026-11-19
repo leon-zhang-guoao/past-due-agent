@@ -1,0 +1,17 @@
+[
+  {
+    "line": 27,
+    "status": "FAIL",
+    "message": "Code: 49. DB::Exception: Different order of columns in UNION subquery: 'CONTROL', _subquery337, '', '', '', toInt64(0), '', toInt64(0), toInt64(0) and 'CONTROL', '', '', '', toInt64(0), '', toInt64(0), toInt64(0). (LOGICAL_ERROR)\n"
+  },
+  {
+    "line": 31,
+    "status": "FAIL",
+    "message": "Code: 49. DB::Exception: Different order of columns in UNION subquery: 'CONTROL', _subquery337, '', '', '', toInt64(0), '', toInt64(0), toInt64(0) and 'CONTROL', '', '', '', toInt64(0), '', toInt64(0), toInt64(0). (LOGICAL_ERROR)\n"
+  },
+  {
+    "line": 35,
+    "status": "FAIL",
+    "message": "Code: 49. DB::Exception: Different order of columns in UNION subquery: 'CONTROL', _subquery337, '', '', '', toInt64(0), '', toInt64(0), toInt64(0) and 'CONTROL', '', '', '', toInt64(0), '', toInt64(0), toInt64(0). (LOGICAL_ERROR)\n"
+  }
+]

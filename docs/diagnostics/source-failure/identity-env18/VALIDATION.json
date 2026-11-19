@@ -1,0 +1,33 @@
+{
+  "kind": "NATIVE22_SYNTHETIC_NOT_DEPLOYED_JDBC",
+  "status": "PASS",
+  "engine": "22.8.21.38",
+  "graph_sha256": "6ca958475a2b4e2489874d96c8dc49a59f4ec0bc6ebfdee7c55fbc6b333bbcd8",
+  "checks": [
+    {
+      "script": "test_clickhouse22_live.py",
+      "script_sha256": "e539eb2d40f34c2383424975db5523366bf6f25ec3ddd7e94d63261749dfe8e9",
+      "exit_code": 0,
+      "status": "PASS",
+      "output": "test_ambiguity_country_and_same_country (__main__.ClickHouse22Live) ... ok\ntest_changed_identity_fingerprint_detects_source_drift (__main__.ClickHouse22Live) ... ok\ntest_invalid_json_or_tokens_never_all (__main__.ClickHouse22Live) ... ok\ntest_missing_and_invalid (__main__.ClickHouse22Live) ... ok\ntest_mixed_exact_name_code_dedup_and_missing (__main__.ClickHouse22Live) ... ok\ntest_original_f5_identity_requests (__main__.ClickHouse22Live) ... ok\ntest_overview_current_not_snapshot (__main__.ClickHouse22Live) ... ok\ntest_paging_drift_and_batch_composition (__main__.ClickHouse22Live) ... ok\ntest_quoted_names_are_values (__main__.ClickHouse22Live) ... ok\ntest_thirteen_vendor_input_coverage_without_top_n (__main__.ClickHouse22Live) ... ok\ntest_typed_retained_reads_preserve_metrics_and_composition (__main__.ClickHouse22Live) ... ok\ntest_zero_pd_is_measured_and_unattributed_rows (__main__.ClickHouse22Live) ... ok\n\n----------------------------------------------------------------------\nRan 12 tests in 11.348s\n\nOK\n"
+    },
+    {
+      "script": "test_clickhouse22_current.py",
+      "script_sha256": "1450ff58b9608d66aa4fe6669248f0986672e856cd4775f986a9558d878df17e",
+      "exit_code": 0,
+      "status": "PASS",
+      "output": "test_atlas_appended_sort_and_limit_first_and_continuation (__main__.ClickHouse22Current) ... ok\ntest_denominator_org_parity (__main__.ClickHouse22Current) ... ok\ntest_duplicate_mapping_missing_and_zero (__main__.ClickHouse22Current) ... ok\ntest_invalid_explicit_control (__main__.ClickHouse22Current) ... ok\ntest_null_normalization_and_thirteen_vendor_coverage (__main__.ClickHouse22Current) ... ok\ntest_original_code49_repro_and_measured_single_vendor (__main__.ClickHouse22Current) ... ok\ntest_paging_totals_joint_and_fingerprint (__main__.ClickHouse22Current) ... ok\n\n----------------------------------------------------------------------\nRan 7 tests in 6.937s\n\nOK\n"
+    }
+  ],
+  "execution_delta_from_HEAD": {
+    ":bindings": [
+      "pastdue_v3_vendor_identity_query_rows-sql"
+    ],
+    ":resolvers": [],
+    ":sources": [],
+    ":selection": []
+  },
+  "deployed_jdbc": "NOT_RUN",
+  "production_latency": "NOT_RUN",
+  "real_agent_eval": "NOT_RUN"
+}

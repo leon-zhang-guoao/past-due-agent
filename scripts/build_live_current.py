@@ -108,7 +108,10 @@ def identity_sql():
  multiIf(candidate_count=0,'NO_READABLE_MATCH',candidate_count=1,'MATCHED','AMBIGUOUS') AS scope_status,
  requested_kind,requested_token,country_code,vendor_code,vendor_name,candidate_count,
  toInt64(row_number() OVER (ORDER BY requested_kind,requested_token,country_code,vendor_code)) AS row_ordinal FROM matches
- UNION ALL SELECT 'CONTROL',(SELECT input_status FROM input_control),'','','',toInt64(0),'',toInt64(0),toInt64(0)),
+ UNION ALL SELECT 'CONTROL' AS record_type,input_status AS scope_status,
+ '' AS requested_kind,'' AS requested_token,'' AS country_code,
+ toInt64(0) AS vendor_code,'' AS vendor_name,toInt64(0) AS candidate_count,
+ toInt64(0) AS row_ordinal FROM input_control),
  measured AS (SELECT *,toInt64(count() OVER ()) AS expected_record_count,
  toString(groupBitXor(cityHash64(toJSONString(tuple(record_type,scope_status,requested_kind,requested_token,
  country_code,vendor_code,vendor_name,candidate_count)))) OVER ()) AS result_fingerprint FROM typed),
@@ -184,8 +187,8 @@ def add_live_current(doc):
             doc[':vocabulary'][':attributes'][K(':'+child+'/'+name)][K(':attribute/description')]=description
     doc[':vocabulary'][':attributes'][K(':pastdue.live-overview-fact/unattributed-open-count')][K(':attribute/description')]='Country rows with null/nonpositive Vendor code; included in Country Open, excluded from ranked Vendors.'
     doc[':vocabulary'][':attributes'][K(':pastdue.live-overview-fact/unattributed-past-due-count')][K(':attribute/description')]='PD among null/nonpositive-code rows; included in Country PD, excluded from ranked Vendors.'
-    doc[':publication'][K(':release/version')]='3.7.1'
-    doc[':publication'][K(':source/revision')]=10
+    doc[':publication'][K(':release/version')]='3.7.2'
+    doc[':publication'][K(':source/revision')]=11
     return doc
 
 
@@ -193,6 +196,6 @@ if __name__=='__main__':
     root=Path(__file__).resolve().parents[1]
     path=root/'atlas/charts/pastdue.edn'
     doc=add_live_current(read(path))
-    doc[':publication'][K(':release/version')]='3.7.1'
-    doc[':publication'][K(':source/revision')]=10
+    doc[':publication'][K(':release/version')]='3.7.2'
+    doc[':publication'][K(':source/revision')]=11
     write(path,doc)

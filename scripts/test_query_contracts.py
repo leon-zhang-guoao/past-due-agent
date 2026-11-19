@@ -45,7 +45,7 @@ class QueryContracts(unittest.TestCase):
             self.assertEqual({a.rsplit('/',1)[1] for a in b.flatten_output(r[':output']) if not a.endswith('/rows')},{n for n,_ in fields})
             entity=self.doc[':vocabulary'][':entities']['pastdue.'+prefix+'-fact']
             self.assertIn(':pastdue.'+prefix+'-fact/scope-key',entity[':entity/identity'])
-        self.assertEqual(self.doc[':publication'][':release/version'],'3.7.1')
+        self.assertEqual(self.doc[':publication'][':release/version'],'3.7.2')
 
     def test_additive_explore_preserves_existing_interfaces(self):
         from build_explore_v2 import add_explore_v2, INPUTS, FIELDS
@@ -74,6 +74,10 @@ class QueryContracts(unittest.TestCase):
                     from build_current_v2 import sql
                     value=copy.deepcopy(value)
                     value[':binding/implementation'][':query']=sql()
+                if section==':bindings' and name=='pastdue_v3_vendor_identity_query_rows-sql':
+                    from build_live_current import identity_sql
+                    value=copy.deepcopy(value)
+                    value[':binding/implementation'][':query']=identity_sql()
                 self.assertEqual(self.doc[':execution'][section][name],value,name)
 
     def test_complete_v2_example_matches_actual_contract(self):

@@ -16,7 +16,7 @@ from edn_io import read, loads, dumps, K
 from run_golden_eval import run_checks
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = '3.7.0'
+VERSION = '3.7.2'
 SKILL = 'skill/pastdue-analysis/'
 HTML_SKILL = 'skill/pastdue-html-report/'
 MANIFEST_PATH = SKILL + 'references/release-manifest.edn'
@@ -37,6 +37,10 @@ ROOT_FILES = {'agent/SYSTEM_PROMPT.md', 'agent/INVOCATION_EXAMPLES.md',
               'docs/STABLE_REPORT_ROLLOUT_3_6_2.md', 'docs/ETA_BINDING_FIX_3_6_3.md', 'docs/CURRENT_3_7_0.md',
               'docs/builds/current-3.7.0/findings.md', 'docs/builds/current-3.7.0/coverage.md',
               'docs/builds/current-3.7.0/open-items.md', 'docs/builds/current-3.7.0/changes.md',
+              'docs/diagnostics/source-failure/IDENTITY_ENV18_REV11_FIX.md',
+              'docs/diagnostics/source-failure/identity-env18/01-f5-identity.eql',
+              'docs/diagnostics/source-failure/identity-env18/02-f5-current-v2-template.eql',
+              'docs/diagnostics/source-failure/identity-env18/VALIDATION.json',
               'docs/COMPOSABLE_ANALYSIS_3_5.md', 'docs/HTML_SUB_AGENT_3_5_1.md'}
 REF_NAMES = {'atlas-query-playbook.md', 'completion-contract.md', 'current-context.md',
              'data-contract.md', 'eta-diagnostic-rules.edn', 'metric-definitions.md',
@@ -230,7 +234,7 @@ def _manifest(full, skill, offline, sql, inputs, doc, baseline):
         ':artifact-input-sha256': inputs,
         ':agent-contract-version': VERSION,
         ':recommended-atlas-publication': doc[':publication'][':release/version'],
-        ':atlas-compatibility': 'Graph3.7.0/revision9 adds live overview and batch identity; original41 execution interfaces unchanged. Exact-set CURRENT reuses current-v2; ranking/other operations retain explore. Existing report paths and optional wide reads preserved. Deployed22.8/JDBC/permissions/latency/Agent acceptance NOT_RUN.',
+        ':atlas-compatibility': 'Graph3.7.2/revision11 preserves rev10 current-v2 fix and changes only identity CONTROL UNION projection versus rev10. Native22.8 synthetic compatibility is recorded separately; deployed JDBC/permissions/latency/Agent acceptance NOT_RUN. Existing report paths and optional wide reads preserved. Legacy current-analysis5s timeout and explore-v3 native22.8 JOIN defect remain unresolved; neither is a verified fallback.',
         ':source-report-page-default': 1000,
         ':compatible-metric-version': '3.1.0',
         ':manifest-self-hash': 'excluded-to-avoid-recursion',

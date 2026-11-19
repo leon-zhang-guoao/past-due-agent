@@ -1,0 +1,6 @@
+{":entity" {":pastdue.vendor-identity-query/countries-json" "[\"US\",\"CA\"]"
+    ":pastdue.vendor-identity-query/vendor-codes-json" "[64342]"
+    ":pastdue.vendor-identity-query/vendor-names-json" "[]"
+    ":pastdue.vendor-identity-query/page-after-ordinal" 0
+    ":pastdue.vendor-identity-query/page-size" 100}
+  ":query" [{":pastdue.vendor-identity-query/rows" [":pastdue.vendor-identity-fact/scope-key" ":pastdue.vendor-identity-fact/record-type" ":pastdue.vendor-identity-fact/scope-status" ":pastdue.vendor-identity-fact/time-basis" ":pastdue.vendor-identity-fact/queried-at-local" ":pastdue.vendor-identity-fact/business-timezone" ":pastdue.vendor-identity-fact/metric-version" ":pastdue.vendor-identity-fact/expected-record-count" ":pastdue.vendor-identity-fact/row-ordinal" ":pastdue.vendor-identity-fact/requested-kind" ":pastdue.vendor-identity-fact/requested-token" ":pastdue.vendor-identity-fact/country-code" ":pastdue.vendor-identity-fact/vendor-code" ":pastdue.vendor-identity-fact/vendor-name" ":pastdue.vendor-identity-fact/candidate-count" ":pastdue.vendor-identity-fact/requested-input-count" ":pastdue.vendor-identity-fact/page-record-count" ":pastdue.vendor-identity-fact/next-after-ordinal" ":pastdue.vendor-identity-fact/has-more" ":pastdue.vendor-identity-fact/result-fingerprint"]}]}

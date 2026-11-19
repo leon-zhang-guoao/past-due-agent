@@ -6,19 +6,40 @@ import unittest
 from edn_io import loads, read
 from validate_bundle import ROOT, validate
 from build_live_current import (add_live_current, OVERVIEW, IDENTITY, OVERVIEW_INPUTS,
-    OVERVIEW_FIELDS, IDENTITY_INPUTS, IDENTITY_FIELDS)
+    OVERVIEW_FIELDS, IDENTITY_INPUTS, IDENTITY_FIELDS, identity_sql)
 import test_sql_fixtures as fixtures
 
 O='pastdue_v3_live_overview_query_rows'
 I='pastdue_v3_vendor_identity_query_rows'
 
 class Contract(unittest.TestCase):
+    def test_only_identity_control_query_changes_from_rev10(self):
+        import zipfile
+        with zipfile.ZipFile(ROOT/'releases/pastdue-graph-v3.7.1-rev10.zip') as archive:
+            baseline=loads(archive.read('atlas/charts/pastdue.edn').decode())
+        result=add_live_current(copy.deepcopy(baseline))
+        before=" UNION ALL SELECT 'CONTROL',(SELECT input_status FROM input_control),'','','',toInt64(0),'',toInt64(0),toInt64(0)),"
+        after=""" UNION ALL SELECT 'CONTROL' AS record_type,input_status AS scope_status,
+ '' AS requested_kind,'' AS requested_token,'' AS country_code,
+ toInt64(0) AS vendor_code,'' AS vendor_name,toInt64(0) AS candidate_count,
+ toInt64(0) AS row_ordinal FROM input_control),"""
+        query=baseline[':execution'][':bindings'][I+'-sql'][':binding/implementation'][':query']
+        self.assertEqual(query.count(before),1)
+        self.assertEqual(identity_sql(),query.replace(before,after))
+        expected=copy.deepcopy(baseline[':execution'])
+        expected[':bindings'][I+'-sql'][':binding/implementation'][':query']=identity_sql()
+        self.assertEqual(result[':execution'],expected)
+        self.assertEqual(result[':vocabulary'],baseline[':vocabulary'])
+
     def test_additive_idempotent_and_examples(self):
         baseline=loads(subprocess.check_output(['git','show','HEAD:atlas/charts/pastdue.edn'],cwd=ROOT,text=True))
         result=add_live_current(copy.deepcopy(baseline))
         self.assertEqual(validate(result),[])
         for section in (':resolvers',':bindings',':sources',':selection'):
             for key,value in baseline[':execution'][section].items():
+                if section==':bindings' and key==I+'-sql':
+                    value=copy.deepcopy(value)
+                    value[':binding/implementation'][':query']=identity_sql()
                 self.assertEqual(result[':execution'][section][key],value)
         self.assertEqual(add_live_current(copy.deepcopy(result)),result)
         for parent,inputs,fields in ((OVERVIEW,OVERVIEW_INPUTS,OVERVIEW_FIELDS),(IDENTITY,IDENTITY_INPUTS,IDENTITY_FIELDS)):

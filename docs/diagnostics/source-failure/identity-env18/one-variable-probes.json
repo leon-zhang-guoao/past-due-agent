@@ -1,0 +1,17 @@
+[
+  {
+    "variant": "aliased_scalar",
+    "status": "PASS",
+    "rows": 3
+  },
+  {
+    "variant": "unnamed_from_control",
+    "status": "PASS",
+    "rows": 3
+  },
+  {
+    "variant": "fixed",
+    "status": "PASS",
+    "rows": 3
+  }
+]

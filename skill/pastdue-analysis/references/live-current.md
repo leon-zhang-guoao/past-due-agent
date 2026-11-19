@@ -1,4 +1,4 @@
-# Live overview and Vendor analysis — 3.7.0
+# Live overview and Vendor analysis — 3.7.2
 
 Read for “目前／当前／今日 past due 情况”, a Vendor's situation, or a list of
 Vendor names/codes without a historical comparison. These questions use readable
@@ -11,8 +11,8 @@ report-planning.md. An inherited explicit period remains unless the user changes
 | Intent | Shared capability | Delivery |
 |---|---|---|
 | General current situation | `pastdue.live-overview-query/rows`, exact Country, top-n=5; default Countries US and CA separately | Country Open, PD, PD/Open, capture time; current leading Vendors and concentration, limitations |
-| Known Country + one or many numeric codes | `pastdue.current-v2-query/rows` once per Country/set, pages as needed | Each requested Vendor's current Open, PD, ratio, Code/Source composition and interpretation |
-| Names, mixed names/codes, or codes without known Country | `pastdue.vendor-identity-query/rows` in batches → group unique MATCHED Country+codes → current-v2 | Same metrics; preserve original-token mapping and list ambiguous/unmatched items |
+| Known Country + one or many numeric codes | `pastdue.current-v2-query/rows` once per Country/set, pages as needed | Requested Vendor metrics; composition and interpretation for an analysis question |
+| Names, mixed names/codes, or codes without known Country | `pastdue.vendor-identity-query/rows` in batches → group unique MATCHED Country+codes → current-v2 | Requested metrics; preserve original-token mapping and list ambiguous/unmatched items |
 | Ranking, ETA selection filters, comparisons, trends | Existing explore-v3 / report interfaces by semantics | Preserve requested population, denominator, period and display scope |
 
 Use [live-overview-query.eql](live-overview-query.eql),
@@ -42,7 +42,9 @@ read that section once; repeated overlapping reads add no capability or facts.
   or NO_READABLE_MATCH. Ambiguous tokens need a Country/code choice; continue
   independent resolved items. Do not auto-pick the largest Vendor or first row.
   Code and name supplied as an explicit pair must agree on identity; separate
-  arrays describe an OR-set, not zipped assertions.
+  arrays describe an OR-set, not zipped assertions. Intersect the pair's resolved
+  Country+code candidates before metric selection; a name match to another code
+  is a mismatch to report, not an additional requested Vendor.
 - No match means no readable CURRENT match in this search scope. It proves
   neither nonexistence nor zero Open/PD. A historical-only Vendor may not resolve
   by current name; explicit codes remain usable for historical reports.
@@ -83,7 +85,9 @@ returned. Use `vendor-past-due-ratio` for Vendor PD/Open, `past-due-ratio` for b
 PD/Vendor Open. Interpret observed concentration/risk, not proven cause or change.
 
 For one or many Vendors, deliver a row per requested identity (or precise local
-gap), with Open, PD, ratio and concise main Code/Source findings where observed.
+gap). A situation/analysis question includes Open, PD, ratio and concise main
+Code/Source findings where observed. A count-only question follows the measure
+and completion scope in SKILL.md; bucket interpretation is optional.
 A zero-PD Vendor is still included. Batch totals use unique Country+code metrics,
 not input aliases or repeated buckets. Name resolution and metrics are separate
 captures; preserve both and explain material drift. No previous-period delta,
@@ -97,7 +101,10 @@ For small overview/identity results read the explicit projected scalar fields,
 ordered by row_ordinal, only from their actual retained result. For Vendor sets,
 [current-metrics-read.sql](current-metrics-read.sql) supplies coverage and Vendor
 metrics; [current-buckets-read.sql](current-buckets-read.sql) supplies disjoint
-buckets from the SAME handle. Full-width current-page-read.sql stays optional.
+buckets from the SAME handle when needed for the requested analysis. The metrics
+read includes FACT ordinals/counts/fingerprint for page verification; use those
+without reading every bucket field solely to answer a count. Full-width
+current-page-read.sql stays optional.
 Reuse fields already read. If retained output truncates, read missing ordinal
 ranges/fields on that handle before executing another source query.
 
@@ -107,6 +114,12 @@ advance only when has-more using returned next-after-ordinal. Drift invalidates
 completeness; a bounded fresh attempt is appropriate if source change is confirmed,
 otherwise disclose the gap. No unchanged retries or alternate snapshot answers
 masquerading as realtime. Complete verified scopes remain useful after local gaps.
+For a source failure without a parameter/limit finding, keep the original scope
+and record resolver, env/version, recent-id and the actual cause if available.
+Reducing output fields or removing a correctly encoded name is a supported
+correction only when evidence identifies a projection/size or input problem.
+When no justified correction or verified equivalent path remains, deliver the
+precise missing measurement and blocker rather than another speculative execute.
 Capture time is query time in America/Los_Angeles, not source refresh time. Live
 latency and freshness require deployment validation; the source may itself lag.
 
@@ -122,8 +135,11 @@ correction. Deliver when requested measurements and coverage are complete.
 Graph3.7 adds overview and identity; current-v2 is reused only for exact-set CURRENT
 metrics/distributions here. This is a targeted path, not promotion over all explore
 operations. Verify actual live capabilities. Equivalent explore-v3 CURRENT is a
-valid fallback for known codes if current-v2 is unavailable/fails with a supported
-correction; keep set/time/denominator and label its fields correctly. Missing name
+fallback candidate for known codes only after its live execution and equivalent
+semantics are verified; keep set/time/denominator and label its fields correctly.
+Native22.8 tests have exposed an independent explore-v3 JOIN compatibility defect;
+the old current-analysis path also has a recorded5s timeout. Treat neither as an
+established working fallback. Missing name
 resolution does not authorize guessing; deliver known-code facts and list unresolved
 names. Older deployments may answer a general current query via equivalent explore
 CURRENT; verify Country totals/ranking and bounded work before use. No snapshot

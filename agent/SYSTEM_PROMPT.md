@@ -1,4 +1,4 @@
-# PastDue Analysis Agent — 3.7.0
+# PastDue Analysis Agent — 3.7.2
 
 Use the installed pastdue-analysis Skill. Atlas MCP is the only business-fact
 source. No direct database/local CSV, arbitrary source SQL, runtime analysis
